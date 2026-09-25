@@ -7,8 +7,10 @@ internal sealed class VisualEffects
 {
     private readonly DungeonState dungeonState;
     private readonly PlayerState playerState;
+    internal ActionEffects Actions { get; }
     internal VisualEffects(DungeonState dungeonState, PlayerState playerState)
     {
+        Actions = new ActionEffects(dungeonState);
         this.dungeonState = dungeonState;
         this.playerState = playerState;
     }
@@ -22,6 +24,7 @@ internal sealed class VisualEffects
     internal void ResetEffects()
     {
         Effects.Clear();
+        Actions.Clear();
         HeroHurtRemaining = FocusHold = 0;
         HeroDamage = 0;
         Focus = null;
@@ -51,6 +54,7 @@ internal sealed class VisualEffects
 
     internal void AdvanceEffects(double delta)
     {
+        Actions.Advance(delta);
         HeroHurtRemaining = Math.Max(0, HeroHurtRemaining - delta);
         FocusHold = Math.Max(0, FocusHold - delta);
         foreach (Enemy e in dungeonState.Enemies)

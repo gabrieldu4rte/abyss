@@ -5,6 +5,7 @@ namespace Abyss.Presentation;
 internal sealed class HudRenderer
 {
     private readonly AsciiCanvas asciiCanvas;
+    private readonly ActionEffectsRenderer actionEffectsRenderer;
     private readonly DungeonState dungeonState;
     private readonly ExpeditionJournal expeditionJournal;
     private readonly HeroCombatStats heroCombatStats;
@@ -13,9 +14,10 @@ internal sealed class HudRenderer
     private readonly PlayerState playerState;
     private readonly RunState runState;
     private readonly VisualEffects visualEffects;
-    internal HudRenderer(AsciiCanvas asciiCanvas, DungeonState dungeonState, ExpeditionJournal expeditionJournal, HeroCombatStats heroCombatStats, InventoryState inventoryState, Localization localization, PlayerState playerState, RunState runState, VisualEffects visualEffects)
+    internal HudRenderer(AsciiCanvas asciiCanvas, DungeonState dungeonState, ExpeditionJournal expeditionJournal, HeroCombatStats heroCombatStats, InventoryState inventoryState, Localization localization, PlayerState playerState, RunState runState, VisualEffects visualEffects, ActionEffectsRenderer actionEffectsRenderer)
     {
         this.asciiCanvas = asciiCanvas;
+        this.actionEffectsRenderer = actionEffectsRenderer;
         this.dungeonState = dungeonState;
         this.expeditionJournal = expeditionJournal;
         this.heroCombatStats = heroCombatStats;
@@ -47,6 +49,7 @@ internal sealed class HudRenderer
 
         DrawJournalSummary();
         asciiCanvas.Text(272, 121, runState.IsAiming ? localization.Translate("> MIRA: WASD / SETAS. ESC cancela.", "> AIM: WASD / ARROWS. ESC cancels.") : dungeonState.IsMerchantFloor ? localization.Translate("[E] Converse ao lado de M. [>] Continue sua jornada.", "[E] Talk next to M. [>] Continue your journey.") : localization.Translate("[>] Encontre a passagem para as profundezas.", "[>] Find the passage into the depths."), runState.IsAiming ? UiTheme.Gold : UiTheme.Teal, 15);
+        var actionFrame = actionEffectsRenderer.GetFrame();
         for (int y = 0; y < GameRules.Height; y++)
             for (int x = 0; x < GameRules.Width; x++)
             {
@@ -87,6 +90,11 @@ internal sealed class HudRenderer
                     }
                 }
 
+                if (pos != playerState.Position && actionFrame.TryGetValue(pos, out var actionGlyph))
+                {
+                    g = actionGlyph.Character;
+                    c = actionGlyph.Color;
+                }
                 asciiCanvas.Text(UiTheme.MapX + x * UiTheme.CellX, UiTheme.MapY + y * UiTheme.CellY, g.ToString(), c, 17);
             }
 

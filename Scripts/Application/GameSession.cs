@@ -19,6 +19,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
     internal RandomStream RandomStream { get; } = new();
     internal InventoryRenderer InventoryRenderer { get; }
     internal HudRenderer HudRenderer { get; }
+    internal ActionEffectsRenderer ActionEffectsRenderer { get; }
     internal VisualEffects VisualEffects { get; }
     internal AsciiCanvas AsciiCanvas { get; }
     internal MerchantRenderer MerchantRenderer { get; }
@@ -58,7 +59,8 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         LootService = new LootService(DungeonState, ExpeditionJournal, InventoryState, Localization, RandomStream);
         JournalFormatter = new JournalFormatter(ExpeditionJournal, Localization);
         InventoryRenderer = new InventoryRenderer(AsciiCanvas, InventoryState, Localization, MenuState, PlayerState);
-        HudRenderer = new HudRenderer(AsciiCanvas, DungeonState, ExpeditionJournal, HeroCombatStats, InventoryState, Localization, PlayerState, RunState, VisualEffects);
+        ActionEffectsRenderer = new ActionEffectsRenderer(AsciiCanvas, DungeonState, VisualEffects.Actions);
+        HudRenderer = new HudRenderer(AsciiCanvas, DungeonState, ExpeditionJournal, HeroCombatStats, InventoryState, Localization, PlayerState, RunState, VisualEffects, ActionEffectsRenderer);
         CombatService = new CombatService(DungeonState, ExpeditionJournal, HeroCombatStats, InventoryState, Localization, LootService, PlayerState, ProgressionService, RunState, VisualEffects, RandomStream);
         DungeonGenerator = new DungeonGenerator(DungeonState, ExpeditionJournal, LootService, MenuState, MerchantState, PlayerState, VisualEffects, RandomStream);
         UiComponents = new UiComponents(AsciiCanvas, Localization, MenuState);
@@ -83,7 +85,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         GameInput.AdvanceHeldMovement(delta);
         if (RunState.Screen == "game" || RunState.Screen == "dead")
             VisualEffects.AdvanceEffects(delta);
-        if (Clock > .10)
+        if (Clock > (VisualEffects.Actions.Active && RunState.Screen == "game" ? 1.0 / 30 : .10))
         {
             Clock = 0;
             Host.RequestRedraw();

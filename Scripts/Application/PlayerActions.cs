@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using static Abyss.Rules.TabletopRules;
 
 namespace Abyss.Application;
@@ -141,21 +142,26 @@ internal sealed class PlayerActions
         }
 
         int range = playerState.ClassIndex == 2 ? 10 : 6;
-        var p = playerState.Position;
+        var origin = playerState.Position;
+        var path = new List<Vector2I> { origin };
+        var p = origin;
         for (int i = 0; i < range; i++)
         {
             p += d;
             if (!dungeonState.Walk(p))
                 break;
+            path.Add(p);
             var e = dungeonState.At(p);
             if (e != null)
             {
+                visualEffects.Actions.PlayProjectile(origin, path, playerState.ClassIndex == 1);
                 combatService.ResolveHeroAttack(e, true);
                 turns.EndTurn();
                 return;
             }
         }
 
+        visualEffects.Actions.PlayProjectile(origin, path, playerState.ClassIndex == 1);
         expeditionJournal.Say("O disparo se perde na escuridao.", "The shot fades into the darkness.");
         turns.EndTurn();
     }
@@ -176,6 +182,9 @@ internal sealed class PlayerActions
             return;
         }
 
+        var chosenTarget = visualEffects.Focus != null && targets.Contains(visualEffects.Focus) ? visualEffects.Focus : targets[0];
+        visualEffects.Actions.PlaySkill(playerState.ClassIndex, playerState.Position,
+            playerState.ClassIndex < 2 ? targets.Select(enemy => enemy.Position) : new[] { chosenTarget.Position }, heroCombatStats.AbilityRange);
         playerState.Energy -= cost;
         expeditionJournal.Say(UiTheme.Skills[playerState.ClassIndex] + "!", UiTheme.EnglishSkills[playerState.ClassIndex] + "!");
         if (playerState.ClassIndex < 2)

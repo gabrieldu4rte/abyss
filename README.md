@@ -147,7 +147,7 @@ Trade uses the same gear objects as the inventory. Equipped-item identity is pre
 
 ## ASCII asset pipeline
 
-`AsciiArt` loads `Art/*.txt` and corresponding `*.tone` files. Each printable character represents image detail; the tone map determines its brightness. `AsciiCanvas` caches glyph layers and draws them with the monospaced font. Menus use localized lighting modulation for the tower, campfire, and journal candle. Damage effects use character changes, color changes, and temporary portrait displacement.
+`AsciiArt` loads `Art/*.txt` and corresponding `*.tone` files. Each printable character represents image detail; the tone map determines its brightness. `AsciiCanvas` caches glyph layers and draws them with the monospaced font. Menus use localized lighting modulation for the tower, campfire, and journal candle. Damage effects use character changes, color changes, and temporary portrait displacement. `ActionEffects` records outgoing actions before turn resolution, and `ActionEffectsRenderer` draws animated ASCII overlays: rotating blades, an expanding arcane wave, arrow trails, and shadow slashes. Basic staff/bow shots follow the actual firing path up to the first enemy, wall, or range limit, including misses. Effects never consume randomness or schedule turns, are clipped to visible walkable cells, pause with menus, and clear when a floor changes. Active action effects request redraws at up to 30 FPS; idle redraw timing remains unchanged.
 
 The original raster illustrations in `ArtSources/` are offline conversion inputs. Gameplay draws the converted ASCII assets, not those raster images. `Tools/convert_ascii.py` uses Pillow to regenerate the text/tone assets. Preserve matching dimensions between each text file and its tone map. When creating an export preset, ensure runtime `.txt`, `.tone`, and font resources are included.
 
@@ -173,6 +173,7 @@ Coverage includes:
 - Merchant generation, stock persistence, purchase/sale confirmation, currency, and equipped-item sales.
 - Menu navigation, localization persistence, journal pagination, ASCII asset validity, and damage animations.
 - Held movement timing, release, pause, focus loss, and aiming.
+- Skill/projectile animation lifecycle, shot directions, wall/range clipping, fog, and cosmetic-only timing.
 - Platform-port substitution, AI policy dispatch, and architectural dependency boundaries.
 - **1,273 frozen behavior checkpoints** recorded before the structural refactor, covering generated maps, actions, rewards, inventory, logs, effects, and merchant transactions.
 
@@ -197,6 +198,8 @@ Flags after `--` are handled by the game:
 - `--capture=/absolute/path.png`: save a rendered frame and exit; keyboard input is disabled during capture.
 - `--capture-delay=SECONDS`: wait before capture, clamped to 0–3 seconds.
 - `--freeze-animation`: with capture, disable frame processing for repeatable visual comparisons.
+- `--action-demo=warrior|mage|archer|rogue|bolt|arrow`: preview an outgoing action in a deterministic room.
+- `--effect-time=SECONDS`: advance the action preview to a specific animation time before capture.
 
 ## Development conventions
 

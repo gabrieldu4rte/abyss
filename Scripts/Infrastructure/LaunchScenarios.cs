@@ -108,5 +108,6 @@ internal sealed class LaunchScenarios(GameSession game)
             if (args.Contains("--room-demo"))
                 game.RunState.Screen = "game";
         }
+        ActionAnimationPreview.Configure(game, args);
     }
 }
