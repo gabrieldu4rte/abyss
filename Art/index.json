@@ -1,0 +1,104 @@
+{
+  "archer": {
+    "columns": 100,
+    "rows": 60,
+    "source": "archer.png",
+    "file": "archer.txt"
+  },
+  "book": {
+    "columns": 160,
+    "rows": 96,
+    "source": "book.png",
+    "file": "book.txt"
+  },
+  "camp": {
+    "columns": 160,
+    "rows": 96,
+    "source": "camp.png",
+    "file": "camp.txt"
+  },
+  "crown": {
+    "columns": 160,
+    "rows": 96,
+    "source": "crown.png",
+    "file": "crown.txt"
+  },
+  "globe": {
+    "columns": 160,
+    "rows": 96,
+    "source": "globe.png",
+    "file": "globe.txt"
+  },
+  "goblin": {
+    "columns": 100,
+    "rows": 60,
+    "source": "goblin.png",
+    "file": "goblin.txt"
+  },
+  "grave": {
+    "columns": 160,
+    "rows": 96,
+    "source": "grave.png",
+    "file": "grave.txt"
+  },
+  "mage": {
+    "columns": 100,
+    "rows": 60,
+    "source": "mage.png",
+    "file": "mage.txt"
+  },
+  "rat": {
+    "columns": 100,
+    "rows": 60,
+    "source": "rat.png",
+    "file": "rat.txt"
+  },
+  "rogue": {
+    "columns": 100,
+    "rows": 60,
+    "source": "rogue.png",
+    "file": "rogue.txt"
+  },
+  "skeleton": {
+    "columns": 100,
+    "rows": 60,
+    "source": "skeleton.png",
+    "file": "skeleton.txt"
+  },
+  "torch": {
+    "columns": 160,
+    "rows": 96,
+    "source": "torch.png",
+    "file": "torch.txt"
+  },
+  "tower": {
+    "columns": 160,
+    "rows": 96,
+    "source": "tower.png",
+    "file": "tower.txt"
+  },
+  "unknown": {
+    "columns": 100,
+    "rows": 60,
+    "source": "unknown.png",
+    "file": "unknown.txt"
+  },
+  "warden": {
+    "columns": 100,
+    "rows": 60,
+    "source": "warden.png",
+    "file": "warden.txt"
+  },
+  "warrior": {
+    "columns": 100,
+    "rows": 60,
+    "source": "warrior.png",
+    "file": "warrior.txt"
+  },
+  "merchant": {
+    "columns": 100,
+    "rows": 60,
+    "source": "merchant.png",
+    "file": "merchant.txt"
+  }
+}
