@@ -1,12 +1,13 @@
-# Origens das artes
+# Art sources
 
-Todas as 17 imagens nesta pasta foram criadas com a ferramenta integrada **imagegen**, sem usar API/CLI externo. Os prompts originais estão em [prompts.json](prompts.json); o novo retrato usa [merchant-prompt.txt](merchant-prompt.txt).
+All 17 illustrations in this directory were created with the integrated **imagegen** tool. The original prompts are stored in [prompts.json](prompts.json); the merchant portrait uses [merchant-prompt.txt](merchant-prompt.txt).
 
-- Heróis: `warrior.png`, `mage.png`, `archer.png`, `rogue.png`.
-- Monstros: `rat.png`, `skeleton.png`, `goblin.png`, `warden.png`.
+- Heroes: `warrior.png`, `mage.png`, `archer.png`, `rogue.png`.
+- Monsters: `rat.png`, `skeleton.png`, `goblin.png`, `warden.png`.
 - Menus: `tower.png`, `camp.png`, `globe.png`, `book.png`, `grave.png`, `crown.png`.
-- Complementos: `unknown.png`, `torch.png`.
+- Supporting illustrations: `unknown.png`, `torch.png`.
+- Merchant: `merchant.png`, converted into a 100 × 60 character portrait.
 
-As bases são ilustrações detalhadas monocromáticas de fantasia. `../Tools/convert_ascii.py` converte luminância e contornos em caracteres ASCII, corrige a proporção dos glifos e escreve as grades e oito faixas tonais em `../Art/`. As fontes permanecem aqui para permitir novas conversões. `.gdignore` impede que o jogo importe os PNGs como recursos visuais: o resultado exibido é sempre texto desenhado pelo Godot.
+The sources are detailed monochrome fantasy illustrations. [convert_ascii.py](../Tools/convert_ascii.py) converts luminance and edges into ASCII characters, compensates for glyph proportions, and writes character grids and eight-level tone maps to `Art/`.
 
-- Mercador: `merchant.png`, retrato gerado pela ferramenta integrada imagegen e convertido para 100 x 60 caracteres.
+These sources are retained for future conversions. `.gdignore` prevents Godot from importing the PNG files as visual resources. The game renders the converted text rather than these raster images.

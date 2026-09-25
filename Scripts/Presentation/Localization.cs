@@ -1,0 +1,80 @@
+using System.Collections.Generic;
+using static Abyss.Rules.TabletopRules;
+
+namespace Abyss.Presentation;
+internal sealed class Localization
+{
+    private readonly MenuState menuState;
+    internal Localization(MenuState menuState)
+    {
+        this.menuState = menuState;
+    }
+
+    internal string Translate(string portuguese, string english) => menuState.English ? english : portuguese;
+    internal string ClassName(int i) => menuState.English ? UiTheme.EnglishNames[i] : UiTheme.Names[i];
+    internal string SkillName(int i) => menuState.English ? UiTheme.EnglishSkills[i] : UiTheme.Skills[i];
+    internal string EnemyName(char g) => g switch
+    {
+        'r' => Translate("RATO DAS CRIPTAS", "CRYPT RAT"),
+        's' => Translate("ESQUELETO", "SKELETON"),
+        'g' => Translate("GOBLIN", "GOBLIN"),
+        'B' => Translate("GUARDIAO", "WARDEN"),
+        _ => Translate("SEM ALVO", "NO TARGET")};
+    internal string HelpText(int topic) => topic switch
+    {
+        0 => Translate("# O ABISMO\nSob as ruinas, escadas levam a saloes esquecidos.\nA luz da superficie desaparece muito antes do fim da jornada.\n\n# A DESCIDA\nProcure as passagens entre as salas e guarde suas provisoes.\nNem toda sombra precisa ser enfrentada.\nAs escadas sao o caminho para as profundezas.\n\n# O QUE RESTA\nOuro, cicatrizes e lembrancas acompanham quem sobrevive.\nA verdadeira conquista e voltar a encontrar o proximo caminho.", "# THE ABYSS\nBeneath the ruins, stairs lead to forgotten halls.\nDaylight vanishes long before the journey is over.\n\n# THE DESCENT\nSeek passages between chambers and preserve your supplies.\nNot every shadow must be confronted.\nStairs lead farther into the depths.\n\n# WHAT REMAINS\nGold, scars and memories follow those who survive.\nThe true achievement is finding the next path."),
+        1 => Translate("# SALAS E CORREDORES\nSalas abertas oferecem espaco, mas tambem deixam voce exposto.\nPassagens estreitas ajudam a separar os perseguidores.\nParedes e esquinas podem esconder sua fuga.\n\n# ESCADAS VIGIADAS\nAlgumas escadas pertencem aos Guardioes.\nEles aguardam na propria sala e nao abandonam seu posto.\nEntrar em seu dominio rompe o silencio.\n\n# UM REFUGIO RARO\nA luz do mercador anuncia uma tregua.\nAli nao ha criaturas a espreita: apenas negocios e outra escada.", "# CHAMBERS AND CORRIDORS\nOpen rooms offer space, but leave you exposed.\nNarrow passages help separate pursuers.\nWalls and corners may conceal your retreat.\n\n# GUARDED STAIRS\nSome stairways belong to the Wardens.\nThey wait in their chamber and never abandon their post.\nEntering their domain breaks the silence.\n\n# A RARE REFUGE\nThe merchant's light promises a truce.\nNo creatures lurk there: only trade and another stairway."),
+        2 => Translate("# RATOS DAS CRIPTAS\nPequenos vultos percorrem o chao entre pedras e ossos.\nNao confunda seu tamanho com mansidao.\n\n# ESQUELETOS\nOs mortos ainda caminham pelos corredores.\nSeus passos secos denunciam presencas alem da luz.\n\n# GOBLINS\nOlhos atentos acompanham qualquer movimento nas salas.\nQuem e visto pode ganhar um perseguidor persistente.\n\n# GUARDIOES\nSentinelas das escadas, presos ao dever de proteger a passagem.\nPara seguir adiante, sera preciso enfrenta-los.", "# CRYPT RATS\nSmall shapes scurry among stones and bones.\nDo not mistake their size for gentleness.\n\n# SKELETONS\nThe dead still walk these corridors.\nDry footsteps betray a presence beyond the light.\n\n# GOBLINS\nWatchful eyes follow every movement in the chambers.\nBeing spotted may earn you a persistent pursuer.\n\n# WARDENS\nStairway sentinels, bound to guard the passage.\nTo travel farther, you must confront them."),
+        3 => Translate("# GUERREIRO\nEnfrenta o perigo de perto, com espada ou adaga.\nArmaduras de placas combinam com sua vocacao.\n\n# MAGO\nConduz a forca arcana por meio de um cajado.\nMantos protegem quem trilha esse caminho.\n\n# ARQUEIRO\nMantem a distancia e confia na precisao do arco.\n\n# LADINO\nEspadas e adagas acompanham seus passos discretos.\nA astucia pode valer tanto quanto a forca.", "# WARRIOR\nFaces danger up close, with sword or dagger.\nPlate armor suits this calling.\n\n# MAGE\nChannels arcane force through a staff.\nRobes shelter those who walk this path.\n\n# ARCHER\nKeeps a distance and trusts the bow's precision.\n\n# ROGUE\nSwords and daggers accompany quiet footsteps.\nCunning can be as valuable as strength."),
+        4 => Translate("# ARMAS, VESTES E AMULETOS\nUma boa lamina, um manto ou um talisma podem mudar sua jornada.\nAlgumas pecas exigem experiencia; outras, uma vocacao especifica.\n\n# TESOUROS\nBaus esquecidos guardam equipamentos e provisoes.\nNem tudo o que encontrar servira ao seu caminho.\nO mercador pode dar destino ao que voce nao precisa.\n\n# RELIQUIAS\nPecas comuns e raras dividem espaco com achados extraordinarios.\nArtefatos epicos e lendarios carregam propriedades especiais.\nExamine cada um: poder e utilidade nem sempre sao a mesma coisa.", "# WEAPONS, GARMENTS AND CHARMS\nA good blade, robe or talisman can change your journey.\nSome pieces demand experience; others, a particular calling.\n\n# TREASURES\nForgotten chests hold equipment and supplies.\nNot everything you find will suit your path.\nThe merchant may find a use for what you do not need.\n\n# RELICS\nCommon and rare pieces mingle with extraordinary discoveries.\nEpic and legendary artifacts carry special properties.\nExamine each: power and usefulness are not always the same."),
+        5 => Translate("# FRASCOS DE VIDA\nPocoes fecham feridas e devolvem folego aos viajantes.\nGuarde-as com cuidado; a proxima pode estar longe.\n\n# ESSENCIAS DE ENERGIA\nOutros frascos restauram as forcas gastas na jornada.\nCristais encontrados pelo caminho tambem oferecem alivio.\n\n# MOEDAS\nO ouro pesa pouco diante de uma necessidade urgente.\nUm bolso abastecido pode garantir provisoes no proximo refugio.\n\n# PRUDENCIA\nEscolha quando lutar e quando recuar.\nNenhum tesouro vale muito para quem nao sobrevive para usa-lo.", "# HEALTH DRAUGHTS\nPotions close wounds and restore a traveler's breath.\nGuard them carefully; the next may be far away.\n\n# ENERGY ESSENCES\nOther bottles replenish strength spent on the journey.\nCrystals found along the way also offer relief.\n\n# COINS\nGold weighs little against an urgent need.\nA full purse may secure supplies at the next refuge.\n\n# PRUDENCE\nChoose when to fight and when to retreat.\nTreasure means little to those who cannot survive to use it."),
+        _ => Translate("# O MERCADOR\nUm viajante de capuz mantem seu pequeno refugio entre as ruinas.\nNinguem sabe como suas mercadorias chegam tao fundo.\n\n# SUA BANCA\nHa armas, vestes, amuletos e frascos entre seus pertences.\nSua oferta varia: examine as pecas antes de se decidir.\nEle tambem compra equipamentos e provisoes dos aventureiros.\n\n# PALAVRAS NA PENUMBRA\n\"O Abismo cobra caro. Eu aceito moedas.\"\n\"Volte vivo. Bons clientes sao raros.\"\n\n# TREGUA\nA sala do mercador e um lugar seguro antes de continuar a descida.", "# THE MERCHANT\nA hooded traveler keeps a small refuge among the ruins.\nNobody knows how his wares reach these depths.\n\n# HIS STALL\nWeapons, garments, charms and bottles fill his belongings.\nHis wares vary: examine each piece before deciding.\nHe also buys equipment and supplies from adventurers.\n\n# WORDS IN THE GLOOM\n\"The Abyss asks a price. I take coins.\"\n\"Come back alive. Good customers are rare.\"\n\n# TRUCE\nThe merchant's room is a safe place before continuing downward.")};
+    internal static string MonsterName(char glyph, bool en) => glyph switch
+    {
+        'r' => en ? "Crypt rat" : "Rato das criptas",
+        's' => en ? "Skeleton" : "Esqueleto",
+        'g' => "Goblin",
+        'B' => en ? "Warden" : "Guardiao",
+        _ => en ? "Enemy" : "Inimigo"
+    };
+    internal string StatsLine(Attributes a, bool first) => first ? Translate($"FOR {a.Strength}  DES {a.Dexterity}", $"STR {a.Strength}  DEX {a.Dexterity}") : Translate($"CON {a.Constitution}  INT {a.Intelligence}", $"CON {a.Constitution}  INT {a.Intelligence}");
+    internal string OfferName(Offer offer) => offer.Gear is Gear g ? GearLabel(g) : offer.Potion == 0 ? Translate("Pocao de vida", "Health potion") : Translate("Pocao de energia", "Energy potion");
+    internal string MerchantSpeech() => Translate(new[] { "O Abismo cobra caro. Eu aceito moedas.", "Aco firme, frascos cheios. Escolha bem.", "Aqui, ate as sombras respeitam a tregua.", "Volte vivo. Bons clientes sao raros." }[menuState.MerchantQuote], new[] { "The Abyss asks a price. I take coins.", "Steady steel, full bottles. Choose well.", "Here, even shadows honor the truce.", "Come back alive. Good customers are rare." }[menuState.MerchantQuote]);
+    internal string GearStats(Gear gear)
+    {
+        if (gear.Slot == GearSlot.Weapon)
+            return Translate($"Dano: {new DamageDice(1, gear.Sides, gear.Power)} + ", $"Damage: {new DamageDice(1, gear.Sides, gear.Power)} + ") + (gear.Kind == GearKind.Sword ? Translate("FOR", "STR") : gear.Kind == GearKind.Staff ? "INT" : Translate("DES", "DEX"));
+        var b = gear.AttributeBonus;
+        var parts = new List<string>();
+        if (gear.Slot == GearSlot.Armor)
+            parts.Add($"{Translate("CA", "AC")} {gear.ArmorClass}");
+        if (b.Strength != 0)
+            parts.Add(Translate($"FOR +{b.Strength}", $"STR +{b.Strength}"));
+        if (b.Dexterity != 0)
+            parts.Add(Translate($"DES +{b.Dexterity}", $"DEX +{b.Dexterity}"));
+        if (b.Constitution != 0)
+            parts.Add($"CON +{b.Constitution}");
+        if (b.Intelligence != 0)
+            parts.Add($"INT +{b.Intelligence}");
+        return string.Join(" | ", parts);
+    }
+
+    internal string GearName(Gear g) => Translate(new[] { "Espada", "Adaga", "Cajado", "Arco", "Placas", "Couro", "Manto", "Amuleto" }[(int)g.Kind], new[] { "Sword", "Dagger", "Staff", "Bow", "Plate", "Leather", "Robe", "Amulet" }[(int)g.Kind]);
+    internal string RarityName(Rarity r) => Translate(new[] { "Comum", "Raro", "Epico", "Lendario" }[(int)r], new[] { "Common", "Rare", "Epic", "Legendary" }[(int)r]);
+    internal string GearLabel(Gear g) => $"{GearName(g)} / {RarityName(g.Quality)}" + (g.Grade > 0 ? $" +{g.Grade}" : "");
+    internal string SlotName(int slot) => Translate(new[] { "ARMA", "ARMADURA", "ACESSORIO" }[slot], new[] { "WEAPON", "ARMOR", "ACCESSORY" }[slot]);
+    internal string GearNameFor(Gear gear, bool en)
+    {
+        bool previous = menuState.English;
+        menuState.English = en;
+        string name = GearLabel(gear);
+        menuState.English = previous;
+        return name;
+    }
+
+    internal string GearEffect(Gear g) => g.Quality < Rarity.Epic ? Translate("Sem efeito especial.", "No special effect.") : g.Slot switch
+    {
+        GearSlot.Weapon => g.Quality == Rarity.Epic ? Translate("Impacto: +1d4 de dano ao acertar.", "Impact: +1d4 damage on hit.") : Translate("Impacto: +1d6; drena ate 2 PV ao acertar.", "Impact: +1d6; drains up to 2 HP on hit."),
+        GearSlot.Armor => Translate($"Protecao: reduz dano recebido em {(g.Quality == Rarity.Epic ? 1 : 2)}.", $"Protection: reduces incoming damage by {(g.Quality == Rarity.Epic ? 1 : 2)}."),
+        _ => Translate($"Foco: +{(g.Quality == Rarity.Epic ? 1 : 2)} energia por abate.", $"Focus: +{(g.Quality == Rarity.Epic ? 1 : 2)} energy per kill.")};
+}
