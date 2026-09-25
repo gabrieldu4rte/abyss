@@ -8,7 +8,6 @@ namespace Abyss.Presentation;
 internal enum ActionAnimationKind { Whirlwind, ArcaneNova, PiercingArrow, ShadowStep, ArcaneBolt, Arrow }
 internal readonly record struct ActionGlyph(Vector2I Position, char Character, Color Color);
 
-// A snapshot of an action, independent of subsequent movement, damage, or random rolls.
 internal sealed class ActionAnimation
 {
     internal ActionAnimationKind Kind { get; }
@@ -91,7 +90,6 @@ internal sealed class ActionAnimation
             yield return new(Path[head], Kind == ActionAnimationKind.ArcaneBolt ? '*' : Kind == ActionAnimationKind.ShadowStep ? '@' : arrow, color);
         else
         {
-            // Also show an end flash for missed or wall-blocked shots; this is not a damage indicator.
             var end = Path[^1];
             yield return new(end, Kind == ActionAnimationKind.ShadowStep ? '/' : '*', color);
             foreach (var d in GameRules.Directions)

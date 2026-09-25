@@ -112,7 +112,6 @@ internal sealed partial class RegressionSuite
                 throw new Exception("Chest rewards exceed caps");
             for (int roll = 0; roll < 100; roll++)
             {
-                // Same roll can only maintain or improve rarity across cycles.
                 game.RandomGenerator = new RegressionSuite.RangeRandom(roll);
                 Rarity early = game.LootService.RollRarity(depth);
                 game.RandomGenerator = new RegressionSuite.RangeRandom(roll);

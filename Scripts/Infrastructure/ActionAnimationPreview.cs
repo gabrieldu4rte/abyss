@@ -5,7 +5,6 @@ using System.Globalization;
 
 namespace Abyss.Infrastructure;
 
-// Optional deterministic showcase for visual verification; never runs in a normal expedition.
 internal static class ActionAnimationPreview
 {
     internal static void Configure(GameSession game, string[] args)

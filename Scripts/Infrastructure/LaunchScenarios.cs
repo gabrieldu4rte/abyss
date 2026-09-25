@@ -3,7 +3,6 @@ using System;
 using System.Linq;
 
 namespace Abyss.Infrastructure;
-// Deterministic scenarios used by capture commands; normal runs leave the session on the home screen.
 internal sealed class LaunchScenarios(GameSession game)
 {
     internal void Configure(string[] args)

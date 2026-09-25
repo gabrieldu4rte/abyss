@@ -27,7 +27,6 @@ internal sealed class MerchantRenderer
         asciiCanvas.Text(32, 96, localization.Translate("O MERCADOR DO ABISMO", "THE ABYSS MERCHANT"), UiTheme.Gold, 24);
         asciiCanvas.Portrait(32, 158, AsciiArt.Merchant, localization.Translate("MERCADOR", "MERCHANT"), UiTheme.Teal);
         asciiCanvas.Text(32, 490, localization.Translate($"OURO {playerState.Gold}", $"GOLD {playerState.Gold}"), UiTheme.Gold, 21);
-        // Short lines keep the merchant's speech inside its column.
         string speech = localization.MerchantSpeech();
         int row = 0;
         while (speech.Length > 0)

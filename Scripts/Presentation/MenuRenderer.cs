@@ -90,6 +90,16 @@ internal sealed class MenuRenderer
         uiComponents.Footer("[ENTER] voltar ao menu inicial", "[ENTER] return to the main menu");
     }
 
+    internal void DrawQuitConfirm()
+    {
+        asciiCanvas.DrawAsciiImage(32, 139, AsciiArt.Camp, 510, 510, new Color("fff6df"), 2);
+        asciiCanvas.Text(600, 223, localization.Translate("SAIR DO JOGO?", "QUIT THE GAME?"), UiTheme.Gold, 23);
+        asciiCanvas.Text(600, 290, localization.Translate("Tem certeza de que deseja sair?", "Are you sure you want to quit?"), UiTheme.Ink, 20);
+        asciiCanvas.Text(600, 410, (menuState.ExitYes ? "  " : "> ") + localization.Translate("NAO, FICAR", "NO, STAY"), menuState.ExitYes ? UiTheme.Dim : UiTheme.Teal, 22);
+        asciiCanvas.Text(600, 474, (menuState.ExitYes ? "> " : "  ") + localization.Translate("SIM, SAIR DO JOGO", "YES, QUIT GAME"), menuState.ExitYes ? UiTheme.Teal : UiTheme.Dim, 22);
+        uiComponents.Footer("[SETAS] escolher   [ENTER] confirmar   [ESC] cancelar", "[ARROWS] choose   [ENTER] confirm   [ESC] cancel");
+    }
+
     internal void DrawExitConfirm()
     {
         asciiCanvas.DrawAsciiImage(32, 139, AsciiArt.Camp, 510, 510, new Color("fff6df"), 2);

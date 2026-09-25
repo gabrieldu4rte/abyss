@@ -145,6 +145,14 @@ The game remains turn-based. `_Process` advances animation time and the held-key
 
 Trade uses the same gear objects as the inventory. Equipped-item identity is preserved when selling or removing equipment. Every purchase/sale is confirmed before resources change; trading itself does not advance turns. Returning to the main menu also requires confirmation and does not save the expedition.
 
+## Startup and screen transitions
+
+Normal startup plays a short localized terminal-style story at 42 characters per second. Enter or Space reveals the remaining text, then continues; Escape skips it. The main menu appears automatically two seconds after the story finishes. Saved language preferences apply before the introduction.
+
+`OpeningStory` owns presentation timing. `ScreenTransitions` records ASCII drawing commands and replays the outgoing screen while fading out, then fades in the destination. Each half lasts 180 ms with smooth interpolation. Screen navigation, pause tabs, and shop modes share this path. Transition input is suppressed and held movement is cleared; presentation timing never advances combat turns or consumes random numbers. Capture scenarios disable navigation fades for deterministic screenshots.
+
+The main menu's Quit action opens a confirmation with No selected. Escape cancels; the host only closes after an explicit Yes confirmation. Returning from an expedition retains its separate progress-loss confirmation.
+
 ## ASCII asset pipeline
 
 `AsciiArt` loads `Art/*.txt` and corresponding `*.tone` files. Each printable character represents image detail; the tone map determines its brightness. `AsciiCanvas` caches glyph layers and draws them with the monospaced font. Menus use localized lighting modulation for the tower, campfire, and journal candle. Damage effects use character changes, color changes, and temporary portrait displacement. `ActionEffects` records outgoing actions before turn resolution, and `ActionEffectsRenderer` draws animated ASCII overlays: rotating blades, an expanding arcane wave, arrow trails, and shadow slashes. Basic staff/bow shots follow the actual firing path up to the first enemy, wall, or range limit, including misses. Effects never consume randomness or schedule turns, are clipped to visible walkable cells, pause with menus, and clear when a floor changes. Active action effects request redraws at up to 30 FPS; idle redraw timing remains unchanged.
@@ -174,6 +182,7 @@ Coverage includes:
 - Menu navigation, localization persistence, journal pagination, ASCII asset validity, and damage animations.
 - Held movement timing, release, pause, focus loss, and aiming.
 - Skill/projectile animation lifecycle, shot directions, wall/range clipping, fog, and cosmetic-only timing.
+- Localized introduction timing, skip/continue, automatic completion, bidirectional fades, transition input gating, and quit confirmation.
 - Platform-port substitution, AI policy dispatch, and architectural dependency boundaries.
 - **1,273 frozen behavior checkpoints** recorded before the structural refactor, covering generated maps, actions, rewards, inventory, logs, effects, and merchant transactions.
 
@@ -192,7 +201,7 @@ Flags after `--` are handled by the game:
 
 - `--english` / `--portuguese`: override the displayed language for the process.
 - `--demo`: start the seeded mage scenario.
-- `--view=home|classes|language|pause|inventory|journal|settings|help|confirm_exit|dead`: select a screen; combine with `--demo` for expedition screens.
+- `--view=intro|home|classes|language|pause|inventory|journal|settings|help|confirm_exit|confirm_quit|dead`: select a screen; combine with `--demo` for expedition screens.
 - `--damage-demo`, `--ranged-demo`, `--inventory-demo`, `--merchant-demo`: deterministic feature scenarios.
 - `--trade-demo`, `--room-demo`: modify the merchant scenario.
 - `--capture=/absolute/path.png`: save a rendered frame and exit; keyboard input is disabled during capture.

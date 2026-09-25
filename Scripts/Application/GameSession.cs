@@ -8,6 +8,8 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
 {
     internal IGameHost Host { get; }
     internal IAsciiCanvas Canvas { get; }
+    internal ScreenTransitions Transitions { get; }
+    internal OpeningStory OpeningStory { get; }
     internal ILanguageSettings Settings { get; }
     internal PlayerState PlayerState { get; } = new();
     internal DungeonState DungeonState { get; } = new();
@@ -46,13 +48,15 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
     internal GameSession(IGameHost host, IAsciiCanvas canvas, ILanguageSettings settings)
     {
         Host = host;
-        Canvas = canvas;
+        Transitions = new ScreenTransitions(canvas);
+        Canvas = Transitions;
         Settings = settings;
         VisualEffects = new VisualEffects(DungeonState, PlayerState);
         MerchantService = new MerchantService(ExpeditionJournal, InventoryState, MenuState, MerchantState, PlayerState, RunState);
         LanguagePreferences = new LanguagePreferences(MenuState, Settings);
         HeroCombatStats = new HeroCombatStats(PlayerState, InventoryState);
         Localization = new Localization(MenuState);
+        OpeningStory = new OpeningStory(RunState, Localization);
         AsciiCanvas = new AsciiCanvas(Canvas, VisualEffects);
         InventoryService = new InventoryService(this, ExpeditionJournal, InventoryState, Localization, MenuState, PlayerState, RunState, RandomStream);
         ProgressionService = new ProgressionService(ExpeditionJournal, HeroCombatStats, PlayerState);
@@ -71,8 +75,8 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         PlayerActions = new PlayerActions(CombatService, this, DungeonState, this, ExpeditionJournal, HeroCombatStats, InventoryState, LootService, MenuState, PlayerState, RunState, VisualEffects, RandomStream);
         MenuRenderer = new MenuRenderer(AsciiCanvas, DungeonState, Localization, MenuState, PlayerState, RunState, UiComponents);
         MenuController = new MenuController(Host, InventoryService, InventoryState, JournalFormatter, LanguagePreferences, MenuState, MerchantService, PlayerActions, PlayerState, RunState, this);
-        GameRenderer = new GameRenderer(AsciiCanvas, HudRenderer, Localization, MenuRenderer, MerchantRenderer, PauseRenderer, RunState);
-        GameInput = new GameInput(this, ExpeditionJournal, Host, MenuController, MenuState, PlayerActions, PlayerState, RunState, VisualEffects);
+        GameRenderer = new GameRenderer(AsciiCanvas, HudRenderer, Localization, MenuRenderer, MerchantRenderer, PauseRenderer, RunState, MenuState, Transitions, OpeningStory);
+        GameInput = new GameInput(this, ExpeditionJournal, Host, MenuController, MenuState, PlayerActions, PlayerState, RunState, VisualEffects, Transitions, OpeningStory);
     }
 
     internal Random RandomGenerator { get => RandomStream.Generator; set => RandomStream.Generator = value; }
@@ -81,11 +85,13 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
     public void Tick(double delta)
     {
         Clock += delta;
+        Transitions.Advance(delta);
+        OpeningStory.Advance(delta);
         VisualEffects.UiTime += delta;
         GameInput.AdvanceHeldMovement(delta);
         if (RunState.Screen == "game" || RunState.Screen == "dead")
             VisualEffects.AdvanceEffects(delta);
-        if (Clock > (VisualEffects.Actions.Active && RunState.Screen == "game" ? 1.0 / 30 : .10))
+        if (Clock > (Transitions.Active || RunState.Screen == "intro" || (VisualEffects.Actions.Active && RunState.Screen == "game") ? 1.0 / 30 : .10))
         {
             Clock = 0;
             Host.RequestRedraw();

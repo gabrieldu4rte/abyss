@@ -118,7 +118,10 @@ internal sealed class MenuController
                 else if (menuState.MenuIndex == 1)
                     OpenLanguage("home");
                 else
-                    host.Quit();
+                {
+                    menuState.ExitYes = false;
+                    runState.Screen = "confirm_quit";
+                }
             }
         }
         else if (runState.Screen == "language")
@@ -163,6 +166,17 @@ internal sealed class MenuController
             HandlePause(key);
         else if (runState.Screen == "shop")
             HandleShop(key);
+        else if (runState.Screen == "confirm_quit")
+        {
+            if (key == Key.Escape) runState.Screen = "home";
+            else if (UiTheme.Previous(key) || UiTheme.Next(key) || key == Key.Left || key == Key.Right)
+                menuState.ExitYes = !menuState.ExitYes;
+            else if (UiTheme.Confirm(key))
+            {
+                if (menuState.ExitYes) host.Quit();
+                else runState.Screen = "home";
+            }
+        }
         else if (runState.Screen == "confirm_exit")
             HandleExitConfirm(key);
         else if (runState.Screen == "dead")

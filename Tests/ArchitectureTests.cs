@@ -17,6 +17,18 @@ internal sealed partial class RegressionSuite
             throw new Exception("Fullscreen bypassed the host port.");
         isolated.GameInput.HandleKey(Key.Key3);
         isolated.GameInput.HandleKey(Key.Enter);
+        if (host.QuitCalls != 0 || isolated.RunState.Screen != "confirm_quit" || isolated.MenuState.ExitYes)
+            throw new Exception("Quit must ask for confirmation with No selected.");
+        isolated.GameInput.HandleKey(Key.Enter);
+        if (isolated.RunState.Screen != "home" || host.QuitCalls != 0)
+            throw new Exception("Declining quit must return home.");
+        isolated.GameInput.HandleKey(Key.Enter);
+        isolated.GameInput.HandleKey(Key.Escape);
+        if (isolated.RunState.Screen != "home" || host.QuitCalls != 0)
+            throw new Exception("Escape must cancel quitting.");
+        isolated.GameInput.HandleKey(Key.Enter);
+        isolated.GameInput.HandleKey(Key.Down);
+        isolated.GameInput.HandleKey(Key.Enter);
         if (host.QuitCalls != 1)
             throw new Exception("Quit bypassed the host port.");
         isolated.MenuState.English = true;

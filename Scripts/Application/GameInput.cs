@@ -4,6 +4,8 @@ using System;
 namespace Abyss.Application;
 internal sealed class GameInput
 {
+    private readonly ScreenTransitions transitions;
+    private readonly OpeningStory openingStory;
     private readonly ITurnScheduler turns;
     private readonly ExpeditionJournal expeditionJournal;
     private readonly IGameHost host;
@@ -13,9 +15,11 @@ internal sealed class GameInput
     private readonly PlayerState playerState;
     private readonly RunState runState;
     private readonly VisualEffects visualEffects;
-    internal GameInput(ITurnScheduler turns, ExpeditionJournal expeditionJournal, IGameHost host, MenuController menuController, MenuState menuState, PlayerActions playerActions, PlayerState playerState, RunState runState, VisualEffects visualEffects)
+    internal GameInput(ITurnScheduler turns, ExpeditionJournal expeditionJournal, IGameHost host, MenuController menuController, MenuState menuState, PlayerActions playerActions, PlayerState playerState, RunState runState, VisualEffects visualEffects, ScreenTransitions transitions, OpeningStory openingStory)
     {
         this.turns = turns;
+        this.transitions = transitions;
+        this.openingStory = openingStory;
         this.expeditionJournal = expeditionJournal;
         this.host = host;
         this.menuController = menuController;
@@ -38,6 +42,7 @@ internal sealed class GameInput
         }
 
         StopHeldMovement();
+        if (transitions.Active && k.Keycode != Key.F11) return;
         if (runState.Screen == "game" && !runState.IsAiming && UiTheme.MovementDirection(k.Keycode) != Vector2I.Zero)
         {
             HeldMovementKey = k.Keycode;
@@ -56,6 +61,7 @@ internal sealed class GameInput
             return;
         }
 
+        if (runState.Screen == "intro") { openingStory.HandleKey(key); return; }
         if (menuController.HandleMenus(key))
             return;
         if (key == Key.I)
@@ -131,7 +137,7 @@ internal sealed class GameInput
 
     internal void AdvanceHeldMovement(double delta)
     {
-        if (runState.Screen != "game" || runState.IsAiming)
+        if (transitions.Active || runState.Screen != "game" || runState.IsAiming)
         {
             StopHeldMovement();
             return;
