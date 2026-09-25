@@ -170,7 +170,6 @@ internal sealed partial class RegressionSuite
                 throw new Exception("Loot scarcity failed");
         }
 
-        // A seeded simulation checks the advertised hit probability against real rolls.
         random = new Random(734);
         int hits = 0;
         for (int i = 0; i < 20000; i++)

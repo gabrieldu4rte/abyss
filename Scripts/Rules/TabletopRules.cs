@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 
 namespace Abyss.Rules;
-// All probability and dice rules are deterministic when supplied a seeded Random.
 public static class TabletopRules
 {
     public readonly record struct Attributes(int Strength, int Dexterity, int Constitution, int Intelligence)
@@ -60,7 +59,6 @@ public static class TabletopRules
             's' => new(10, 10, 10, 4),
             'g' => new(10, 12, 10, 8),
             _ => new(12, 10, 12, 12)};
-        // Keep combat attributes stable within each five-floor band.
         int growth = (depth - 1) / 5;
         return new(baseStats.Strength + growth, baseStats.Dexterity + growth / 2, baseStats.Constitution + growth, baseStats.Intelligence + growth / 2);
     }

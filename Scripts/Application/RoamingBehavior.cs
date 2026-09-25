@@ -24,7 +24,6 @@ internal sealed class RoamingBehavior(CombatService combatService, DungeonState 
             return;
         }
 
-        // Follow the last known position, never the player's position through walls.
         if (enemy.Alerted && enemy.LastSeen.HasValue && enemy.SearchTurns > 0 && enemy.Position != enemy.LastSeen.Value)
         {
             navigator.StepEnemy(enemy, enemy.LastSeen.Value);

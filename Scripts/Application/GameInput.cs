@@ -142,7 +142,6 @@ internal sealed class GameInput
         MovementDelay -= delta;
         if (MovementDelay > 0)
             return;
-        // At most one turn per frame, even after a stall.
         MovementDelay = .16;
         playerActions.Move(UiTheme.MovementDirection(HeldMovementKey));
         host.RequestRedraw();

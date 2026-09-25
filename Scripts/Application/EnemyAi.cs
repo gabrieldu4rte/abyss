@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 
 namespace Abyss.Application;
-// Dispatch is extensible; enemy policies own their sensing and activation rules.
 internal sealed class EnemyAi(IReadOnlyList<IEnemyBehavior> behaviors)
 {
     internal void ActEnemy(Enemy enemy, bool evade = false, bool mayAttack = true)

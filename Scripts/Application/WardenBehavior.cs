@@ -12,8 +12,6 @@ internal sealed class WardenBehavior(CombatService combatService, DungeonState d
             enemy.Alerted = true;
             expeditionJournal.Say("Voce entrou na sala da escada. O Guardiao desperta!", "You entered the stair room. The Warden awakens!");
         }
-
-        // The guardian never attacks across the doorway or leaves its room.
         if (inside && GameRules.Dist(playerState.Position, enemy.Position) == 1)
         {
             if (mayAttack)

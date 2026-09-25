@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 
 namespace Abyss.Infrastructure;
-// Original illustrations are archived in ArtSources. Runtime art is plain ASCII only.
 public static class AsciiArt
 {
     public static readonly Dictionary<string, string> ToneMaps = new();

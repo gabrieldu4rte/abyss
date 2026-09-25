@@ -96,7 +96,6 @@ internal sealed class HudRenderer
             asciiCanvas.Text(UiTheme.MapX + fx.Position.X * UiTheme.CellX - 4, UiTheme.MapY + fx.Position.Y * UiTheme.CellY - 16 - rise, $"-{fx.Damage}", fx.Hero ? UiTheme.Red : UiTheme.Gold, 15);
         }
 
-        // Ability details have their own panel below the map, away from enemy stats.
         asciiCanvas.Text(272, 597, localization.Translate("SUAS ACOES / CUSTO / DADOS DE DANO", "YOUR ACTIONS / COST / DAMAGE DICE"), UiTheme.Gold, 13);
         asciiCanvas.Frame(270, 612, 78, 4, UiTheme.Dim, 15, 18);
         asciiCanvas.Text(283, 634, $"[Q] {localization.SkillName(playerState.ClassIndex)}  |  {heroCombatStats.AbilityCost} EN  |  {heroCombatStats.AbilityDice}", playerState.Energy >= heroCombatStats.AbilityCost ? UiTheme.Teal : UiTheme.Dim, 15);

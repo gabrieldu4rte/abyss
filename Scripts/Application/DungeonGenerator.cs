@@ -130,7 +130,6 @@ internal sealed class DungeonGenerator
             return p;
         }
 
-        // Reserve room for scarce loot; density stays bounded at every depth.
         int population = Math.Min(7 + (dungeonState.Floor - 1) / 2, 14) - (GameRules.IsBossFloor(dungeonState.Floor) ? 2 : 0);
         for (int i = 0; i < Math.Min(population, Math.Max(0, free.Count - 5)); i++)
         {
