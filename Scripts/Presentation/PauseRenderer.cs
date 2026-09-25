@@ -72,8 +72,12 @@ internal sealed class PauseRenderer
         asciiCanvas.Text(310, 458, $"[Q] {localization.SkillName(playerState.ClassIndex)} | {heroCombatStats.AbilityCost} EN | d20{UiTheme.Signed(heroCombatStats.SpellBonus + 2)} | {heroCombatStats.AbilityDice}", UiTheme.Teal, 17);
         asciiCanvas.Text(310, 487, localization.Translate($"Alcance: {heroCombatStats.AbilityRange} casas", $"Range: {heroCombatStats.AbilityRange} tiles") + (playerState.ClassIndex == 3 ? localization.Translate(" | Critico 19-20; +4 defesa na resposta", " | Critical 19-20; +4 defense on response") : ""), UiTheme.Dim, 15);
         if (playerState.ClassIndex is 1 or 2)
-            asciiCanvas.Text(310, 519, heroCombatStats.CanShoot ? localization.Translate($"[F] Basico: {heroCombatStats.ShotCost} EN | d20{UiTheme.Signed(heroCombatStats.SpellBonus)} | {heroCombatStats.ShotDice} | Alcance {(playerState.ClassIndex == 2 ? 10 : 6)}", $"[F] Basic: {heroCombatStats.ShotCost} EN | d20{UiTheme.Signed(heroCombatStats.SpellBonus)} | {heroCombatStats.ShotDice} | Range {(playerState.ClassIndex == 2 ? 10 : 6)}") : localization.Translate("[F] Equipe um arco/cajado compativel para disparar.", "[F] Equip a compatible bow/staff to shoot."), UiTheme.Ink, 16);
-        asciiCanvas.Text(310, 551, localization.Translate("[P] Pocao: cura 2d10 (2-20 PV), consome uma acao.", "[P] Potion: heals 2d10 (2-20 HP), uses one action."), UiTheme.Ink, 16);
+        {
+            asciiCanvas.Text(310, 519, heroCombatStats.CanShoot ? localization.Translate($"[F] Basico: {heroCombatStats.ShotCost} EN | d20{UiTheme.Signed(heroCombatStats.SpellBonus)} | {heroCombatStats.ShotDice}", $"[F] Basic: {heroCombatStats.ShotCost} EN | d20{UiTheme.Signed(heroCombatStats.SpellBonus)} | {heroCombatStats.ShotDice}") : localization.Translate("[F] Equipe um arco/cajado compativel para disparar.", "[F] Equip a compatible bow/staff to shoot."), UiTheme.Ink, 17);
+            if (heroCombatStats.CanShoot)
+                asciiCanvas.Text(310, 548, localization.Translate($"Alcance: {(playerState.ClassIndex == 2 ? 10 : 6)} casas", $"Range: {(playerState.ClassIndex == 2 ? 10 : 6)} tiles"), UiTheme.Dim, 15);
+        }
+        asciiCanvas.Text(310, heroCombatStats.CanShoot ? 579 : 551, localization.Translate("[P] Pocao: cura 2d10 (2-20 PV), consome uma acao.", "[P] Potion: heals 2d10 (2-20 HP), uses one action."), UiTheme.Ink, 16);
         asciiCanvas.Text(310, 603, localization.Translate("EQUIPAMENTOS", "EQUIPMENT"), UiTheme.Gold, 16);
         for (int i = 0; i < 3; i++)
             asciiCanvas.Text(310, 630 + i * 22, localization.SlotName(i) + ": " + (inventoryState.Equipped[i] is Gear g ? localization.GearLabel(g) : localization.Translate("Vazio", "Empty")), inventoryState.Equipped[i] is Gear gear ? UiTheme.RarityColor(gear.Quality) : UiTheme.Dim, 15);
