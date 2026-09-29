@@ -107,7 +107,12 @@ internal sealed class AsciiCanvas
             Text(x + 57, y + 279, $"-{damage} HP", UiTheme.Red, 18);
         }
         else
-            Text(x + 22, y + 278, "<------ + ------>", UiTheme.Dim, 15);
+        {
+            const string ornament = "<------ + ------>";
+            float frameWidth = Font.GetStringSize(new string('-', 25), HorizontalAlignment.Left, -1, 15).X;
+            float ornamentWidth = Font.GetStringSize(ornament, HorizontalAlignment.Left, -1, 15).X;
+            Text(x + (frameWidth - ornamentWidth) / 2, y + 278, ornament, UiTheme.Dim, 15);
+        }
     }
 
     internal Font Font = null!;

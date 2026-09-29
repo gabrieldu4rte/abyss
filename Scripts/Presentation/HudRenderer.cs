@@ -34,7 +34,7 @@ internal sealed class HudRenderer
         asciiCanvas.Text(272, 91, EnvironmentAppearance.Name(dungeonState.Environment.Biome, localization), UiTheme.Teal, 16);
         asciiCanvas.Text(1012, 91, dungeonState.IsMerchantFloor ? localization.Translate("MERCADOR", "MERCHANT") : localization.Translate("ALVO SELECIONADO", "SELECTED TARGET"), dungeonState.IsMerchantFloor ? UiTheme.Gold : UiTheme.Red, 16);
         var target = visualEffects.FocusEnemy();
-        asciiCanvas.Portrait(24, 121, AsciiArt.Heroes[playerState.ClassIndex], "@ " + localization.ClassName(playerState.ClassIndex), UiTheme.Teal, visualEffects.HeroHurtRemaining, visualEffects.HeroDamage);
+        asciiCanvas.Portrait(24, 121, HeroPortrait.Select(playerState), "@ " + localization.ClassName(playerState.ClassIndex), UiTheme.Teal, visualEffects.HeroHurtRemaining, visualEffects.HeroDamage);
         asciiCanvas.Portrait(1012, 121, dungeonState.IsMerchantFloor ? AsciiArt.Merchant : AsciiArt.Enemy(target?.Glyph ?? '?'), dungeonState.IsMerchantFloor ? localization.Translate("MERCADOR", "MERCHANT") : localization.EnemyName(target?.Glyph ?? '?'), dungeonState.IsMerchantFloor ? UiTheme.Gold : target == null ? UiTheme.Dim : UiTheme.Red, target?.Hurt ?? 0, target?.LastDamage ?? 0);
         asciiCanvas.Text(32, 432, localization.Translate($"VIDA {playerState.Health}/{playerState.MaxHealth}", $"HEALTH {playerState.Health}/{playerState.MaxHealth}"), UiTheme.Red, 15);
         asciiCanvas.Text(32, 453, asciiCanvas.Bar(playerState.Health, playerState.MaxHealth), UiTheme.Red, 16);

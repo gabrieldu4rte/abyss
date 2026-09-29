@@ -20,6 +20,7 @@ internal sealed partial class RegressionSuite
             g.PlayerState.Position = new Vector2I(20, 13);
             g.DungeonGenerator.Reveal();
         }
+        int dryFloors = 0, trapFreeFloors = 0, barrelFreeFloors = 0;
         for (int seed = 0; seed < 20; seed++)
             for (int floor = 1; floor <= 21; floor++)
             {
@@ -28,10 +29,18 @@ internal sealed partial class RegressionSuite
                 Assert(world.Fixtures.Count(f => f.Value == Fixture.WallTorch) >= 2, "Map lacks collectible torches.");
                 foreach (var fixture in world.Fixtures)
                     Assert(g.DungeonState.Walk(fixture.Key) && fixture.Key != g.DungeonState.Stairs && fixture.Key != g.PlayerState.Position && !g.DungeonState.Items.ContainsKey(fixture.Key) && g.DungeonState.At(fixture.Key) == null, "Environment overlaps reserved content.");
+                int water = world.Details.Count(d => d.Value == '~');
+                int barrels = world.Fixtures.Count(f => f.Value == Fixture.OilBarrel);
+                int traps = world.Fixtures.Count(f => f.Value == Fixture.PoisonTrap);
+                Assert(water <= (world.Biome == Biome.Cistern ? 26 : 13) && barrels <= 2 && traps <= 2, "Environmental density exceeds sparse generation limits.");
+                if (water == 0) dryFloors++;
+                if (barrels == 0) barrelFreeFloors++;
+                if (traps == 0) trapFreeFloors++;
                 var first = string.Join(";", world.Details) + string.Join(";", world.Fixtures);
                 g.EnvironmentGenerator.Generate();
                 Assert(first == string.Join(";", world.Details) + string.Join(";", world.Fixtures), "Environment generation is not deterministic.");
             }
+        Assert(dryFloors > 150 && barrelFreeFloors > 120 && trapFreeFloors > 180, "Environmental features appear too frequently across floors.");
         g.DungeonGenerator.Generate(true);
         Assert(world.Oil.Count == 0 && world.Fire.Count == 0 && world.Fixtures.Values.All(f => f == Fixture.WallTorch), "Merchant room contains hazards.");
         EmptyRoom();

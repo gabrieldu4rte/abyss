@@ -59,7 +59,7 @@ internal sealed class PauseRenderer
 
     internal void DrawCharacterSheet()
     {
-        asciiCanvas.Portrait(32, 202, AsciiArt.Heroes[playerState.ClassIndex], localization.ClassName(playerState.ClassIndex), UiTheme.Teal);
+        asciiCanvas.Portrait(32, 202, HeroPortrait.Select(playerState), localization.ClassName(playerState.ClassIndex), UiTheme.Teal);
         asciiCanvas.Text(32, 530, localization.Translate($"NIVEL {playerState.Level} / ANDAR {dungeonState.Floor}", $"LEVEL {playerState.Level} / FLOOR {dungeonState.Floor}"), UiTheme.Gold, 18);
         asciiCanvas.Text(32, 563, $"XP {playerState.Experience} / {heroCombatStats.XpToNext}", UiTheme.Ink, 17);
         asciiCanvas.Text(32, 596, localization.Translate($"DERROTADOS {playerState.Kills}", $"DEFEATED {playerState.Kills}"), UiTheme.Dim, 16);

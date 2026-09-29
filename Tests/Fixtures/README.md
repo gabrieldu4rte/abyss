@@ -13,3 +13,5 @@ Do not regenerate the file to silence a refactoring regression. When gameplay in
 `environment-behavior.sha256` is the active baseline after the requested biome, torch, and hazard update. The original `behavior.sha256` remains unchanged as historical evidence for the refactor. Intentional differences include torch fuel/visibility, environmental fixtures and damage, new chest supplies, and merchant torch stock. The new snapshot serialization includes biome details, fixtures, oil, fire, poison and torch state.
 
 Before recording this baseline, the subsystem tests verify generation invariants, fuel lifetime, reduced sight and wall occlusion, throwing and cancellation, collection, trade, ignition chains, poison and reward/death handling. The baseline is then independently replayed without recording.
+
+The environmental baseline also includes the requested sparse-generation rebalance: optional small pools and at most two barrels or traps per floor, with explicit density checks across 420 generated maps.

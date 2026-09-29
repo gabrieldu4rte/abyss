@@ -23,6 +23,13 @@ public static class AsciiArt
         Read("archer"),
         Read("rogue")
     };
+    public static readonly string[] CriticalHeroes =
+    {
+        Read("warrior_critical"),
+        Read("mage_critical"),
+        Read("archer_critical"),
+        Read("rogue_critical")
+    };
     public static readonly string Merchant = Read("merchant");
     public static readonly string Rat = Read("rat"), Skeleton = Read("skeleton"), Goblin = Read("goblin"), Warden = Read("warden"), Unknown = Read("unknown");
     public static readonly string Tower = Read("tower"), Camp = Read("camp"), Globe = Read("globe"), Book = Read("book"), Grave = Read("grave"), Crown = Read("crown"), Torch = Read("torch");

@@ -29,8 +29,9 @@ internal static class EnvironmentPreview
         }
         if (args.Contains("--fire-demo"))
         {
-            var barrel = game.DungeonState.Environment.Fixtures.First(f => f.Value == Fixture.OilBarrel).Key;
-            game.EnvironmentService.Ignite(barrel);
+            var barrel = game.DungeonState.Environment.Fixtures.Where(f => f.Value == Fixture.OilBarrel).Select(f => (Vector2I?)f.Key).FirstOrDefault();
+            if (barrel == null) return;
+            game.EnvironmentService.Ignite(barrel.Value);
         }
     }
 }

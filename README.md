@@ -152,7 +152,7 @@ Trade uses the same gear objects as the inventory. Equipped-item identity is pre
 
 ### Generation and visuals
 
-Every five-floor cycle changes the biome in this repeating order: Ancient Ruins, Forgotten Cisterns, Fungal Caves, Ember Forges. Terrain remains walkable and the existing room/corridor connectivity is preserved. Each biome has its own palette and details: rubble and bones, connected shallow pools, fungi, or ash. Wall edges use ASCII outlines. Water ripples, torch flames, fire, and warm lighting animate using glyphs and color changes only.
+Every five-floor cycle changes the biome in this repeating order: Ancient Ruins, Forgotten Cisterns, Fungal Caves, Ember Forges. Terrain remains walkable and the existing room/corridor connectivity is preserved. Water appears on 65% of cistern floors and 25% of other floors, in one small patch (occasionally two in cisterns). Barrels appear on 50% of floors and poison traps on 35%, with at most two of each. Merchant rooms have no pools or hazards. These features are optional, leaving most rooms clear. Each biome has its own palette and details: rubble and bones, connected shallow pools, fungi, or ash. Wall edges use ASCII outlines. Water ripples, torch flames, fire, and warm lighting animate using glyphs and color changes only.
 
 `EnvironmentGenerator` uses a separate random stream derived from the expedition seed and floor, so cosmetic generation does not consume combat or loot rolls. Fixtures avoid the player, stairs, enemies, and pickups at generation time. Hazard placement also avoids the arrival area. Merchant rooms contain decorative details and collectible lights, with no generated barrels or traps; ignition is disabled in the refuge.
 
@@ -180,6 +180,12 @@ Normal startup plays a short localized terminal-style story at 42 characters per
 `OpeningStory` owns presentation timing. `ScreenTransitions` records ASCII drawing commands and replays the outgoing screen while fading out, then fades in the destination. Each half lasts 180 ms with smooth interpolation. Screen navigation, pause tabs, and shop modes share this path. Transition input is suppressed and held movement is cleared; presentation timing never advances combat turns or consumes random numbers. Capture scenarios disable navigation fades for deterministic screenshots.
 
 The main menu's Quit action opens a confirmation with No selected. Escape cancels; the host only closes after an explicit Yes confirmation. Returning from an expedition retains its separate progress-loss confirmation.
+
+## Health-dependent hero portraits
+
+Each class has its original portrait and a matching exhausted critical-health variant. `HeroPortrait.Select` uses the critical asset at 25% health or below and immediately restores the original above that threshold. HUD, character sheet, and the static end-of-run portrait share the selector; class selection always shows the original portrait. Portrait selection never changes gameplay state or adds damage animations to the death screen.
+
+Critical source illustrations are stored in `ArtSources/*_critical.png`, with the integrated image-generation prompts in `ArtSources/critical-portrait-prompts.json`. The converter produces matching 100-column ASCII grids and tone maps. No raster portrait is displayed at runtime.
 
 ## ASCII asset pipeline
 
@@ -238,6 +244,7 @@ Flags after `--` are handled by the game:
 - `--freeze-animation`: with capture, disable frame processing for repeatable visual comparisons.
 - `--action-demo=warrior|mage|archer|rogue|bolt|arrow`: preview an outgoing action in a deterministic room.
 - `--effect-time=SECONDS`: advance the action preview to a specific animation time before capture.
+- `--critical-demo=0|1|2|3`: preview a critically injured warrior, mage, archer, or rogue; supports `--view=pause` and `--view=dead`.
 - `--biome-demo=0|1|2|3`: seeded full-map environmental preview (diagnostics only).
 - `--fog-demo` / `--dark-demo`: use ordinary torch visibility or reduced unlit visibility in a biome preview.
 - `--torch-inventory` / `--fire-demo`: show torch inventory details or ignite a preview barrel.

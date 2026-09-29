@@ -100,5 +100,29 @@
     "rows": 60,
     "source": "merchant.png",
     "file": "merchant.txt"
+  },
+  "warrior_critical": {
+    "columns": 100,
+    "rows": 60,
+    "source": "warrior_critical.png",
+    "file": "warrior_critical.txt"
+  },
+  "mage_critical": {
+    "columns": 100,
+    "rows": 60,
+    "source": "mage_critical.png",
+    "file": "mage_critical.txt"
+  },
+  "archer_critical": {
+    "columns": 100,
+    "rows": 60,
+    "source": "archer_critical.png",
+    "file": "archer_critical.txt"
+  },
+  "rogue_critical": {
+    "columns": 100,
+    "rows": 60,
+    "source": "rogue_critical.png",
+    "file": "rogue_critical.txt"
   }
 }

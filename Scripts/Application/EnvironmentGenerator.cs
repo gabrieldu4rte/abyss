@@ -23,9 +23,15 @@ internal sealed class EnvironmentGenerator(DungeonState dungeon, PlayerState pla
                 if (random.NextDouble() < .23)
                     world.Details[p] = world.Biome switch { Biome.Ruins => random.Next(2) == 0 ? ':' : '%', Biome.Cistern => ',', Biome.FungalCaves => random.Next(2) == 0 ? '"' : ';', _ => random.Next(2) == 0 ? ',' : ':' };
             }
-        foreach (var center in free.Where(_ => random.NextDouble() < (world.Biome == Biome.Cistern ? .07 : .012)).ToArray())
-            foreach (var p in free.Where(p => GameRules.Dist(p, center) <= 2))
-                if (random.NextDouble() < .8) world.Details[p] = '~';
+        double waterChance = world.Biome == Biome.Cistern ? .65 : .25;
+        if (!dungeon.IsMerchantFloor && random.NextDouble() < waterChance)
+        {
+            var centers = free.Where(p => GameRules.Directions.All(d => dungeon.Walk(p + d))).OrderBy(_ => random.Next()).ToList();
+            int pools = world.Biome == Biome.Cistern && random.NextDouble() < .35 ? 2 : 1;
+            foreach (var center in centers.Take(pools))
+                foreach (var p in free.Where(p => GameRules.Dist(p, center) <= 2 && dungeon.Los(center, p)))
+                    if (p == center || random.NextDouble() < .65) world.Details[p] = '~';
+        }
         var walls = free.Where(p => GameRules.Directions.Any(d => !dungeon.Walk(p + d))).OrderBy(_ => random.Next()).ToList();
         int torchCount = dungeon.IsMerchantFloor ? 3 : 5;
         foreach (var p in walls)
@@ -38,8 +44,9 @@ internal sealed class EnvironmentGenerator(DungeonState dungeon, PlayerState pla
         }
         if (dungeon.IsMerchantFloor) return;
         var hazards = free.Where(p => GameRules.Dist(p, player.Position) > 5 && GameRules.Dist(p, dungeon.Stairs) > 2 && !world.Fixtures.ContainsKey(p) && (!world.Details.TryGetValue(p, out var detail) || detail != '~')).OrderBy(_ => random.Next()).ToList();
-        int barrels = Math.Min(4, hazards.Count);
+        int barrels = random.NextDouble() < .50 ? (random.NextDouble() < .20 ? 2 : 1) : 0;
         foreach (var p in hazards.Take(barrels)) world.Fixtures[p] = Fixture.OilBarrel;
-        foreach (var p in hazards.Skip(barrels).Take(3)) world.Fixtures[p] = Fixture.PoisonTrap;
+        int traps = random.NextDouble() < .35 ? (random.NextDouble() < .20 ? 2 : 1) : 0;
+        foreach (var p in hazards.Skip(barrels).Take(traps)) world.Fixtures[p] = Fixture.PoisonTrap;
     }
 }

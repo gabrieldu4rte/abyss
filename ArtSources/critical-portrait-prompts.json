@@ -1,0 +1,25 @@
+{
+  "tool": "integrated image_gen",
+  "edits": [
+    {
+      "name": "warrior",
+      "path": "/home/gabriel/.codex/generated_images/01a0cece-3e31-7ab2-9f9b-362fb25d381b/exec-7e1f7383-1119-469e-bf13-29410bea1a42.png",
+      "prompt": "Use case: identity-preserve. Asset: critical-health variant of the supplied warrior portrait for a monochrome ASCII RPG. Edit this exact portrait: keep the same recognizable person, gender, facial structure, clothing, equipment, silhouette, camera, square framing and pure black background. Change expression and condition only: visibly exhausted, close to collapse but alive, drooping eyelids, heavy dark eye sockets, tense pained brow, slightly lowered head, pallor, disheveled hair, sweat and minor superficial scratches. Strong readable expression changes that survive conversion to a 100-column ASCII portrait. Preserve intricate grayscale engraved realistic fantasy illustration and bright facial details. For the hooded rogue preserve scarf and convey fatigue through the eyes. No text, frame, color, extra people, gore or missing limbs. Deliver one square portrait, not a comparison sheet. Use ONLY reference image 1 of the four portraits (warrior, female mage, female archer, male rogue in that order). The other images are not to be combined."
+    },
+    {
+      "name": "mage",
+      "path": "/home/gabriel/.codex/generated_images/01a0cece-3e31-7ab2-9f9b-362fb25d381b/exec-63ef02ea-c2ee-4140-83a6-20da762f9ff4.png",
+      "prompt": "Use case: identity-preserve. Asset: critical-health variant of the supplied mage portrait for a monochrome ASCII RPG. Edit this exact portrait: keep the same recognizable person, gender, facial structure, clothing, equipment, silhouette, camera, square framing and pure black background. Change expression and condition only: visibly exhausted, close to collapse but alive, drooping eyelids, heavy dark eye sockets, tense pained brow, slightly lowered head, pallor, disheveled hair, sweat and minor superficial scratches. Strong readable expression changes that survive conversion to a 100-column ASCII portrait. Preserve intricate grayscale engraved realistic fantasy illustration and bright facial details. For the hooded rogue preserve scarf and convey fatigue through the eyes. No text, frame, color, extra people, gore or missing limbs. Deliver one square portrait, not a comparison sheet. Use ONLY reference image 2 of the four portraits (warrior, female mage, female archer, male rogue in that order). The other images are not to be combined."
+    },
+    {
+      "name": "archer",
+      "path": "/home/gabriel/.codex/generated_images/01a0cece-3e31-7ab2-9f9b-362fb25d381b/exec-957e2b75-34a0-441c-b4dc-7c2a082c59bd.png",
+      "prompt": "Use case: identity-preserve. Asset: critical-health variant of the supplied archer portrait for a monochrome ASCII RPG. Edit this exact portrait: keep the same recognizable person, gender, facial structure, clothing, equipment, silhouette, camera, square framing and pure black background. Change expression and condition only: visibly exhausted, close to collapse but alive, drooping eyelids, heavy dark eye sockets, tense pained brow, slightly lowered head, pallor, disheveled hair, sweat and minor superficial scratches. Strong readable expression changes that survive conversion to a 100-column ASCII portrait. Preserve intricate grayscale engraved realistic fantasy illustration and bright facial details. For the hooded rogue preserve scarf and convey fatigue through the eyes. No text, frame, color, extra people, gore or missing limbs. Deliver one square portrait, not a comparison sheet. Use ONLY reference image 3 of the four portraits (warrior, female mage, female archer, male rogue in that order). The other images are not to be combined."
+    },
+    {
+      "name": "rogue",
+      "path": "/home/gabriel/.codex/generated_images/01a0cece-3e31-7ab2-9f9b-362fb25d381b/exec-c2320409-81db-4960-ab48-268ef5c0ef8a.png",
+      "prompt": "Use case: identity-preserve. Asset: critical-health variant of the supplied rogue portrait for a monochrome ASCII RPG. Edit this exact portrait: keep the same recognizable person, gender, facial structure, clothing, equipment, silhouette, camera, square framing and pure black background. Change expression and condition only: visibly exhausted, close to collapse but alive, drooping eyelids, heavy dark eye sockets, tense pained brow, slightly lowered head, pallor, disheveled hair, sweat and minor superficial scratches. Strong readable expression changes that survive conversion to a 100-column ASCII portrait. Preserve intricate grayscale engraved realistic fantasy illustration and bright facial details. For the hooded rogue preserve scarf and convey fatigue through the eyes. No text, frame, color, extra people, gore or missing limbs. Deliver one square portrait, not a comparison sheet. Use ONLY reference image 4 of the four portraits (warrior, female mage, female archer, male rogue in that order). The other images are not to be combined."
+    }
+  ]
+}

@@ -108,5 +108,14 @@ internal sealed class LaunchScenarios(GameSession game)
                 game.RunState.Screen = "game";
         }
         ActionAnimationPreview.Configure(game, args);
+        var critical = args.FirstOrDefault(a => a.StartsWith("--critical-demo="));
+        if (critical != null)
+        {
+            game.PlayerState.ClassIndex = Math.Clamp(int.Parse(critical.Split('=')[1]), 0, 3);
+            game.Start(42073);
+            game.PlayerState.Health = Math.Max(1, game.PlayerState.MaxHealth / 4);
+            if (args.Contains("--view=pause")) game.RunState.Screen = "pause";
+            if (args.Contains("--view=dead")) { game.PlayerState.Health = 0; game.RunState.Screen = "dead"; }
+        }
     }
 }

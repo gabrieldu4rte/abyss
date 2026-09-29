@@ -110,11 +110,33 @@ internal sealed partial class RegressionSuite
         game.VisualEffects.AdvanceEffects(2);
         if (game.VisualEffects.FocusEnemy() != null)
             throw new Exception("Stale dead target");
-        var arts = AsciiArt.Heroes.Concat(new[] { AsciiArt.Merchant, AsciiArt.Rat, AsciiArt.Skeleton, AsciiArt.Goblin, AsciiArt.Warden, AsciiArt.Unknown, AsciiArt.Tower, AsciiArt.Camp, AsciiArt.Globe, AsciiArt.Book, AsciiArt.Grave, AsciiArt.Crown });
+        var arts = AsciiArt.Heroes.Concat(AsciiArt.CriticalHeroes).Concat(new[] { AsciiArt.Merchant, AsciiArt.Rat, AsciiArt.Skeleton, AsciiArt.Goblin, AsciiArt.Warden, AsciiArt.Unknown, AsciiArt.Tower, AsciiArt.Camp, AsciiArt.Globe, AsciiArt.Book, AsciiArt.Grave, AsciiArt.Crown });
         if (arts.Any(a => a.Any(c => c != '\n' && (c < 32 || c > 126))))
             throw new Exception("Non-ASCII art");
         if (AsciiArt.Heroes.Distinct().Count() != 4)
             throw new Exception("Portraits not unique");
+        var portraitPlayer = new PlayerState();
+        for (int hero = 0; hero < 4; hero++)
+        {
+            portraitPlayer.ClassIndex = hero;
+            portraitPlayer.MaxHealth = 100;
+            portraitPlayer.Health = 100;
+            if (HeroPortrait.Select(portraitPlayer) != AsciiArt.Heroes[hero]) throw new Exception("Healthy portrait changed.");
+            portraitPlayer.Health = 25;
+            if (HeroPortrait.Select(portraitPlayer) != AsciiArt.CriticalHeroes[hero]) throw new Exception("Critical portrait threshold failed.");
+            portraitPlayer.Health = 26;
+            if (HeroPortrait.Select(portraitPlayer) != AsciiArt.Heroes[hero]) throw new Exception("Healing did not restore healthy portrait.");
+            portraitPlayer.Health = 0;
+            if (HeroPortrait.Select(portraitPlayer) != AsciiArt.CriticalHeroes[hero]) throw new Exception("Death portrait should retain critical appearance.");
+            portraitPlayer.MaxHealth = 101;
+            portraitPlayer.Health = 26;
+            if (HeroPortrait.Select(portraitPlayer) != AsciiArt.Heroes[hero]) throw new Exception("Portrait threshold rounds health incorrectly.");
+            var healthy = AsciiArt.Heroes[hero].Split('\n');
+            var critical = AsciiArt.CriticalHeroes[hero].Split('\n');
+            if (AsciiArt.Heroes[hero] == AsciiArt.CriticalHeroes[hero] || healthy.Length != critical.Length || !healthy.Select(l => l.Length).SequenceEqual(critical.Select(l => l.Length)))
+                throw new Exception("Critical portrait is not a distinct compatible ASCII asset.");
+            if (!AsciiArt.ToneMaps.ContainsKey(AsciiArt.CriticalHeroes[hero])) throw new Exception("Critical portrait lacks a tone map.");
+        }
         var testPath = "user://language-test-" + Guid.NewGuid().ToString("N") + ".cfg";
         try
         {
