@@ -6,6 +6,8 @@ using System.Collections.Generic;
 namespace Abyss.Application;
 internal sealed class DungeonGenerator
 {
+    private readonly InventoryState inventoryState;
+    private readonly EnvironmentGenerator environmentGenerator;
     private readonly DungeonState dungeonState;
     private readonly ExpeditionJournal expeditionJournal;
     private readonly LootService lootService;
@@ -14,9 +16,11 @@ internal sealed class DungeonGenerator
     private readonly PlayerState playerState;
     private readonly VisualEffects visualEffects;
     private readonly RandomStream random;
-    internal DungeonGenerator(DungeonState dungeonState, ExpeditionJournal expeditionJournal, LootService lootService, MenuState menuState, MerchantState merchantState, PlayerState playerState, VisualEffects visualEffects, RandomStream random)
+    internal DungeonGenerator(DungeonState dungeonState, ExpeditionJournal expeditionJournal, LootService lootService, MenuState menuState, MerchantState merchantState, PlayerState playerState, VisualEffects visualEffects, RandomStream random, InventoryState inventoryState, EnvironmentGenerator environmentGenerator)
     {
         this.dungeonState = dungeonState;
+        this.inventoryState = inventoryState;
+        this.environmentGenerator = environmentGenerator;
         this.expeditionJournal = expeditionJournal;
         this.lootService = lootService;
         this.menuState = menuState;
@@ -54,6 +58,8 @@ internal sealed class DungeonGenerator
         merchantState.MerchantStock.Add(new Offer { Potion = 0, Quantity = random.Generator.Next(2, 5) });
         merchantState.MerchantStock.Add(new Offer { Potion = 1, Quantity = random.Generator.Next(1, 4) });
         menuState.MerchantQuote = random.Generator.Next(4);
+        merchantState.MerchantStock.Add(new Offer { Potion = 2, Quantity = 4 });
+        environmentGenerator.Generate();
         Reveal();
         expeditionJournal.Say("Uma luz acolhedora. Voce encontrou o mercador.", "A welcoming light. You found the merchant.");
     }
@@ -151,17 +157,22 @@ internal sealed class DungeonGenerator
             expeditionJournal.Say($"Andar {dungeonState.Floor}: um Guardiao bloqueia a descida.", $"Floor {dungeonState.Floor}: a Warden blocks the descent.");
         }
 
+        environmentGenerator.Generate();
         Reveal();
     }
 
     internal void Reveal()
     {
         Array.Clear(dungeonState.Visible);
+        var lights = dungeonState.Environment.Fixtures.Where(f => f.Value == Fixture.WallTorch).Select(f => f.Key)
+            .Concat(dungeonState.Environment.Fire.Keys).Where(p => dungeonState.Los(playerState.Position, p)).ToArray();
         for (int y = 0; y < GameRules.Height; y++)
             for (int x = 0; x < GameRules.Width; x++)
             {
                 var p = new Vector2I(x, y);
-                if ((p - playerState.Position).LengthSquared() <= 100 && dungeonState.Los(playerState.Position, p))
+                if ((p - playerState.Position).LengthSquared() <= 100 &&
+                    (inventoryState.HasLight || (p - playerState.Position).LengthSquared() <= 9 || lights.Any(light => GameRules.Dist(light, p) <= 2 && dungeonState.Los(light, p))) &&
+                    dungeonState.Los(playerState.Position, p))
                     dungeonState.Explored[x, y] = dungeonState.Visible[x, y] = true;
             }
     }

@@ -15,6 +15,14 @@ internal sealed partial class RegressionSuite
         {
             var b = new StringBuilder();
             b.Append($"{game.PlayerState.ClassIndex}|{game.DungeonState.Floor}|{game.PlayerState.Health}|{game.PlayerState.MaxHealth}|{game.PlayerState.Energy}|{game.PlayerState.MaxEnergy}|{game.InventoryState.Potions}|{game.InventoryState.EnergyPotions}|{game.PlayerState.Experience}|{game.PlayerState.Level}|{game.PlayerState.Gold}|{game.RunState.Turn}|{game.RunState.Seed}|{game.PlayerState.Kills}|{game.PlayerState.Attributes}|{game.PlayerState.Position}|{game.DungeonState.Stairs}|{game.DungeonState.StairsRoom}|{game.RunState.Screen}|{game.RunState.IsAiming}|{game.DungeonState.IsMerchantFloor}|{game.DungeonState.MerchantPosition}|{game.MenuState.MerchantQuote}|{game.ExpeditionJournal.LastRollPt}|{game.ExpeditionJournal.LastRollEn}|{game.ExpeditionJournal.LastPotionRoll}|{game.ExpeditionJournal.LastPotionHealing}|{game.VisualEffects.HeroHurtRemaining}|{game.VisualEffects.HeroDamage}|{game.VisualEffects.FocusHold}|{game.MenuState.ShopSelling}|{game.MenuState.ShopIndex}|{game.MenuState.ConfirmYes}|{game.MenuState.ExitYes}|{game.MenuState.InventoryNotice}|{game.MenuState.ShopNotice}\n");
+            b.Append($"\nLIGHT:{game.InventoryState.SpareTorches}:{game.InventoryState.TorchFuel}:{game.InventoryState.TorchEquipped}");
+            var world = game.DungeonState.Environment;
+            b.Append($"\nWORLD:{world.Biome}:{world.HeroPoisonTurns}");
+            foreach (var entry in world.Details.OrderBy(e => e.Key.Y).ThenBy(e => e.Key.X)) b.Append($"\nD:{entry.Key}:{entry.Value}");
+            foreach (var entry in world.Fixtures.OrderBy(e => e.Key.Y).ThenBy(e => e.Key.X)) b.Append($"\nX:{entry.Key}:{entry.Value}");
+            foreach (var p in world.Oil.OrderBy(p => p.Y).ThenBy(p => p.X)) b.Append($"\nOIL:{p}");
+            foreach (var entry in world.Fire.OrderBy(e => e.Key.Y).ThenBy(e => e.Key.X)) b.Append($"\nFIRE:{entry.Key}:{entry.Value}");
+            foreach (var entry in world.PoisonedEnemies.OrderBy(e => e.Key.Position.Y).ThenBy(e => e.Key.Position.X)) b.Append($"\nPOISON:{entry.Key.Position}:{entry.Value}");
             for (int y = 0; y < GameRules.Height; y++)
                 for (int x = 0; x < GameRules.Width; x++)
                     b.Append($"{game.DungeonState.Tiles[x, y]}{game.DungeonState.Explored[x, y]}{game.DungeonState.Visible[x, y]}");
@@ -117,7 +125,7 @@ internal sealed partial class RegressionSuite
             System.IO.File.WriteAllText(record.Substring(20), text);
         else
         {
-            string expected = Godot.FileAccess.GetFileAsString("res://Tests/Fixtures/behavior.sha256");
+            string expected = Godot.FileAccess.GetFileAsString("res://Tests/Fixtures/environment-behavior.sha256");
             var actualLines = text.Split('\n');
             var expectedLines = expected.Split('\n');
             if (!actualLines.SequenceEqual(expectedLines))
@@ -128,6 +136,6 @@ internal sealed partial class RegressionSuite
         }
 
         game.MenuState.IsTesting = false;
-        GD.Print($"BEHAVIOR AUDIT: {hashes.Count} deterministic checkpoints match the pre-refactor version.");
+        GD.Print($"BEHAVIOR AUDIT: {hashes.Count} deterministic checkpoints match the environmental gameplay baseline.");
     }
 }

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 namespace Abyss.Domain;
 internal sealed class DungeonState
 {
+    internal EnvironmentState Environment { get; } = new();
     internal bool IsMerchantFloor { get; set; }
     internal Vector2I MerchantPosition { get; set; }
     internal char[, ] Tiles { get; } = new char[GameRules.Width, GameRules.Height];

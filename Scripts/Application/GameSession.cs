@@ -44,6 +44,8 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
     internal JournalFormatter JournalFormatter { get; }
     internal Localization Localization { get; }
     internal EnemyNavigator EnemyNavigator { get; }
+    internal EnvironmentGenerator EnvironmentGenerator { get; }
+    internal EnvironmentService EnvironmentService { get; }
 
     internal GameSession(IGameHost host, IAsciiCanvas canvas, ILanguageSettings settings)
     {
@@ -66,13 +68,15 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         ActionEffectsRenderer = new ActionEffectsRenderer(AsciiCanvas, DungeonState, VisualEffects.Actions);
         HudRenderer = new HudRenderer(AsciiCanvas, DungeonState, ExpeditionJournal, HeroCombatStats, InventoryState, Localization, PlayerState, RunState, VisualEffects, ActionEffectsRenderer);
         CombatService = new CombatService(DungeonState, ExpeditionJournal, HeroCombatStats, InventoryState, Localization, LootService, PlayerState, ProgressionService, RunState, VisualEffects, RandomStream);
-        DungeonGenerator = new DungeonGenerator(DungeonState, ExpeditionJournal, LootService, MenuState, MerchantState, PlayerState, VisualEffects, RandomStream);
+        EnvironmentGenerator = new EnvironmentGenerator(DungeonState, PlayerState, RunState);
+        EnvironmentService = new EnvironmentService(DungeonState, InventoryState, PlayerState, RunState, ExpeditionJournal, CombatService, VisualEffects);
+        DungeonGenerator = new DungeonGenerator(DungeonState, ExpeditionJournal, LootService, MenuState, MerchantState, PlayerState, VisualEffects, RandomStream, InventoryState, EnvironmentGenerator);
         UiComponents = new UiComponents(AsciiCanvas, Localization, MenuState);
         MerchantRenderer = new MerchantRenderer(AsciiCanvas, InventoryState, Localization, MenuState, MerchantService, PlayerState, UiComponents);
         PauseRenderer = new PauseRenderer(AsciiCanvas, DungeonState, ExpeditionJournal, HeroCombatStats, InventoryRenderer, InventoryState, JournalFormatter, Localization, MenuState, PlayerState, UiComponents);
         EnemyNavigator = new EnemyNavigator(DungeonState, PlayerState);
         EnemyAi = new EnemyAi(new IEnemyBehavior[] { new WardenBehavior(CombatService, DungeonState, ExpeditionJournal, PlayerState, EnemyNavigator), new RoamingBehavior(CombatService, DungeonState, PlayerState, RandomStream, EnemyNavigator) });
-        PlayerActions = new PlayerActions(CombatService, this, DungeonState, this, ExpeditionJournal, HeroCombatStats, InventoryState, LootService, MenuState, PlayerState, RunState, VisualEffects, RandomStream);
+        PlayerActions = new PlayerActions(CombatService, this, DungeonState, this, ExpeditionJournal, HeroCombatStats, InventoryState, LootService, MenuState, PlayerState, RunState, VisualEffects, RandomStream, EnvironmentService);
         MenuRenderer = new MenuRenderer(AsciiCanvas, DungeonState, Localization, MenuState, PlayerState, RunState, UiComponents);
         MenuController = new MenuController(Host, InventoryService, InventoryState, JournalFormatter, LanguagePreferences, MenuState, MerchantService, PlayerActions, PlayerState, RunState, this);
         GameRenderer = new GameRenderer(AsciiCanvas, HudRenderer, Localization, MenuRenderer, MerchantRenderer, PauseRenderer, RunState, MenuState, Transitions, OpeningStory);
@@ -100,6 +104,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
 
     internal void Start(int? fixedSeed = null)
     {
+        DungeonState.Environment.Clear();
         RunState.Seed = fixedSeed ?? Random.Shared.Next(1, int.MaxValue);
         RandomGenerator = new Random(RunState.Seed);
         DungeonState.Floor = 1;
@@ -167,6 +172,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
                 break;
         }
 
+        if (PlayerState.Health > 0) EnvironmentService.Tick();
         if (RunState.Turn % 6 == 0)
             PlayerState.Energy = Math.Min(PlayerState.MaxEnergy, PlayerState.Energy + 1);
         DungeonGenerator.Reveal();

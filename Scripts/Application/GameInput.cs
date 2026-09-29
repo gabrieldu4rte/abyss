@@ -61,6 +61,12 @@ internal sealed class GameInput
             return;
         }
 
+        if (runState.Screen == "torch_aim")
+        {
+            if (key == Key.Escape) { runState.Screen = "pause"; menuState.PauseTab = 1; }
+            else if (UiTheme.MovementDirection(key) != Vector2I.Zero) playerActions.ThrowTorch(UiTheme.MovementDirection(key));
+            return;
+        }
         if (runState.Screen == "intro") { openingStory.HandleKey(key); return; }
         if (menuController.HandleMenus(key))
             return;

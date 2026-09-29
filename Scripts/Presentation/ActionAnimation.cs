@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Abyss.Presentation;
 
-internal enum ActionAnimationKind { Whirlwind, ArcaneNova, PiercingArrow, ShadowStep, ArcaneBolt, Arrow }
+internal enum ActionAnimationKind { Whirlwind, ArcaneNova, PiercingArrow, ShadowStep, ArcaneBolt, Arrow, Torch }
 internal readonly record struct ActionGlyph(Vector2I Position, char Character, Color Color);
 
 internal sealed class ActionAnimation
@@ -41,6 +41,7 @@ internal sealed class ActionAnimation
         var color = Kind switch
         {
             ActionAnimationKind.ArcaneNova or ActionAnimationKind.ArcaneBolt => new Color("b994ff"),
+            ActionAnimationKind.Torch => new Color("ffac55"),
             ActionAnimationKind.ShadowStep => new Color("bd85de"),
             ActionAnimationKind.PiercingArrow => new Color("8ff0c5"),
             _ => new Color("ffd58a")
@@ -87,7 +88,7 @@ internal sealed class ActionAnimation
             yield return new(Path[i], trail, tailColor);
         }
         if (Elapsed < TravelTime)
-            yield return new(Path[head], Kind == ActionAnimationKind.ArcaneBolt ? '*' : Kind == ActionAnimationKind.ShadowStep ? '@' : arrow, color);
+            yield return new(Path[head], Kind is ActionAnimationKind.ArcaneBolt or ActionAnimationKind.Torch ? '*' : Kind == ActionAnimationKind.ShadowStep ? '@' : arrow, color);
         else
         {
             var end = Path[^1];

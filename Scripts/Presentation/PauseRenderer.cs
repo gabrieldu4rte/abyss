@@ -116,12 +116,13 @@ internal sealed class PauseRenderer
             localization.Translate("VOCACOES", "CALLINGS"),
             localization.Translate("EQUIPAMENTOS E RELIQUIAS", "EQUIPMENT AND RELICS"),
             localization.Translate("PROVISOES", "SUPPLIES"),
-            localization.Translate("O MERCADOR", "THE MERCHANT")
+            localization.Translate("O MERCADOR", "THE MERCHANT"),
+            localization.Translate("LUZ E PERIGOS", "LIGHT AND HAZARDS")
         };
         asciiCanvas.Text(32, 206, localization.Translate("COMPENDIO DO VIAJANTE", "TRAVELER'S COMPENDIUM"), UiTheme.Gold, 17);
         for (int i = 0; i < topics.Length; i++)
             asciiCanvas.Text(32, 251 + i * 38, (menuState.HelpTopic == i ? "> " : "  ") + topics[i], menuState.HelpTopic == i ? UiTheme.Teal : UiTheme.Dim, 15);
-        asciiCanvas.Text(32, 572, localization.Translate("[CIMA/BAIXO] categoria", "[UP/DOWN] category"), UiTheme.Dim, 14);
+        asciiCanvas.Text(32, 593, localization.Translate("[CIMA/BAIXO] categoria", "[UP/DOWN] category"), UiTheme.Dim, 14);
         float y = 212;
         foreach (string line in localization.HelpText(menuState.HelpTopic).Split('\n'))
         {

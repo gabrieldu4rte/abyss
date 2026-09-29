@@ -31,6 +31,7 @@ internal sealed class HudRenderer
     internal void DrawGame()
     {
         asciiCanvas.Text(32, 91, localization.Translate($"ANDAR {dungeonState.Floor}", $"FLOOR {dungeonState.Floor}"), UiTheme.Gold, 18);
+        asciiCanvas.Text(272, 91, EnvironmentAppearance.Name(dungeonState.Environment.Biome, localization), UiTheme.Teal, 16);
         asciiCanvas.Text(1012, 91, dungeonState.IsMerchantFloor ? localization.Translate("MERCADOR", "MERCHANT") : localization.Translate("ALVO SELECIONADO", "SELECTED TARGET"), dungeonState.IsMerchantFloor ? UiTheme.Gold : UiTheme.Red, 16);
         var target = visualEffects.FocusEnemy();
         asciiCanvas.Portrait(24, 121, AsciiArt.Heroes[playerState.ClassIndex], "@ " + localization.ClassName(playerState.ClassIndex), UiTheme.Teal, visualEffects.HeroHurtRemaining, visualEffects.HeroDamage);
@@ -41,6 +42,8 @@ internal sealed class HudRenderer
         asciiCanvas.Text(32, 502, asciiCanvas.Bar(playerState.Energy, playerState.MaxEnergy), UiTheme.Teal, 16);
         asciiCanvas.Text(32, 543, localization.Translate($"NV {playerState.Level}  XP {playerState.Experience}/{heroCombatStats.XpToNext}", $"LV {playerState.Level}  XP {playerState.Experience}/{heroCombatStats.XpToNext}"), UiTheme.Gold, 15);
         asciiCanvas.Text(32, 575, localization.Translate($"POCOES {inventoryState.Potions}  OURO {playerState.Gold}", $"POTIONS {inventoryState.Potions}  GOLD {playerState.Gold}"), UiTheme.Ink, 14);
+        asciiCanvas.Text(32, 607, localization.Translate($"TOCHA {(inventoryState.HasLight ? inventoryState.TorchFuel : 0)}/100", $"TORCH {(inventoryState.HasLight ? inventoryState.TorchFuel : 0)}/100"), inventoryState.HasLight ? UiTheme.Gold : UiTheme.Dim, 14);
+        if (dungeonState.Environment.HeroPoisonTurns > 0) asciiCanvas.Text(32, 631, localization.Translate("ENVENENADO", "POISONED"), new Color("a3c879"), 14);
         if (target != null)
         {
             asciiCanvas.Text(1019, 432, target.Health <= 0 ? localization.Translate("DERROTADO", "DEFEATED") : localization.Translate($"VIDA {target.Health}/{target.MaxHealth}", $"HEALTH {target.Health}/{target.MaxHealth}"), UiTheme.Red, 15);
@@ -48,18 +51,17 @@ internal sealed class HudRenderer
         }
 
         DrawJournalSummary();
-        asciiCanvas.Text(272, 121, runState.IsAiming ? localization.Translate("> MIRA: WASD / SETAS. ESC cancela.", "> AIM: WASD / ARROWS. ESC cancels.") : dungeonState.IsMerchantFloor ? localization.Translate("[E] Converse ao lado de M. [>] Continue sua jornada.", "[E] Talk next to M. [>] Continue your journey.") : localization.Translate("[>] Encontre a passagem para as profundezas.", "[>] Find the passage into the depths."), runState.IsAiming ? UiTheme.Gold : UiTheme.Teal, 15);
+        asciiCanvas.Text(272, 121, runState.Screen == "torch_aim" ? localization.Translate("> TOCHA: WASD / SETAS. ESC cancela.", "> TORCH: WASD / ARROWS. ESC cancels.") : runState.IsAiming ? localization.Translate("> MIRA: WASD / SETAS. ESC cancela.", "> AIM: WASD / ARROWS. ESC cancels.") : dungeonState.IsMerchantFloor ? localization.Translate("[E] Converse ao lado de M. [>] Continue sua jornada.", "[E] Talk next to M. [>] Continue your journey.") : localization.Translate("[>] Encontre a passagem para as profundezas.", "[>] Find the passage into the depths."), runState.IsAiming ? UiTheme.Gold : UiTheme.Teal, 15);
         var actionFrame = actionEffectsRenderer.GetFrame();
         for (int y = 0; y < GameRules.Height; y++)
             for (int x = 0; x < GameRules.Width; x++)
             {
                 if (!dungeonState.Explored[x, y])
                     continue;
-                char g = dungeonState.Tiles[x, y];
-                Color c = dungeonState.Visible[x, y] ? (g == '#' ? new Color("71879a") : new Color("354452")) : new Color("23303e");
                 var pos = new Vector2I(x, y);
-                if (g == '>')
-                    c = dungeonState.Visible[x, y] ? UiTheme.Gold : UiTheme.Dim;
+                var terrain = EnvironmentAppearance.Sample(dungeonState, pos, visualEffects.UiTime);
+                char g = terrain.Glyph;
+                Color c = terrain.Color;
                 if (dungeonState.Visible[x, y])
                 {
                     if (dungeonState.Items.TryGetValue(pos, out char item))
@@ -110,7 +112,8 @@ internal sealed class HudRenderer
         asciiCanvas.Text(283, 655, heroCombatStats.CanShoot ? $"[F] {localization.Translate("Basico", "Basic")}  |  {heroCombatStats.ShotCost} EN  |  {heroCombatStats.ShotDice}" : !heroCombatStats.CanMelee ? localization.Translate("[F] Equipe um arco/cajado compativel.", "[F] Equip a compatible bow/staff.") : localization.Translate($"[Mover contra inimigo] Ataque basico: {heroCombatStats.MeleeDice}", $"[Bump into enemy] Basic attack: {heroCombatStats.MeleeDice}"), UiTheme.Ink, 15);
         asciiCanvas.Rule(685);
         asciiCanvas.Text(32, 707, localization.Translate("WASD mover | Q habilidade | P pocao | E interagir | ESPACO esperar | TAB trocar alvo | ESC pausa", "WASD move | Q ability | P potion | E interact | SPACE wait | TAB switch target | ESC pause"), UiTheme.Ink, 15);
-        asciiCanvas.Text(32, 779, localization.Translate("@ voce   # parede   > escada   ! pocao   $ ouro   * cristal   C bau   M mercador", "@ you   # wall   > stairs   ! potion   $ gold   * crystal   C chest   M merchant"), UiTheme.Dim, 13);
+        asciiCanvas.Text(32, 749, localization.Translate("Y tocha fixa   t tocha caida   O barril   o oleo   ^ armadilha   ~ agua   * fogo", "Y fixed torch   t fallen torch   O barrel   o oil   ^ trap   ~ water   * fire"), UiTheme.Dim, 13);
+        asciiCanvas.Text(32, 779, localization.Translate("@ voce   |-+ parede   > escada   ! pocao   $ ouro   * cristal   C bau   M mercador", "@ you   |-+ wall   > stairs   ! potion   $ gold   * crystal   C chest   M merchant"), UiTheme.Dim, 13);
     }
 
     internal void DrawJournalSummary()

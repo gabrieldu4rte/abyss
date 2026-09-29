@@ -194,9 +194,9 @@ internal sealed class MenuController
     internal void HandleHelp(Key key)
     {
         if (UiTheme.Previous(key))
-            menuState.HelpTopic = (menuState.HelpTopic + 6) % 7;
+            menuState.HelpTopic = (menuState.HelpTopic + 7) % 8;
         if (UiTheme.Next(key))
-            menuState.HelpTopic = (menuState.HelpTopic + 1) % 7;
+            menuState.HelpTopic = (menuState.HelpTopic + 1) % 8;
     }
 
     internal void HandleShop(Key key)
@@ -276,11 +276,12 @@ internal sealed class MenuController
 
     internal void HandleInventory(Key key)
     {
-        int count = 5 + inventoryState.Backpack.Count;
+        int count = 7 + inventoryState.Backpack.Count;
         if (UiTheme.Previous(key))
             menuState.InventoryIndex = (menuState.InventoryIndex + count - 1) % count;
         if (UiTheme.Next(key))
             menuState.InventoryIndex = (menuState.InventoryIndex + 1) % count;
+        if (key == Key.T && menuState.InventoryIndex is 3 or 6) { playerActions.BeginTorchThrow(); return; }
         if (!UiTheme.Confirm(key))
             return;
         if (menuState.InventoryIndex < 3)
@@ -290,7 +291,9 @@ internal sealed class MenuController
             else
                 inventoryService.InventoryMessage("Slot vazio. Selecione um item na mochila.", "Empty slot. Select an item in the backpack.");
         }
-        else if (menuState.InventoryIndex == 3)
+        else if (menuState.InventoryIndex is 3 or 6)
+            playerActions.ToggleTorch();
+        else if (menuState.InventoryIndex == 4)
         {
             if (inventoryState.Potions == 0 || playerState.Health == playerState.MaxHealth)
             {
@@ -301,9 +304,9 @@ internal sealed class MenuController
             runState.Screen = "game";
             playerActions.Drink();
         }
-        else if (menuState.InventoryIndex == 4)
+        else if (menuState.InventoryIndex == 5)
             inventoryService.DrinkEnergy();
         else
-            inventoryService.ToggleGear(inventoryState.Backpack[menuState.InventoryIndex - 5]);
+            inventoryService.ToggleGear(inventoryState.Backpack[menuState.InventoryIndex - 7]);
     }
 }

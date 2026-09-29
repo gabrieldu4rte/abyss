@@ -160,6 +160,7 @@ internal sealed partial class RegressionSuite
             TestMerchant();
             TestCycleBalance();
             TestHeldMovement();
+            TestEnvironment();
             TestBehaviorRegression();
             TestArchitecture();
             TestActionAnimations();

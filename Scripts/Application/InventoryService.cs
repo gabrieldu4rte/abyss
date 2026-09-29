@@ -29,6 +29,9 @@ internal sealed class InventoryService
         inventoryState.Backpack.Clear();
         Array.Clear(inventoryState.Equipped);
         inventoryState.Potions = 5;
+        inventoryState.SpareTorches = 0;
+        inventoryState.TorchFuel = 100;
+        inventoryState.TorchEquipped = true;
         inventoryState.EnergyPotions = menuState.InventoryIndex = 0;
         menuState.InventoryNotice = ("", "");
         var starter = new Gear(new[] { GearKind.Sword, GearKind.Staff, GearKind.Bow, GearKind.Dagger }[playerState.ClassIndex], Rarity.Common);

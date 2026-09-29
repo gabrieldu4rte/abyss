@@ -43,15 +43,23 @@ internal sealed class LootService
                 var gear = DropEquipment(dungeonState.Floor);
                 expeditionJournal.Say($"Bau: {localization.GearNameFor(gear, false)}. [I] inventario.", $"Chest: {localization.GearNameFor(gear, true)}. [I] inventory.");
             }
-            else if (random.Generator.Next(2) == 0)
+            else if (random.Generator.Next(3) == 0)
             {
                 inventoryState.Potions++;
                 expeditionJournal.Say("Bau: +1 pocao de vida.", "Chest: +1 health potion.");
             }
             else
             {
-                inventoryState.EnergyPotions++;
-                expeditionJournal.Say("Bau: +1 pocao de energia.", "Chest: +1 energy potion.");
+                if (random.Generator.Next(2) == 0)
+                {
+                    inventoryState.EnergyPotions++;
+                    expeditionJournal.Say("Bau: +1 pocao de energia.", "Chest: +1 energy potion.");
+                }
+                else
+                {
+                    inventoryState.SpareTorches++;
+                    expeditionJournal.Say("Bau: +1 tocha.", "Chest: +1 torch.");
+                }
             }
         }
     }

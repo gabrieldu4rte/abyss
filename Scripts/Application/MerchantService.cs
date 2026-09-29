@@ -30,6 +30,8 @@ internal sealed class MerchantService
             offers.Add(new Offer { Potion = 0, Quantity = inventoryState.Potions });
         if (inventoryState.EnergyPotions > 0)
             offers.Add(new Offer { Potion = 1, Quantity = inventoryState.EnergyPotions });
+        if (inventoryState.SpareTorches > 0)
+            offers.Add(new Offer { Potion = 2, Quantity = inventoryState.SpareTorches });
         return offers;
     }
 
@@ -60,7 +62,7 @@ internal sealed class MerchantService
             }
             else
             {
-                if ((offer.Potion == 0 ? inventoryState.Potions : inventoryState.EnergyPotions) <= 0)
+                if ((offer.Potion == 0 ? inventoryState.Potions : offer.Potion == 1 ? inventoryState.EnergyPotions : inventoryState.SpareTorches) <= 0)
                 {
                     menuState.PendingTrade = null;
                     return;
@@ -68,8 +70,9 @@ internal sealed class MerchantService
 
                 if (offer.Potion == 0)
                     inventoryState.Potions--;
-                else
+                else if (offer.Potion == 1)
                     inventoryState.EnergyPotions--;
+                else inventoryState.SpareTorches--;
                 var existing = merchantState.MerchantStock.FirstOrDefault(o => o.Gear == null && o.Potion == offer.Potion);
                 if (existing == null)
                     merchantState.MerchantStock.Add(new Offer { Potion = offer.Potion });
@@ -101,8 +104,9 @@ internal sealed class MerchantService
                 inventoryState.Backpack.Add(gear);
             else if (offer.Potion == 0)
                 inventoryState.Potions++;
-            else
+            else if (offer.Potion == 1)
                 inventoryState.EnergyPotions++;
+            else inventoryState.SpareTorches++;
             menuState.ShopNotice = ($"Compra concluida. -{price} ouro.", $"Purchased. -{price} gold.");
         }
 

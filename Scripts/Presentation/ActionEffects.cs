@@ -19,6 +19,9 @@ internal sealed class ActionEffects(DungeonState dungeonState)
     internal void PlayProjectile(Vector2I origin, IReadOnlyList<Vector2I> path, bool arcane)
         => Add(arcane ? ActionAnimationKind.ArcaneBolt : ActionAnimationKind.Arrow, origin, path, new Vector2I[0], 0);
 
+    internal void PlayTorch(Vector2I origin, IReadOnlyList<Vector2I> path)
+        => Add(ActionAnimationKind.Torch, origin, path, new Vector2I[0], 0);
+
     internal void PlaySkill(int classIndex, Vector2I origin, IEnumerable<Vector2I> targets, int radius)
     {
         var positions = targets.ToArray();

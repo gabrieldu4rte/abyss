@@ -3,6 +3,10 @@ using System.Collections.Generic;
 namespace Abyss.Domain;
 internal sealed class InventoryState
 {
+    internal int SpareTorches { get; set; }
+    internal int TorchFuel { get; set; }
+    internal bool TorchEquipped { get; set; }
+    internal bool HasLight => TorchEquipped && TorchFuel > 0;
     internal int Potions { get; set; }
     internal List<Gear> Backpack { get; } = new();
     internal Gear? [] Equipped { get; } = new Gear? [3];

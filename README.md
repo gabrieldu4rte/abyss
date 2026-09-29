@@ -46,7 +46,7 @@ Scripts/
 Tests/
   RegressionSuite.cs        Headless test entry point and shared test helpers
   *Tests.cs                 Tests grouped by subsystem
-  Fixtures/behavior.sha256   Pre-refactor deterministic behavior checkpoints
+  Fixtures/                 Current environmental baseline and historical refactor checkpoints
 Art/                        Runtime ASCII text and tone maps
 ArtSources/                 Source illustrations; not rendered by the game
 Tools/convert_ascii.py      Offline raster-to-ASCII converter
@@ -67,8 +67,9 @@ Namespaces follow the responsibility folders: `Abyss.Domain`, `Abyss.Rules`, `Ab
 ### State and domain models
 
 - `PlayerState`: class selection, position, base attributes, health, energy, level, experience, gold, and kill count.
-- `InventoryState`: backpack, three equipment slots, and consumable counts.
+- `InventoryState`: backpack, three gear slots, a dedicated torch slot, remaining fuel, and stacked consumable counts.
 - `DungeonState`: map tiles, exploration/visibility masks, enemies, pickups, stair room, and merchant location. Spatial queries live alongside the map data.
+- `EnvironmentState`: biome, decorative terrain, fixtures, oil, temporary fire, and poison duration.
 - `RunState`: seed, turn number, current screen, and aiming state.
 - `ExpeditionJournal`: localized event history and the last combat/healing rolls.
 - `Gear`, `Enemy`, and `Offer`: equipment definitions, enemy combat/awareness state, and merchant stock entries.
@@ -88,6 +89,8 @@ State is owned by a session rather than static global variables. Mutable collect
 | `InventoryService` | Initial equipment, requirements, equipment changes, energy potions |
 | `LootService` | Chest contents, rarity rolls, enemy gold, equipment rewards |
 | `DungeonGenerator` | Procedural floors, merchant rooms, visibility updates |
+| `EnvironmentGenerator` | Seeded biome details and safe fixture placement |
+| `EnvironmentService` | Torch throwing, barrel spills, ignition, poison, and turn-based fuel |
 | `EnemyAi` | Dispatch to registered enemy behavior policies |
 | `EnemyNavigator` | Occupancy-aware breadth-first pathfinding |
 | `MerchantService` | Offers, pricing, confirmed purchases and sales |
@@ -145,6 +148,31 @@ The game remains turn-based. `_Process` advances animation time and the held-key
 
 Trade uses the same gear objects as the inventory. Equipped-item identity is preserved when selling or removing equipment. Every purchase/sale is confirmed before resources change; trading itself does not advance turns. Returning to the main menu also requires confirmation and does not save the expedition.
 
+## Biomes and environmental simulation
+
+### Generation and visuals
+
+Every five-floor cycle changes the biome in this repeating order: Ancient Ruins, Forgotten Cisterns, Fungal Caves, Ember Forges. Terrain remains walkable and the existing room/corridor connectivity is preserved. Each biome has its own palette and details: rubble and bones, connected shallow pools, fungi, or ash. Wall edges use ASCII outlines. Water ripples, torch flames, fire, and warm lighting animate using glyphs and color changes only.
+
+`EnvironmentGenerator` uses a separate random stream derived from the expedition seed and floor, so cosmetic generation does not consume combat or loot rolls. Fixtures avoid the player, stairs, enemies, and pickups at generation time. Hazard placement also avoids the arrival area. Merchant rooms contain decorative details and collectible lights, with no generated barrels or traps; ignition is disabled in the refuge.
+
+### Torches and visibility
+
+- A new expedition starts with one equipped torch containing 100 turns of fuel. Fresh spares stack independently of the three gear slots.
+- The equipped torch restores the original radius of 10 cells. Without it, personal sight falls to 3 cells; nearby fixed torches and fire illuminate a small area in direct line of sight. Walls still block visibility. Explored terrain remains dimly remembered.
+- Only completed gameplay turns consume fuel. Menu navigation, aiming, cancellation, and real-time animation do not. Stowing preserves remaining fuel. A burned-out torch is replaced manually from inventory.
+- Select the torch slot or spare stack in inventory: Enter lights/stows, and T opens directional throw aiming on the map. Escape returns to inventory without spending anything. A valid throw consumes one torch and one action, travels up to five visible cells, and stops at a wall, fixture, enemy, or oil. A blocked throw consumes nothing.
+- Throwing uses the equipped flame first; otherwise it lights a fresh spare. Water extinguishes a torch that lands in it. The active partially used torch cannot be sold as a fresh spare.
+- Bumping or shooting a fixed torch knocks it onto the floor as `t`; stepping onto it collects a fresh spare. Chests can contain torches. Merchants stock four fresh torches for 8 gold each and buy spares for 4 gold, with the existing confirmation flow.
+
+### Hazards and turn order
+
+- Hitting an oil barrel (`O`) spills oil (`o`) onto its tile and adjacent dry walkable tiles. A thrown torch ignites it; connected oil and nearby barrels can chain together. Water and walls stop propagation. Stairs remain protected.
+- Fire lasts four completed turns and deals `3 + min(5, cycleIndex)` damage per affected actor per turn, including the ignition turn. It can hurt both the player and enemies.
+- Poison traps (`^`) trigger once under either actor, become spent (`_`), and inflict 2 damage for three turns, including activation. Poison continues after leaving the trap or changing floors.
+- Environmental effects resolve once after enemy actions, followed by a visibility refresh. Environmental enemy kills use the normal defeat/reward path exactly once. Lethal environmental damage ends the expedition.
+- Wall torches, barrel spills, and hazards are separate from the base map tiles. `EnvironmentAppearance` samples their visual state without advancing turns or changing resources.
+
 ## Startup and screen transitions
 
 Normal startup plays a short localized terminal-style story at 42 characters per second. Enter or Space reveals the remaining text, then continues; Escape skips it. The main menu appears automatically two seconds after the story finishes. Saved language preferences apply before the introduction.
@@ -184,9 +212,10 @@ Coverage includes:
 - Skill/projectile animation lifecycle, shot directions, wall/range clipping, fog, and cosmetic-only timing.
 - Localized introduction timing, skip/continue, automatic completion, bidirectional fades, transition input gating, and quit confirmation.
 - Platform-port substitution, AI policy dispatch, and architectural dependency boundaries.
-- **1,273 frozen behavior checkpoints** recorded before the structural refactor, covering generated maps, actions, rewards, inventory, logs, effects, and merchant transactions.
+- 420 environmental generation scenarios plus torch lifetime, lighting/occlusion, inventory-only throwing, safe rooms, fire chains, water, poison, environmental defeat, and torch economy.
+- Frozen environmental gameplay checkpoints covering maps, actions, rewards, inventory, light, terrain, hazards, logs, effects, and merchant transactions. The original 1,273 pre-refactor checkpoints remain archived in `Tests/Fixtures/behavior.sha256`.
 
-The behavior fixture is a compatibility baseline, not an expected-output file to regenerate after a failure. Investigate mismatches first. It deliberately protects random consumption order as well as visible rules. Only an intentional gameplay change should justify updating it.
+The active `environment-behavior.sha256` fixture records the intentional environmental gameplay update. The historical `behavior.sha256` is retained unchanged. A behavior fixture is a compatibility baseline, not an expected-output file to regenerate after a failure. Investigate mismatches first. It deliberately protects random consumption order as well as visible rules. Only an intentional gameplay change should justify updating it.
 
 ## Capture and diagnostic commands
 
@@ -209,6 +238,9 @@ Flags after `--` are handled by the game:
 - `--freeze-animation`: with capture, disable frame processing for repeatable visual comparisons.
 - `--action-demo=warrior|mage|archer|rogue|bolt|arrow`: preview an outgoing action in a deterministic room.
 - `--effect-time=SECONDS`: advance the action preview to a specific animation time before capture.
+- `--biome-demo=0|1|2|3`: seeded full-map environmental preview (diagnostics only).
+- `--fog-demo` / `--dark-demo`: use ordinary torch visibility or reduced unlit visibility in a biome preview.
+- `--torch-inventory` / `--fire-demo`: show torch inventory details or ignite a preview barrel.
 
 ## Development conventions
 

@@ -15,6 +15,7 @@ internal sealed partial class RegressionSuite
             game.Start(520);
             game.DungeonState.Enemies.Clear();
             game.DungeonState.Items.Clear();
+        game.DungeonState.Environment.Clear();
             game.PlayerState.Position = new Vector2I(30, 13);
             for (int y = 1; y < GameRules.Height - 1; y++)
                 for (int x = 1; x < GameRules.Width - 1; x++) game.DungeonState.Tiles[x, y] = '.';

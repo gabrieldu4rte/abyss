@@ -18,6 +18,7 @@ internal static class ActionAnimationPreview
         var world = game.DungeonState;
         world.Enemies.Clear();
         world.Items.Clear();
+        world.Environment.Clear();
         for (int y = 0; y < GameRules.Height; y++)
             for (int x = 0; x < GameRules.Width; x++) world.Tiles[x, y] = x >= 20 && x <= 44 && y >= 5 && y <= 22 ? '.' : '#';
         Array.Clear(world.Explored);

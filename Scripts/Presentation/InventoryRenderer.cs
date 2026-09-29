@@ -27,20 +27,22 @@ internal sealed class InventoryRenderer
             asciiCanvas.Text(32, 234 + i * 31, (menuState.InventoryIndex == i ? "> " : "  ") + localization.SlotName(i) + ": " + (g == null ? localization.Translate("Vazio", "Empty") : localization.GearLabel(g)), g == null ? UiTheme.Dim : UiTheme.RarityColor(g.Quality), 15);
         }
 
-        asciiCanvas.Text(32, 351, localization.Translate("CONSUMIVEIS", "CONSUMABLES"), UiTheme.Gold, 16);
-        asciiCanvas.Text(32, 380, (menuState.InventoryIndex == 3 ? "> " : "  ") + localization.Translate($"Pocao de vida x{inventoryState.Potions}", $"Health potion x{inventoryState.Potions}"), menuState.InventoryIndex == 3 ? UiTheme.Teal : UiTheme.Ink, 16);
-        asciiCanvas.Text(32, 410, (menuState.InventoryIndex == 4 ? "> " : "  ") + localization.Translate($"Pocao de energia x{inventoryState.EnergyPotions}", $"Energy potion x{inventoryState.EnergyPotions}"), menuState.InventoryIndex == 4 ? UiTheme.Teal : UiTheme.Ink, 16);
-        int page = Math.Max(0, menuState.InventoryIndex - 5) / 6;
-        asciiCanvas.Text(32, 450, localization.Translate($"MOCHILA / PAGINA {page + 1}", $"BACKPACK / PAGE {page + 1}"), UiTheme.Gold, 16);
-        for (int i = page * 6; i < Math.Min(inventoryState.Backpack.Count, page * 6 + 6); i++)
+        asciiCanvas.Text(32, 327, (menuState.InventoryIndex == 3 ? "> " : "  ") + localization.Translate($"Tocha: {inventoryState.TorchFuel}/100 ({(inventoryState.TorchEquipped ? "acesa" : "guardada")})", $"Torch: {inventoryState.TorchFuel}/100 ({(inventoryState.TorchEquipped ? "lit" : "stowed")})"), menuState.InventoryIndex == 3 ? UiTheme.Teal : UiTheme.Gold, 15);
+        asciiCanvas.Text(32, 362, localization.Translate("CONSUMIVEIS", "CONSUMABLES"), UiTheme.Gold, 16);
+        asciiCanvas.Text(32, 391, (menuState.InventoryIndex == 4 ? "> " : "  ") + localization.Translate($"Pocao de vida x{inventoryState.Potions}", $"Health potion x{inventoryState.Potions}"), menuState.InventoryIndex == 4 ? UiTheme.Teal : UiTheme.Ink, 16);
+        asciiCanvas.Text(32, 419, (menuState.InventoryIndex == 5 ? "> " : "  ") + localization.Translate($"Pocao de energia x{inventoryState.EnergyPotions}", $"Energy potion x{inventoryState.EnergyPotions}"), menuState.InventoryIndex == 5 ? UiTheme.Teal : UiTheme.Ink, 16);
+        asciiCanvas.Text(32, 447, (menuState.InventoryIndex == 6 ? "> " : "  ") + localization.Translate($"Tochas de reserva x{inventoryState.SpareTorches}", $"Spare torches x{inventoryState.SpareTorches}"), menuState.InventoryIndex == 6 ? UiTheme.Teal : UiTheme.Ink, 16);
+        int page = Math.Max(0, menuState.InventoryIndex - 7) / 5;
+        asciiCanvas.Text(32, 485, localization.Translate($"MOCHILA / PAGINA {page + 1}", $"BACKPACK / PAGE {page + 1}"), UiTheme.Gold, 16);
+        for (int i = page * 5; i < Math.Min(inventoryState.Backpack.Count, page * 5 + 5); i++)
         {
             var g = inventoryState.Backpack[i];
             bool worn = inventoryState.Equipped.Any(e => ReferenceEquals(e, g));
-            asciiCanvas.Text(32, 482 + (i - page * 6) * 29, (menuState.InventoryIndex == i + 5 ? "> " : "  ") + (worn ? "[*] " : "[ ] ") + localization.GearLabel(g), UiTheme.RarityColor(g.Quality), 16);
+            asciiCanvas.Text(32, 516 + (i - page * 5) * 29, (menuState.InventoryIndex == i + 7 ? "> " : "  ") + (worn ? "[*] " : "[ ] ") + localization.GearLabel(g), UiTheme.RarityColor(g.Quality), 16);
         }
 
         asciiCanvas.Frame(570, 198, 72, 26, UiTheme.Dim, 15, 18);
-        Gear? detail = menuState.InventoryIndex < 3 ? inventoryState.Equipped[menuState.InventoryIndex] : menuState.InventoryIndex >= 5 ? inventoryState.Backpack[menuState.InventoryIndex - 5] : null;
+        Gear? detail = menuState.InventoryIndex < 3 ? inventoryState.Equipped[menuState.InventoryIndex] : menuState.InventoryIndex >= 7 ? inventoryState.Backpack[menuState.InventoryIndex - 7] : null;
         if (detail is Gear item)
         {
             asciiCanvas.Text(590, 232, localization.GearLabel(item), UiTheme.RarityColor(item.Quality), 21);
@@ -54,16 +56,23 @@ internal sealed class InventoryRenderer
             asciiCanvas.Text(590, 471, localization.GearEffect(item), UiTheme.Ink, 15);
             asciiCanvas.Text(590, 526, localization.Translate("[ENTER] equipar / remover", "[ENTER] equip / remove"), UiTheme.Teal, 17);
         }
-        else if (menuState.InventoryIndex is 3 or 4)
+        else if (menuState.InventoryIndex is 3 or 6)
         {
-            bool life = menuState.InventoryIndex == 3;
+            asciiCanvas.Text(590, 240, localization.Translate("TOCHA", "TORCH"), UiTheme.Gold, 22);
+            asciiCanvas.Lines(590, 290, localization.Translate(
+                "Ilumina por 100 turnos. Valor: 8 ouro.\nSem luz, sua visao fica reduzida.\nReservas se acumulam na mochila.\n\n[ENTER] acender / guardar\n[T] arremessar e escolher direcao\n\nO fogo inflama oleo e fere qualquer um.\nAgua apaga uma tocha arremessada.",
+                "Lights 100 turns. Value: 8 gold.\nWithout light, your sight is reduced.\nSpares stack in your backpack.\n\n[ENTER] light / stow\n[T] throw and choose direction\n\nFire ignites oil and hurts anyone.\nWater puts out a thrown torch."), UiTheme.Ink, 17, 29);
+        }
+        else if (menuState.InventoryIndex is 4 or 5)
+        {
+            bool life = menuState.InventoryIndex == 4;
             asciiCanvas.Text(590, 240, life ? localization.Translate("POCAO DE VIDA", "HEALTH POTION") : localization.Translate("POCAO DE ENERGIA", "ENERGY POTION"), UiTheme.Teal, 22);
             asciiCanvas.Lines(590, 300, life ? localization.Translate("Cura 2d10 PV (2-20).\nValor: 12 ouro.\nQualquer classe; nivel 1.", "Heals 2d10 HP (2-20).\nValue: 12 gold.\nAny class; level 1.") : localization.Translate("Restaura 2d6 energia (2-12).\nValor: 15 ouro.\nQualquer classe; nivel 1.", "Restores 2d6 energy (2-12).\nValue: 15 gold.\nAny class; level 1."), UiTheme.Ink, 18, 34);
             asciiCanvas.Text(590, 450, localization.Translate("[ENTER] beber", "[ENTER] drink"), UiTheme.Teal, 18);
         }
         else
             asciiCanvas.Text(590, 240, localization.Translate("Selecione um item na mochila.", "Select an item in the backpack."), UiTheme.Ink, 18);
-        asciiCanvas.Text(590, 574, localization.Translate("Equipar ou beber gasta um turno", "Equipping or drinking uses one turn"), UiTheme.Dim, 16);
+        asciiCanvas.Text(590, 574, localization.Translate("Usar ou equipar gasta um turno", "Using or equipping uses one turn"), UiTheme.Dim, 16);
         asciiCanvas.Text(590, 601, localization.Translate("e retoma a partida.", "and resumes the game."), UiTheme.Dim, 16);
         asciiCanvas.Text(32, 692, localization.Translate(menuState.InventoryNotice.Pt, menuState.InventoryNotice.En), UiTheme.Red, 16);
     }

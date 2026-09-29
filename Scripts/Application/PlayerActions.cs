@@ -7,6 +7,7 @@ using static Abyss.Rules.TabletopRules;
 namespace Abyss.Application;
 internal sealed class PlayerActions
 {
+    private readonly EnvironmentService environment;
     private readonly CombatService combatService;
     private readonly IRunLifecycle lifecycle;
     private readonly DungeonState dungeonState;
@@ -20,9 +21,10 @@ internal sealed class PlayerActions
     private readonly RunState runState;
     private readonly VisualEffects visualEffects;
     private readonly RandomStream random;
-    internal PlayerActions(CombatService combatService, IRunLifecycle lifecycle, DungeonState dungeonState, ITurnScheduler turns, ExpeditionJournal expeditionJournal, HeroCombatStats heroCombatStats, InventoryState inventoryState, LootService lootService, MenuState menuState, PlayerState playerState, RunState runState, VisualEffects visualEffects, RandomStream random)
+    internal PlayerActions(CombatService combatService, IRunLifecycle lifecycle, DungeonState dungeonState, ITurnScheduler turns, ExpeditionJournal expeditionJournal, HeroCombatStats heroCombatStats, InventoryState inventoryState, LootService lootService, MenuState menuState, PlayerState playerState, RunState runState, VisualEffects visualEffects, RandomStream random, EnvironmentService environment)
     {
         this.combatService = combatService;
+        this.environment = environment;
         this.lifecycle = lifecycle;
         this.dungeonState = dungeonState;
         this.turns = turns;
@@ -35,6 +37,43 @@ internal sealed class PlayerActions
         this.runState = runState;
         this.visualEffects = visualEffects;
         this.random = random;
+    }
+
+    internal void ToggleTorch()
+    {
+        if (inventoryState.TorchFuel == 0)
+        {
+            if (inventoryState.SpareTorches == 0)
+            {
+                menuState.InventoryNotice = ("Sem tochas de reserva.", "No spare torches.");
+                return;
+            }
+            inventoryState.SpareTorches--;
+            inventoryState.TorchFuel = 100;
+            inventoryState.TorchEquipped = true;
+        }
+        else inventoryState.TorchEquipped = !inventoryState.TorchEquipped;
+        runState.Screen = "game";
+        expeditionJournal.Say(inventoryState.HasLight ? "Tocha acesa." : "Tocha guardada.", inventoryState.HasLight ? "Torch lit." : "Torch stowed.");
+        turns.EndTurn();
+    }
+    internal void BeginTorchThrow()
+    {
+        if (runState.Screen != "pause" || menuState.PauseTab != 1) return;
+        if (!inventoryState.HasLight && inventoryState.SpareTorches == 0)
+        {
+            menuState.InventoryNotice = ("Sem tocha acesa ou reserva.", "No lit torch or spare available.");
+            return;
+        }
+        runState.IsAiming = false;
+        runState.Screen = "torch_aim";
+    }
+    internal void ThrowTorch(Vector2I direction)
+    {
+        if (runState.Screen != "torch_aim") return;
+        if (!environment.ThrowTorch(direction)) return;
+        runState.Screen = "game";
+        turns.EndTurn();
     }
 
     internal void BeginAim()
@@ -83,6 +122,7 @@ internal sealed class PlayerActions
             return;
         }
 
+        if (environment.Strike(p)) { turns.EndTurn(); return; }
         var enemy = dungeonState.At(p);
         if (enemy != null)
         {
@@ -107,6 +147,12 @@ internal sealed class PlayerActions
     {
         if (!dungeonState.Items.Remove(playerState.Position, out char g))
             return;
+        if (g == 't')
+        {
+            inventoryState.SpareTorches++;
+            expeditionJournal.Say("Tocha recolhida.", "Torch collected.");
+            return;
+        }
         if (g == 'C')
         {
             lootService.OpenChest();
@@ -151,6 +197,12 @@ internal sealed class PlayerActions
             if (!dungeonState.Walk(p))
                 break;
             path.Add(p);
+            if (environment.Strike(p))
+            {
+                visualEffects.Actions.PlayProjectile(origin, path, playerState.ClassIndex == 1);
+                turns.EndTurn();
+                return;
+            }
             var e = dungeonState.At(p);
             if (e != null)
             {

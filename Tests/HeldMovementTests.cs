@@ -10,6 +10,7 @@ internal sealed partial class RegressionSuite
         game.Start(123);
         game.DungeonState.Enemies.Clear();
         game.DungeonState.Items.Clear();
+        game.DungeonState.Environment.Clear();
         game.DungeonState.IsMerchantFloor = false;
         for (int x = 1; x < GameRules.Width - 1; x++)
             for (int y = 1; y < GameRules.Height - 1; y++)
