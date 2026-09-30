@@ -67,7 +67,7 @@ Namespaces follow the responsibility folders: `Abyss.Domain`, `Abyss.Rules`, `Ab
 ### State and domain models
 
 - `PlayerState`: class selection, position, base attributes, health, energy, level, experience, gold, and kill count.
-- `InventoryState`: backpack, three gear slots, a dedicated torch slot, remaining fuel, and stacked consumable counts.
+- `InventoryState`: backpack, three gear slots, active torch fuel, and stacked consumable counts.
 - `DungeonState`: map tiles, exploration/visibility masks, enemies, pickups, stair room, and merchant location. Spatial queries live alongside the map data.
 - `EnvironmentState`: biome, decorative terrain, fixtures, oil, temporary fire, and poison duration.
 - `RunState`: seed, turn number, current screen, and aiming state.
@@ -159,11 +159,11 @@ Every five-floor cycle changes the biome in this repeating order: Ancient Ruins,
 
 ### Torches and visibility
 
-- A new expedition starts with one equipped torch containing 100 turns of fuel. Fresh spares stack independently of the three gear slots.
+- A new expedition starts with one lit torch containing 100 turns of fuel. Torches appear once under consumables, with a total count including the active torch and its remaining fuel. Fuel labels show only the current value.
 - The equipped torch restores the original radius of 10 cells. Without it, personal sight falls to 3 cells; nearby fixed torches and fire illuminate a small area in direct line of sight. Walls still block visibility. Explored terrain remains dimly remembered.
-- Only completed gameplay turns consume fuel. Menu navigation, aiming, cancellation, and real-time animation do not. Stowing preserves remaining fuel. A burned-out torch is replaced manually from inventory.
-- Select the torch slot or spare stack in inventory: Enter lights/stows, and T opens directional throw aiming on the map. Escape returns to inventory without spending anything. A valid throw consumes one torch and one action, travels up to five visible cells, and stops at a wall, fixture, enemy, or oil. A blocked throw consumes nothing.
-- Throwing uses the equipped flame first; otherwise it lights a fresh spare. Water extinguishes a torch that lands in it. The active partially used torch cannot be sold as a fresh spare.
+- Only completed gameplay turns consume fuel. Menu navigation, aiming, cancellation, and real-time animation do not. Stowing preserves remaining fuel. When a torch burns out, the next spare lights automatically without an extra action or loss of vision. Each replacement starts with 100 turns; light expires only when no spare remains.
+- Select the torch consumable in inventory: Enter lights/stows, and T opens directional throw aiming on the map. Escape returns to inventory without spending anything. A valid throw consumes one torch and one action, travels up to five visible cells, and stops at a wall, fixture, enemy, or oil. A blocked throw consumes nothing.
+- Throwing uses the active flame first and automatically lights a replacement if available; otherwise it throws a fresh spare. Water extinguishes a torch that lands in it. The active partially used torch cannot be sold as a fresh spare.
 - Bumping or shooting a fixed torch knocks it onto the floor as `t`; stepping onto it collects a fresh spare. Chests can contain torches. Merchants stock four fresh torches for 8 gold each and buy spares for 4 gold, with the existing confirmation flow.
 
 ### Hazards and turn order
@@ -305,3 +305,20 @@ Flags after `--` are handled by the game:
 - `WardenAbilities` owns turn-based preparation and resolution. `ActionEffects` renders separate shock, wave, spore and flame animations without advancing gameplay or consuming combat randomness.
 - `BestiaryTests` checks all rosters and portraits, 120 generated boss floors, ability costs, windup, escape, room boundaries, status effects and animation timing.
 - `--warden-demo=0|1|2|3` previews a prepared ability. Add `--warden-cast` to inspect the release animation, optionally with `--capture` and `--freeze-animation`.
+
+## Exit integrity
+
+- `DungeonConnectivity.EnsureExit` restores the stair tile after floor decoration and modifiers, verifies reachable walkable regions and carves a deterministic emergency corridor if a disconnected region is found. Normal connected maps retain their layout and random sequence.
+- Discovered stairs retain a readable gold marker outside current sight. An actor or action effect occupying the exit alternates with the stair marker; undiscovered exits remain hidden.
+- `ExitTests` covers 720 infested maps across biome cycles, every floor modifier, merchant floors, disconnected-region recovery and occupied/hidden stair markers.
+- Environmental tests also verify three consecutive torches last exactly 300 turns, automatic replacements preserve vision, stowing preserves fuel and throwing switches to an available spare.
+
+## Persistent bestiary
+
+- Pause → Compendium → Bestiary opens the collection. Left/right selects a biome; up/down selects a creature. Escape returns to the compendium. A/D and Tab retain pause-tab navigation.
+- Each biome lists its three regular species and its Warden. Locked pages show `???` and a generic illustration. Defeating a species reveals its existing ASCII portrait, bilingual lore and cumulative kill count. Combat attributes and ability statistics are omitted.
+- `BestiaryState` tracks stable portrait/species identifiers. `BestiaryProgress` loads known identifiers and records confirmed kills through `CombatService.Hit`; elite variants share their species count, while biome Wardens have distinct entries. Environmental kills use the same path.
+- `IBestiaryStore` separates progression from storage. `GodotBestiaryStore` writes `user://bestiary.cfg` through a temporary file followed by replacement. Discoveries survive new expeditions and application restarts; this does not save an expedition. Failed writes retain in-memory progress and report the issue in the journal.
+- Captures, diagnostic demos and automated tests use isolated in-memory progression, so previews cannot unlock the player's collection. Existing play history predating this feature cannot be reconstructed.
+- `BestiaryProgressTests` covers all sixteen entries, bilingual lore, nonlethal hits, duplicate death handling, elite aggregation, environmental kills, navigation, persistence and real file replacement.
+- `--bestiary-demo` previews an unlocked page; add `--bestiary-locked` to preview a new collection.

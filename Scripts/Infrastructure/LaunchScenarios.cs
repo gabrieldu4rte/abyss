@@ -11,6 +11,21 @@ internal sealed class LaunchScenarios(GameSession game)
             game.MenuState.English = true;
         if (args.Contains("--portuguese"))
             game.MenuState.English = false;
+        if (args.Contains("--bestiary-demo"))
+        {
+            game.Start(712);
+            game.MenuState.PauseTab = 3;
+            game.MenuState.HelpTopic = 2;
+            game.MenuState.BestiaryOpen = true;
+            if (!args.Contains("--bestiary-locked"))
+            {
+                game.MenuState.BestiaryBiome = 2;
+                game.MenuState.BestiaryEntry = 3;
+                var enemy = new Enemy(game.PlayerState.Position, 'B', 15);
+                game.BestiaryProgress.Record(enemy);
+            }
+            game.RunState.Screen = "pause";
+        }
         if (args.Contains("--demo"))
         {
             game.PlayerState.ClassIndex = 1;

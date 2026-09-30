@@ -67,7 +67,7 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
             journal.Say("Nao ha espaco para arremessar nessa direcao.", "There is no room to throw in that direction.");
             return false;
         }
-        if (inventory.HasLight) { inventory.TorchFuel = 0; inventory.TorchEquipped = false; }
+        if (inventory.HasLight) { inventory.TorchFuel = 0; inventory.TorchEquipped = false; inventory.LightReserve(); }
         else inventory.SpareTorches--;
         effects.Actions.PlayTorch(player.Position, path);
         if (!Water(p)) Ignite(p);
@@ -79,7 +79,10 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
         if (inventory.HasLight && --inventory.TorchFuel == 0)
         {
             inventory.TorchEquipped = false;
-            journal.Say("Sua tocha se apagou. Acenda outra no inventario.", "Your torch burned out. Light another in your inventory.");
+            if (inventory.LightReserve())
+                journal.Say("Sua tocha acabou. Voce acende a proxima reserva.", "Your torch burned out. You light the next spare.");
+            else
+                journal.Say("Sua ultima tocha se apagou.", "Your last torch burned out.");
         }
         TriggerTrap(player.Position, null);
         if (player.Health <= 0) return;

@@ -152,7 +152,7 @@ internal sealed partial class RegressionSuite
             throw new Exception("Inventory shortcut failed");
         for (int i = 0; i < 20; i++)
             game.InventoryState.Backpack.Add(new Gear(GearKind.Dagger, Rarity.Common));
-        for (int i = 0; i < game.InventoryState.Backpack.Count + 7; i++)
+        for (int i = 0; i < game.InventoryState.Backpack.Count + 6; i++)
             game.GameInput.HandleKey(Key.Down);
         if (game.MenuState.InventoryIndex != 0)
             throw new Exception("Inventory navigation wrap failed");

@@ -40,8 +40,8 @@ internal static class EnvironmentAppearance
             color = fixture switch { Fixture.OilBarrel => new Color("bd935c"), Fixture.WallTorch => new Color("ffcb6b"), Fixture.SpikeTrap => new Color("c5bec0"), Fixture.ShockTrap => new Color("82c4ef"), Fixture.PoisonTrap => new Color("a3c879"), Fixture.FlameTrap => new Color("ed774b"), _ => new Color("6c775b") };
         }
         if (world.Fire.ContainsKey(p) && visible) { glyph = "*^x+"[frame % 4]; color = new Color(frame % 2 == 0 ? "ffb44f" : "ed774b"); }
-        if (dungeon.Tiles[p.X, p.Y] == '>') { glyph = '>'; color = UiTheme.Gold; }
-        if (!visible) return (glyph, new Color("26323b"));
+        if (p == dungeon.Stairs) { glyph = '>'; color = UiTheme.Gold; }
+        if (!visible) return (glyph, p == dungeon.Stairs ? UiTheme.Gold.Darkened(.3f) : new Color("26323b"));
         if (dungeon.Modifier != FloorModifier.Blackout && world.Fixtures.Any(f => f.Value == Fixture.WallTorch && GameRules.Dist(p, f.Key) <= 3 && dungeon.Los(p, f.Key)))
             color = color.Lerp(new Color("ffc47a"), .12f + (float)(Math.Sin(time * 6 + p.X) + 1) * .07f);
         return (glyph, color);

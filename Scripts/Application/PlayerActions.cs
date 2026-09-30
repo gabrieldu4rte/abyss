@@ -48,9 +48,7 @@ internal sealed class PlayerActions
                 menuState.InventoryNotice = ("Sem tochas de reserva.", "No spare torches.");
                 return;
             }
-            inventoryState.SpareTorches--;
-            inventoryState.TorchFuel = 100;
-            inventoryState.TorchEquipped = true;
+            inventoryState.LightReserve();
         }
         else inventoryState.TorchEquipped = !inventoryState.TorchEquipped;
         runState.Screen = "game";

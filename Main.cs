@@ -8,9 +8,10 @@ public partial class Main : Node2D
 	private GameSession game = null!;
 	public override async void _Ready()
 	{
-		game = new GameSession(new GodotGameHost(this), new GodotAsciiCanvas(this), new GodotLanguageSettings());
-		game.AsciiCanvas.Font = GD.Load<Font>("res://Mono.ttf");
-		var args = OS.GetCmdlineUserArgs();
+        var args = OS.GetCmdlineUserArgs();
+        bool diagnostic = args.Any(a => a == "--self-test" || a.Contains("demo") || a.StartsWith("--capture="));
+        game = new GameSession(new GodotGameHost(this), new GodotAsciiCanvas(this), new GodotLanguageSettings(), diagnostic ? null : new GodotBestiaryStore());
+        game.AsciiCanvas.Font = GD.Load<Font>("res://Mono.ttf");
 		if (args.Contains("--self-test"))
 		{
 			new RegressionSuite(game).SelfTest();

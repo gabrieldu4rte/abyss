@@ -100,18 +100,22 @@ internal sealed class AsciiCanvas
         string face = art;
         float shake = impact ? (stage % 2 == 0 ? -3 : 3) : 0;
         DrawAsciiImage(x + 9 + shake, y + 35, face, 207, 212, impact ? tint : new Color("fff6df"));
+        float frameWidth = Font.GetStringSize(new string('-', 25), HorizontalAlignment.Left, -1, 15).X;
+        void CenteredText(float baseline, string text, Color textColor, int size)
+        {
+            float width = Font.GetStringSize(text, HorizontalAlignment.Left, -1, size).X;
+            Text(x + (frameWidth - width) / 2, baseline, text, textColor, size);
+        }
         if (impact)
         {
             string burst = stage % 3 == 0 ? "*  /  !  \\  *" : stage % 3 == 1 ? "+  *  #  *  +" : ".  +  *  +  .";
-            Text(x + 24, y + 258, burst, UiTheme.Red, 17);
-            Text(x + 57, y + 279, $"-{damage} HP", UiTheme.Red, 18);
+            CenteredText(y + 258, burst, UiTheme.Red, 17);
+            CenteredText(y + 279, $"-{damage} HP", UiTheme.Red, 18);
         }
         else
         {
             const string ornament = "<------ + ------>";
-            float frameWidth = Font.GetStringSize(new string('-', 25), HorizontalAlignment.Left, -1, 15).X;
-            float ornamentWidth = Font.GetStringSize(ornament, HorizontalAlignment.Left, -1, 15).X;
-            Text(x + (frameWidth - ornamentWidth) / 2, y + 278, ornament, UiTheme.Dim, 15);
+            CenteredText(y + 278, ornament, UiTheme.Dim, 15);
         }
     }
 

@@ -1,0 +1,40 @@
+namespace Abyss.Presentation;
+internal static class BestiaryLore
+{
+    internal static string Description(string species, bool english) => (species, english) switch
+    {
+        ("skeleton", false) => "Os sinos que anunciavam seu descanso ha muito se calaram. Ainda assim, estes ossos percorrem os saloes como se esperassem uma ordem antiga. Restos de tecido prendem-se as juntas, lembrancas de nomes que ninguem mais pronuncia.",
+        ("skeleton", true) => "The bells that marked their rest fell silent long ago. Yet these bones still pace the halls, waiting for an ancient command. Scraps of cloth cling to their joints, reminders of names no one speaks anymore.",
+        ("goblin", false) => "Entre os escombros, os goblins recolhem tudo que a superficie esqueceu. Fazem talismas de chaves sem fechadura e discutem a posse de coroas partidas. Para eles, cada viajante traz uma nova historia e algo que pode ser roubado.",
+        ("goblin", true) => "Among the rubble, goblins gather everything the surface has forgotten. They fashion charms from useless keys and quarrel over broken crowns. To them, every traveler brings a new story and something worth stealing.",
+        ("revenant", false) => "Uma promessa manteve este cavaleiro de pe quando seu nome ja havia desaparecido das pedras. Sob o elmo partido nao ha paz, apenas a memoria de um portao que jamais deveria ter sido aberto.",
+        ("revenant", true) => "A promise kept this knight standing long after its name vanished from the stones. Beneath the broken helm there is no peace, only the memory of a gate that should never have been opened.",
+        ("rat", false) => "Descendentes dos ratos que seguiram os primeiros escavadores, conhecem passagens que nenhum mapa preserva. Seus ninhos guardam fios de mortalhas e pequenas moedas, carregadas para longe dos mortos.",
+        ("rat", true) => "Descended from the rats that followed the first diggers, these creatures know passages no map remembers. Their nests hold shroud threads and small coins carried far from the dead.",
+        ("drowned", false) => "As cisternas guardam quem caiu em suas aguas e nunca encontrou a margem. Algas se enroscam em suas vestes, enquanto seus labios repetem palavras que so o eco submerso parece compreender.",
+        ("drowned", true) => "The cisterns keep those who fell into their waters and never found the shore. Weeds coil around their garments as their lips repeat words understood only by the submerged echoes.",
+        ("leech", false) => "Cresceu nas aguas que receberam os segredos e o sangue das ruinas. Seu corpo desliza pelas pedras sem deixar som. Os antigos zeladores diziam que a cisterna respirava; talvez ouvissem estas criaturas se mover.",
+        ("leech", true) => "It grew in waters that received the secrets and blood of the ruins. Its body slides across stone without a sound. Old keepers said the cistern breathed; perhaps they heard these creatures moving.",
+        ("sporeling", false) => "Pequenos vultos brotam entre os grandes cogumelos, seguindo uma musica que nao atravessa o ar. Quando param para observar um visitante, a gruta inteira parece prender a respiracao junto deles.",
+        ("sporeling", true) => "Small shapes sprout among the great mushrooms, following music that never travels through the air. When they pause to watch a visitor, the entire cavern seems to hold its breath with them.",
+        ("cave_crawler", false) => "Suas antenas leem as vibracoes das paredes como outros leem palavras. Debaixo da carapaca repousa a poeira de galerias esquecidas. E raro ve-lo por inteiro antes que desapareca em outra fenda.",
+        ("cave_crawler", true) => "Its antennae read the trembling walls as others read words. Dust from forgotten galleries rests beneath its shell. Few ever see its full length before it vanishes into another crack.",
+        ("myconid", false) => "Estas figuras silenciosas caminham sobre uma floresta que tambem vive sob seus pes. Raizes e fungos entrelacam suas lembrancas. Talvez cada rosto seja apenas um sonho diferente da mesma criatura adormecida.",
+        ("myconid", true) => "These silent figures walk upon a forest that also lives beneath their feet. Roots and fungi weave their memories together. Perhaps every face is a different dream of the same sleeping creature.",
+        ("cinder_hound", false) => "Conta-se que os ferreiros deixavam seus caes junto as fornalhas durante o inverno. Quando as oficinas foram abandonadas, alguns se recusaram a partir. Ainda procuram seus donos entre as cinzas.",
+        ("cinder_hound", true) => "The smiths once left their hounds beside the furnaces through winter. When the workshops were abandoned, some refused to leave. They still search the ashes for their masters.",
+        ("ember_imp", false) => "Nasceu, dizem, de uma fagulha que ouviu uma mentira. Ri dentro das chamines e esconde ferramentas em lugares impossiveis. Seu sorriso lembra a alegria cruel de uma fornalha que nunca se sacia.",
+        ("ember_imp", true) => "They say it was born from a spark that overheard a lie. It laughs inside chimneys and hides tools in impossible places. Its grin carries the cruel delight of a furnace that is never satisfied.",
+        ("forged_sentinel", false) => "Moldada para vigiar as oficinas, a sentinela continua sua ronda apesar do silencio das bigornas. Sob as placas rebitadas, algo ainda trabalha. Ninguem sabe quem alimenta seu coracao de metal.",
+        ("forged_sentinel", true) => "Cast to watch over the workshops, the sentinel keeps its rounds despite the silence of the anvils. Something still labors beneath its riveted plates. No one knows who feeds its metal heart.",
+        ("warden", false) => "O ultimo juramento das ruinas tomou a forma deste guardiao. Sua coroa nao pertence a um rei, mas a um dever sem fim. A escada que protege conduz a segredos que nem os mortos ousaram levar consigo.",
+        ("warden", true) => "The final oath of the ruins took the shape of this Warden. Its crown belongs to no king, only to an endless duty. The stair it guards leads to secrets even the dead dared not carry away.",
+        ("tide_warden", false) => "Antes que as cisternas fossem esquecidas, oferendas eram lancadas em suas aguas. Algo as recebeu. Coroado de conchas, o guardiao das mares ainda espera o tributo de quem deseja atravessar seu reino afogado.",
+        ("tide_warden", true) => "Before the cisterns were forgotten, offerings were cast into their waters. Something received them. Crowned in shells, the Tide Warden still awaits tribute from those who would cross its drowned kingdom.",
+        ("spore_warden", false) => "A floresta subterranea encontrou uma voz neste soberano. Seu corpo carrega estacoes que nunca conheceram o sol. Ao seu redor, cada cogumelo se curva como se recordasse o instante em que a pedra comecou a sonhar.",
+        ("spore_warden", true) => "The underground forest found a voice in this sovereign. Its body bears seasons that never knew the sun. Around it, every mushroom bows as though remembering the moment stone first began to dream.",
+        ("forge_warden", false) => "A ultima obra dos mestres da forja foi tambem sua carcereira. Dentro da armadura arde uma brasa que nenhuma noite apagou. O guardiao espera diante da escada, ouvindo o eco de martelos que ja nao existem.",
+        ("forge_warden", true) => "The forge masters' final creation became their jailer. An ember burns within its armor that no night has extinguished. The Warden waits before the stair, listening to the echoes of hammers that no longer exist.",
+        _ => "???"
+    };
+}

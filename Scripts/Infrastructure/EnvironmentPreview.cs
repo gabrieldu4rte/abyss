@@ -24,7 +24,7 @@ internal static class EnvironmentPreview
         if (args.Contains("--torch-inventory"))
         {
             game.RunState.Screen = "pause";
-            game.MenuState.PauseTab = 1; game.MenuState.InventoryIndex = 3;
+            game.MenuState.PauseTab = 1; game.MenuState.InventoryIndex = 5;
             game.InventoryState.SpareTorches = 3;
         }
         if (args.Contains("--fire-demo"))

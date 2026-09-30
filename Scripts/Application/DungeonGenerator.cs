@@ -63,6 +63,7 @@ internal sealed class DungeonGenerator
         menuState.MerchantQuote = random.Generator.Next(4);
         merchantState.MerchantStock.Add(new Offer { Potion = 2, Quantity = 4 });
         environmentGenerator.Generate();
+        DungeonConnectivity.EnsureExit(dungeonState, playerState.Position);
         Reveal();
         expeditionJournal.Say("Uma luz acolhedora. Voce encontrou o mercador.", "A welcoming light. You found the merchant.");
     }
@@ -163,6 +164,7 @@ internal sealed class DungeonGenerator
 
         environmentGenerator.Generate();
         floorEvents.Generate();
+        DungeonConnectivity.EnsureExit(dungeonState, playerState.Position);
         Reveal();
     }
 

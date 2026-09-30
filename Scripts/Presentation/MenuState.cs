@@ -9,6 +9,9 @@ internal sealed class MenuState
     internal int LanguageIndex { get; set; }
     internal string LanguageReturn { get; set; } = "home";
     internal string LanguageNotice { get; set; } = "";
+    internal bool BestiaryOpen { get; set; }
+    internal int BestiaryBiome { get; set; }
+    internal int BestiaryEntry { get; set; }
     internal int HelpTopic { get; set; }
     internal bool ShopSelling { get; set; }
     internal bool ConfirmYes { get; set; }

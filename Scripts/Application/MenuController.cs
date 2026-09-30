@@ -32,6 +32,21 @@ internal sealed class MenuController
 
     internal void HandlePause(Key key)
     {
+        if (menuState.PauseTab == 3 && menuState.BestiaryOpen)
+        {
+            if (key == Key.Escape) { menuState.BestiaryOpen = false; return; }
+            if (key == Key.Left || key == Key.Right)
+            {
+                menuState.BestiaryBiome = (menuState.BestiaryBiome + (key == Key.Left ? 3 : 1)) % 4;
+                menuState.BestiaryEntry = 0;
+                return;
+            }
+            if (UiTheme.Previous(key) || UiTheme.Next(key))
+            {
+                menuState.BestiaryEntry = (menuState.BestiaryEntry + (UiTheme.Previous(key) ? 3 : 1)) % 4;
+                return;
+            }
+        }
         if (key == Key.Escape)
         {
             runState.Screen = "game";
@@ -193,10 +208,12 @@ internal sealed class MenuController
 
     internal void HandleHelp(Key key)
     {
+        if (menuState.BestiaryOpen) return;
+        if (UiTheme.Confirm(key) && menuState.HelpTopic == 2) { menuState.BestiaryOpen = true; return; }
         if (UiTheme.Previous(key))
-            menuState.HelpTopic = (menuState.HelpTopic + 9) % 10;
+            menuState.HelpTopic = (menuState.HelpTopic + 8) % 9;
         if (UiTheme.Next(key))
-            menuState.HelpTopic = (menuState.HelpTopic + 1) % 10;
+            menuState.HelpTopic = (menuState.HelpTopic + 1) % 9;
     }
 
     internal void HandleShop(Key key)
@@ -276,12 +293,12 @@ internal sealed class MenuController
 
     internal void HandleInventory(Key key)
     {
-        int count = 7 + inventoryState.Backpack.Count;
+        int count = 6 + inventoryState.Backpack.Count;
         if (UiTheme.Previous(key))
             menuState.InventoryIndex = (menuState.InventoryIndex + count - 1) % count;
         if (UiTheme.Next(key))
             menuState.InventoryIndex = (menuState.InventoryIndex + 1) % count;
-        if (key == Key.T && menuState.InventoryIndex is 3 or 6) { playerActions.BeginTorchThrow(); return; }
+        if (key == Key.T && menuState.InventoryIndex == 5) { playerActions.BeginTorchThrow(); return; }
         if (!UiTheme.Confirm(key))
             return;
         if (menuState.InventoryIndex < 3)
@@ -291,9 +308,9 @@ internal sealed class MenuController
             else
                 inventoryService.InventoryMessage("Slot vazio. Selecione um item na mochila.", "Empty slot. Select an item in the backpack.");
         }
-        else if (menuState.InventoryIndex is 3 or 6)
+        else if (menuState.InventoryIndex == 5)
             playerActions.ToggleTorch();
-        else if (menuState.InventoryIndex == 4)
+        else if (menuState.InventoryIndex == 3)
         {
             if (inventoryState.Potions == 0 || playerState.Health == playerState.MaxHealth)
             {
@@ -304,9 +321,9 @@ internal sealed class MenuController
             runState.Screen = "game";
             playerActions.Drink();
         }
-        else if (menuState.InventoryIndex == 5)
+        else if (menuState.InventoryIndex == 4)
             inventoryService.DrinkEnergy();
         else
-            inventoryService.ToggleGear(inventoryState.Backpack[menuState.InventoryIndex - 7]);
+            inventoryService.ToggleGear(inventoryState.Backpack[menuState.InventoryIndex - 6]);
     }
 }

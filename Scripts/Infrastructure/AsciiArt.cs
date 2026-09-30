@@ -50,5 +50,6 @@ public static class AsciiArt
         ["forge_warden"] = Read("forge_warden"),
     };
     public static string Enemy(char glyph) => glyph == 'B' || EnemyCatalog.Common.ContainsKey(glyph) ? CreaturePortraits[EnemyCatalog.Get(glyph, 1).ArtKey] : Unknown;
+    internal static string Creature(string key) => CreaturePortraits[key];
     internal static string Enemy(Enemy? enemy) => enemy == null ? Unknown : CreaturePortraits[enemy.Profile.ArtKey];
 }

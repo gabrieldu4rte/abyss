@@ -4,6 +4,7 @@ using System;
 namespace Abyss.Presentation;
 internal sealed class PauseRenderer
 {
+    private readonly BestiaryRenderer bestiaryRenderer;
     private readonly AsciiCanvas asciiCanvas;
     private readonly DungeonState dungeonState;
     private readonly ExpeditionJournal expeditionJournal;
@@ -15,8 +16,9 @@ internal sealed class PauseRenderer
     private readonly MenuState menuState;
     private readonly PlayerState playerState;
     private readonly UiComponents uiComponents;
-    internal PauseRenderer(AsciiCanvas asciiCanvas, DungeonState dungeonState, ExpeditionJournal expeditionJournal, HeroCombatStats heroCombatStats, InventoryRenderer inventoryRenderer, InventoryState inventoryState, JournalFormatter journalFormatter, Localization localization, MenuState menuState, PlayerState playerState, UiComponents uiComponents)
+    internal PauseRenderer(AsciiCanvas asciiCanvas, DungeonState dungeonState, ExpeditionJournal expeditionJournal, HeroCombatStats heroCombatStats, InventoryRenderer inventoryRenderer, InventoryState inventoryState, JournalFormatter journalFormatter, Localization localization, MenuState menuState, PlayerState playerState, UiComponents uiComponents, BestiaryRenderer bestiaryRenderer)
     {
+        this.bestiaryRenderer = bestiaryRenderer;
         this.asciiCanvas = asciiCanvas;
         this.dungeonState = dungeonState;
         this.expeditionJournal = expeditionJournal;
@@ -38,7 +40,7 @@ internal sealed class PauseRenderer
             localization.Translate("[1] PERSONAGEM", "[1] CHARACTER"),
             localization.Translate("[2] INVENTARIO", "[2] INVENTORY"),
             localization.Translate("[3] DIARIO", "[3] JOURNAL"),
-            localization.Translate("[4] AJUDA", "[4] HELP"),
+            localization.Translate("[4] COMPENDIO", "[4] COMPENDIUM"),
             localization.Translate("[5] CONFIGURACOES", "[5] SETTINGS")
         };
         for (int i = 0; i < 5; i++)
@@ -49,11 +51,19 @@ internal sealed class PauseRenderer
         else if (menuState.PauseTab == 2)
             DrawJournal();
         else if (menuState.PauseTab == 3)
-            DrawHelpTopics();
+        {
+            if (menuState.BestiaryOpen) bestiaryRenderer.Draw();
+            else DrawHelpTopics();
+        }
         else if (menuState.PauseTab == 4)
             DrawPauseSettings();
         else
             inventoryRenderer.DrawInventory();
+        if (menuState.PauseTab == 3 && menuState.BestiaryOpen)
+        {
+            uiComponents.Footer("[A D / TAB] abas   [SETAS] bioma / criatura   [ESC] compendio", "[A D / TAB] tabs   [ARROWS] biome / creature   [ESC] compendium");
+            return;
+        }
         uiComponents.Footer("[1-5 / A D / TAB] abas   [CIMA/BAIXO] navegar   [ENTER] confirmar   [ESC] continuar", "[1-5 / A D / TAB] tabs   [UP/DOWN] navigate   [ENTER] confirm   [ESC] resume");
     }
 
@@ -112,19 +122,24 @@ internal sealed class PauseRenderer
         {
             localization.Translate("O ABISMO", "THE ABYSS"),
             localization.Translate("CAMINHOS E REFUGIOS", "PATHS AND REFUGES"),
-            localization.Translate("HABITANTES", "INHABITANTS"),
+            localization.Translate("BESTIARIO", "BESTIARY"),
             localization.Translate("VOCACOES", "CALLINGS"),
             localization.Translate("EQUIPAMENTOS E RELIQUIAS", "EQUIPMENT AND RELICS"),
             localization.Translate("PROVISOES", "SUPPLIES"),
             localization.Translate("O MERCADOR", "THE MERCHANT"),
             localization.Translate("LUZ E PERIGOS", "LIGHT AND HAZARDS"),
-            localization.Translate("ENCONTROS RAROS", "RARE ENCOUNTERS"),
-            localization.Translate("GUARDIOES", "WARDENS")
+            localization.Translate("ENCONTROS RAROS", "RARE ENCOUNTERS")
         };
         asciiCanvas.Text(32, 206, localization.Translate("COMPENDIO DO VIAJANTE", "TRAVELER'S COMPENDIUM"), UiTheme.Gold, 17);
         for (int i = 0; i < topics.Length; i++)
             asciiCanvas.Text(32, 251 + i * 38, (menuState.HelpTopic == i ? "> " : "  ") + topics[i], menuState.HelpTopic == i ? UiTheme.Teal : UiTheme.Dim, 15);
         asciiCanvas.Text(32, 640, localization.Translate("[CIMA/BAIXO] categoria", "[UP/DOWN] category"), UiTheme.Dim, 14);
+        if (menuState.HelpTopic == 2)
+        {
+            asciiCanvas.Text(355, 212, localization.Translate("BESTIARIO DO VIAJANTE", "TRAVELER'S BESTIARY"), UiTheme.Gold, 20);
+            asciiCanvas.Lines(355, 260, localization.Translate("Retratos e historias das criaturas derrotadas.\nOrganizados pelas terras que habitam.\n\nAs paginas desconhecidas permanecem como ???.\nSuas descobertas acompanham futuras expedicoes.\n\n[ENTER] abrir bestiario", "Portraits and stories of defeated creatures.\nOrganized by the lands they inhabit.\n\nUnknown pages remain marked ???.\nYour discoveries follow you into future expeditions.\n\n[ENTER] open bestiary"), UiTheme.Ink, 17, 32);
+            return;
+        }
         float y = 212;
         foreach (string line in localization.HelpText(menuState.HelpTopic).Split('\n'))
         {

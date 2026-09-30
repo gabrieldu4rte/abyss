@@ -7,6 +7,15 @@ internal sealed class InventoryState
     internal int TorchFuel { get; set; }
     internal bool TorchEquipped { get; set; }
     internal bool HasLight => TorchEquipped && TorchFuel > 0;
+    internal int TorchCount => SpareTorches + (TorchFuel > 0 ? 1 : 0);
+    internal bool LightReserve()
+    {
+        if (TorchFuel > 0 || SpareTorches <= 0) return false;
+        SpareTorches--;
+        TorchFuel = 100;
+        TorchEquipped = true;
+        return true;
+    }
     internal int Potions { get; set; }
     internal List<Gear> Backpack { get; } = new();
     internal Gear? [] Equipped { get; } = new Gear? [3];

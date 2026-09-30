@@ -4,6 +4,7 @@ using static Abyss.Rules.TabletopRules;
 namespace Abyss.Application;
 internal sealed class CombatService
 {
+    private readonly BestiaryProgress bestiary;
     private readonly DungeonState dungeonState;
     private readonly ExpeditionJournal expeditionJournal;
     private readonly HeroCombatStats heroCombatStats;
@@ -15,8 +16,9 @@ internal sealed class CombatService
     private readonly RunState runState;
     private readonly VisualEffects visualEffects;
     private readonly RandomStream random;
-    internal CombatService(DungeonState dungeonState, ExpeditionJournal expeditionJournal, HeroCombatStats heroCombatStats, InventoryState inventoryState, Localization localization, LootService lootService, PlayerState playerState, ProgressionService progressionService, RunState runState, VisualEffects visualEffects, RandomStream random)
+    internal CombatService(DungeonState dungeonState, ExpeditionJournal expeditionJournal, HeroCombatStats heroCombatStats, InventoryState inventoryState, Localization localization, LootService lootService, PlayerState playerState, ProgressionService progressionService, RunState runState, VisualEffects visualEffects, RandomStream random, BestiaryProgress bestiary)
     {
+        this.bestiary = bestiary;
         this.dungeonState = dungeonState;
         this.expeditionJournal = expeditionJournal;
         this.heroCombatStats = heroCombatStats;
@@ -130,6 +132,8 @@ internal sealed class CombatService
             return;
         dungeonState.Enemies.Remove(e);
         playerState.Kills++;
+        if (!bestiary.Record(e))
+            expeditionJournal.Say("Nao foi possivel salvar o bestiario. O registro permanece nesta sessao.", "Could not save the bestiary. The record remains in this session.");
         if (inventoryState.Equipped[2] is Gear charm && charm.Quality >= Rarity.Epic)
             playerState.Energy = Math.Min(playerState.MaxEnergy, playerState.Energy + (charm.Quality == Rarity.Legendary ? 2 : 1));
         int goldReward = lootService.RollEnemyGold(e.Glyph, e.Depth);

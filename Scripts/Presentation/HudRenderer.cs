@@ -51,7 +51,7 @@ internal sealed class HudRenderer
         asciiCanvas.Text(32, 502, asciiCanvas.Bar(playerState.Energy, playerState.MaxEnergy), UiTheme.Teal, 16);
         asciiCanvas.Text(32, 543, localization.Translate($"NV {playerState.Level}  XP {playerState.Experience}/{heroCombatStats.XpToNext}", $"LV {playerState.Level}  XP {playerState.Experience}/{heroCombatStats.XpToNext}"), UiTheme.Gold, 15);
         asciiCanvas.Text(32, 575, localization.Translate($"POCOES {inventoryState.Potions}  OURO {playerState.Gold}", $"POTIONS {inventoryState.Potions}  GOLD {playerState.Gold}"), UiTheme.Ink, 14);
-        asciiCanvas.Text(32, 607, localization.Translate($"TOCHA {(inventoryState.HasLight ? inventoryState.TorchFuel : 0)}/100", $"TORCH {(inventoryState.HasLight ? inventoryState.TorchFuel : 0)}/100"), inventoryState.HasLight ? UiTheme.Gold : UiTheme.Dim, 14);
+        asciiCanvas.Text(32, 607, localization.Translate($"TOCHA {(inventoryState.HasLight ? inventoryState.TorchFuel : 0)}", $"TORCH {(inventoryState.HasLight ? inventoryState.TorchFuel : 0)}"), inventoryState.HasLight ? UiTheme.Gold : UiTheme.Dim, 14);
         if (dungeonState.Environment.HeroPoisonTurns > 0) asciiCanvas.Text(32, 631, localization.Translate("ENVENENADO", "POISONED"), new Color("a3c879"), 14);
         if (target != null)
         {
@@ -105,6 +105,12 @@ internal sealed class HudRenderer
                 {
                     g = actionGlyph.Character;
                     c = actionGlyph.Color;
+                }
+                
+                if (ExitAppearance.ShowMarker(dungeonState, pos, visualEffects.UiTime, g))
+                {
+                    g = '>';
+                    c = dungeonState.Visible[x, y] ? UiTheme.Gold : UiTheme.Gold.Darkened(.3f);
                 }
                 asciiCanvas.Text(UiTheme.MapX + x * UiTheme.CellX, UiTheme.MapY + y * UiTheme.CellY, g.ToString(), c, 17);
             }

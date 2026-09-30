@@ -11,6 +11,9 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
     internal ScreenTransitions Transitions { get; }
     internal OpeningStory OpeningStory { get; }
     internal ILanguageSettings Settings { get; }
+    internal BestiaryState BestiaryState { get; } = new();
+    internal BestiaryProgress BestiaryProgress { get; }
+    internal BestiaryRenderer BestiaryRenderer { get; }
     internal PlayerState PlayerState { get; } = new();
     internal DungeonState DungeonState { get; } = new();
     internal InventoryState InventoryState { get; } = new();
@@ -49,9 +52,10 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
     internal EnvironmentGenerator EnvironmentGenerator { get; }
     internal EnvironmentService EnvironmentService { get; }
 
-    internal GameSession(IGameHost host, IAsciiCanvas canvas, ILanguageSettings settings)
+    internal GameSession(IGameHost host, IAsciiCanvas canvas, ILanguageSettings settings, IBestiaryStore? bestiaryStore = null)
     {
         Host = host;
+        BestiaryProgress = new BestiaryProgress(BestiaryState, bestiaryStore);
         Transitions = new ScreenTransitions(canvas);
         Canvas = Transitions;
         Settings = settings;
@@ -69,14 +73,15 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         InventoryRenderer = new InventoryRenderer(AsciiCanvas, InventoryState, Localization, MenuState, PlayerState);
         ActionEffectsRenderer = new ActionEffectsRenderer(AsciiCanvas, DungeonState, VisualEffects.Actions);
         HudRenderer = new HudRenderer(AsciiCanvas, DungeonState, ExpeditionJournal, HeroCombatStats, InventoryState, Localization, PlayerState, RunState, VisualEffects, ActionEffectsRenderer);
-        CombatService = new CombatService(DungeonState, ExpeditionJournal, HeroCombatStats, InventoryState, Localization, LootService, PlayerState, ProgressionService, RunState, VisualEffects, RandomStream);
+        CombatService = new CombatService(DungeonState, ExpeditionJournal, HeroCombatStats, InventoryState, Localization, LootService, PlayerState, ProgressionService, RunState, VisualEffects, RandomStream, BestiaryProgress);
         FloorEventGenerator = new FloorEventGenerator(DungeonState, PlayerState, RunState, ExpeditionJournal);
         EnvironmentGenerator = new EnvironmentGenerator(DungeonState, PlayerState, RunState);
         EnvironmentService = new EnvironmentService(DungeonState, InventoryState, PlayerState, RunState, ExpeditionJournal, CombatService, VisualEffects);
         DungeonGenerator = new DungeonGenerator(DungeonState, ExpeditionJournal, LootService, MenuState, MerchantState, PlayerState, VisualEffects, RandomStream, InventoryState, EnvironmentGenerator, FloorEventGenerator);
         UiComponents = new UiComponents(AsciiCanvas, Localization, MenuState);
         MerchantRenderer = new MerchantRenderer(AsciiCanvas, InventoryState, Localization, MenuState, MerchantService, PlayerState, UiComponents);
-        PauseRenderer = new PauseRenderer(AsciiCanvas, DungeonState, ExpeditionJournal, HeroCombatStats, InventoryRenderer, InventoryState, JournalFormatter, Localization, MenuState, PlayerState, UiComponents);
+        BestiaryRenderer = new BestiaryRenderer(AsciiCanvas, BestiaryState, MenuState, Localization);
+        PauseRenderer = new PauseRenderer(AsciiCanvas, DungeonState, ExpeditionJournal, HeroCombatStats, InventoryRenderer, InventoryState, JournalFormatter, Localization, MenuState, PlayerState, UiComponents, BestiaryRenderer);
         EnemyNavigator = new EnemyNavigator(DungeonState, PlayerState);
         WardenAbilities = new WardenAbilities(CombatService, DungeonState, PlayerState, ExpeditionJournal, VisualEffects);
         EnemyAi = new EnemyAi(new IEnemyBehavior[] { new WardenBehavior(CombatService, DungeonState, ExpeditionJournal, PlayerState, EnemyNavigator, WardenAbilities), new RoamingBehavior(CombatService, DungeonState, PlayerState, RandomStream, EnemyNavigator) });
@@ -108,6 +113,8 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
 
     internal void Start(int? fixedSeed = null)
     {
+        MenuState.BestiaryOpen = false;
+        MenuState.BestiaryBiome = MenuState.BestiaryEntry = 0;
         DungeonState.Environment.Clear();
         RunState.Seed = fixedSeed ?? Random.Shared.Next(1, int.MaxValue);
         RandomGenerator = new Random(RunState.Seed);
