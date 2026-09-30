@@ -36,13 +36,13 @@ internal static class EnvironmentAppearance
         if (world.Oil.Contains(p)) { glyph = 'o'; color = new Color("a29363"); }
         if (world.Fixtures.TryGetValue(p, out var fixture))
         {
-            glyph = fixture switch { Fixture.OilBarrel => 'O', Fixture.WallTorch => "YyY*"[frame % 4], Fixture.PoisonTrap => '^', _ => '_' };
-            color = fixture switch { Fixture.OilBarrel => new Color("bd935c"), Fixture.WallTorch => new Color("ffcb6b"), Fixture.PoisonTrap => new Color("a3c879"), _ => new Color("6c775b") };
+            glyph = fixture switch { Fixture.OilBarrel => 'O', Fixture.WallTorch => "YyY*"[frame % 4], Fixture.SpikeTrap => '^', Fixture.ShockTrap => 'Z', Fixture.PoisonTrap => '%', Fixture.FlameTrap => 'V', _ => '_' };
+            color = fixture switch { Fixture.OilBarrel => new Color("bd935c"), Fixture.WallTorch => new Color("ffcb6b"), Fixture.SpikeTrap => new Color("c5bec0"), Fixture.ShockTrap => new Color("82c4ef"), Fixture.PoisonTrap => new Color("a3c879"), Fixture.FlameTrap => new Color("ed774b"), _ => new Color("6c775b") };
         }
         if (world.Fire.ContainsKey(p) && visible) { glyph = "*^x+"[frame % 4]; color = new Color(frame % 2 == 0 ? "ffb44f" : "ed774b"); }
         if (dungeon.Tiles[p.X, p.Y] == '>') { glyph = '>'; color = UiTheme.Gold; }
         if (!visible) return (glyph, new Color("26323b"));
-        if (world.Fixtures.Any(f => f.Value == Fixture.WallTorch && GameRules.Dist(p, f.Key) <= 3 && dungeon.Los(p, f.Key)))
+        if (dungeon.Modifier != FloorModifier.Blackout && world.Fixtures.Any(f => f.Value == Fixture.WallTorch && GameRules.Dist(p, f.Key) <= 3 && dungeon.Los(p, f.Key)))
             color = color.Lerp(new Color("ffc47a"), .12f + (float)(Math.Sin(time * 6 + p.X) + 1) * .07f);
         return (glyph, color);
     }

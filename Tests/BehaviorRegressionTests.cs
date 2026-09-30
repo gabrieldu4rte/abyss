@@ -17,7 +17,7 @@ internal sealed partial class RegressionSuite
             b.Append($"{game.PlayerState.ClassIndex}|{game.DungeonState.Floor}|{game.PlayerState.Health}|{game.PlayerState.MaxHealth}|{game.PlayerState.Energy}|{game.PlayerState.MaxEnergy}|{game.InventoryState.Potions}|{game.InventoryState.EnergyPotions}|{game.PlayerState.Experience}|{game.PlayerState.Level}|{game.PlayerState.Gold}|{game.RunState.Turn}|{game.RunState.Seed}|{game.PlayerState.Kills}|{game.PlayerState.Attributes}|{game.PlayerState.Position}|{game.DungeonState.Stairs}|{game.DungeonState.StairsRoom}|{game.RunState.Screen}|{game.RunState.IsAiming}|{game.DungeonState.IsMerchantFloor}|{game.DungeonState.MerchantPosition}|{game.MenuState.MerchantQuote}|{game.ExpeditionJournal.LastRollPt}|{game.ExpeditionJournal.LastRollEn}|{game.ExpeditionJournal.LastPotionRoll}|{game.ExpeditionJournal.LastPotionHealing}|{game.VisualEffects.HeroHurtRemaining}|{game.VisualEffects.HeroDamage}|{game.VisualEffects.FocusHold}|{game.MenuState.ShopSelling}|{game.MenuState.ShopIndex}|{game.MenuState.ConfirmYes}|{game.MenuState.ExitYes}|{game.MenuState.InventoryNotice}|{game.MenuState.ShopNotice}\n");
             b.Append($"\nLIGHT:{game.InventoryState.SpareTorches}:{game.InventoryState.TorchFuel}:{game.InventoryState.TorchEquipped}");
             var world = game.DungeonState.Environment;
-            b.Append($"\nWORLD:{world.Biome}:{world.HeroPoisonTurns}");
+            b.Append($"\nWORLD:{game.DungeonState.Modifier}:{world.Biome}:{world.HeroPoisonTurns}");
             foreach (var entry in world.Details.OrderBy(e => e.Key.Y).ThenBy(e => e.Key.X)) b.Append($"\nD:{entry.Key}:{entry.Value}");
             foreach (var entry in world.Fixtures.OrderBy(e => e.Key.Y).ThenBy(e => e.Key.X)) b.Append($"\nX:{entry.Key}:{entry.Value}");
             foreach (var p in world.Oil.OrderBy(p => p.Y).ThenBy(p => p.X)) b.Append($"\nOIL:{p}");
@@ -27,7 +27,7 @@ internal sealed partial class RegressionSuite
                 for (int x = 0; x < GameRules.Width; x++)
                     b.Append($"{game.DungeonState.Tiles[x, y]}{game.DungeonState.Explored[x, y]}{game.DungeonState.Visible[x, y]}");
             foreach (Enemy e in game.DungeonState.Enemies)
-                b.Append($"\nE:{e.Position}|{e.Health}|{e.MaxHealth}|{e.Depth}|{e.Glyph}|{e.Stats}|{e.Alerted}|{e.SearchTurns}|{e.PatrolTarget}|{e.LastSeen}|{e.Hurt}|{e.LastDamage}");
+                b.Append($"\nE:{e.Position}|{e.Health}|{e.MaxHealth}|{e.Depth}|{e.Glyph}|{string.Join(",", e.Titles)}|{e.Stats}|{e.Alerted}|{e.SearchTurns}|{e.PatrolTarget}|{e.LastSeen}|{e.Hurt}|{e.LastDamage}");
             foreach (var item in game.DungeonState.Items.OrderBy(p => p.Key.Y).ThenBy(p => p.Key.X))
                 b.Append($"\nI:{item.Key}:{item.Value}");
             string GearText(Gear? g) => g == null ? "none" : $"{g.Kind}:{g.Quality}:{g.Grade}";

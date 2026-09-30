@@ -32,10 +32,18 @@ internal sealed class HudRenderer
     {
         asciiCanvas.Text(32, 91, localization.Translate($"ANDAR {dungeonState.Floor}", $"FLOOR {dungeonState.Floor}"), UiTheme.Gold, 18);
         asciiCanvas.Text(272, 91, EnvironmentAppearance.Name(dungeonState.Environment.Biome, localization), UiTheme.Teal, 16);
-        asciiCanvas.Text(1012, 91, dungeonState.IsMerchantFloor ? localization.Translate("MERCADOR", "MERCHANT") : localization.Translate("ALVO SELECIONADO", "SELECTED TARGET"), dungeonState.IsMerchantFloor ? UiTheme.Gold : UiTheme.Red, 16);
         var target = visualEffects.FocusEnemy();
+        if (target?.IsElite == true && !dungeonState.IsMerchantFloor)
+        {
+            for (int i = 0; i < target.Titles.Length; i++)
+                asciiCanvas.Text(1012, 85 + i * 20, (i == 0 ? "ELITE / " : "") + FloorEventText.Title(target.Titles[i], localization.English), FloorEventText.TitleColor(target.Titles[i]), 14);
+        }
+        else
+            asciiCanvas.Text(1012, 91, dungeonState.IsMerchantFloor ? localization.Translate("MERCADOR", "MERCHANT") : localization.Translate("ALVO SELECIONADO", "SELECTED TARGET"), dungeonState.IsMerchantFloor ? UiTheme.Gold : UiTheme.Red, 16);
+        if (dungeonState.Modifier != FloorModifier.None)
+            asciiCanvas.Text(650, 91, FloorEventText.Name(dungeonState.Modifier, localization.English), UiTheme.Gold, 13);
         asciiCanvas.Portrait(24, 121, HeroPortrait.Select(playerState), "@ " + localization.ClassName(playerState.ClassIndex), UiTheme.Teal, visualEffects.HeroHurtRemaining, visualEffects.HeroDamage);
-        asciiCanvas.Portrait(1012, 121, dungeonState.IsMerchantFloor ? AsciiArt.Merchant : AsciiArt.Enemy(target?.Glyph ?? '?'), dungeonState.IsMerchantFloor ? localization.Translate("MERCADOR", "MERCHANT") : localization.EnemyName(target?.Glyph ?? '?'), dungeonState.IsMerchantFloor ? UiTheme.Gold : target == null ? UiTheme.Dim : UiTheme.Red, target?.Hurt ?? 0, target?.LastDamage ?? 0);
+        asciiCanvas.Portrait(1012, 121, dungeonState.IsMerchantFloor ? AsciiArt.Merchant : AsciiArt.Enemy(target?.Glyph ?? '?'), dungeonState.IsMerchantFloor ? localization.Translate("MERCADOR", "MERCHANT") : localization.EnemyName(target?.Glyph ?? '?'), dungeonState.IsMerchantFloor ? UiTheme.Gold : target == null ? UiTheme.Dim : target.IsElite ? FloorEventText.TitleColor(target.Titles[0]) : UiTheme.Red, target?.Hurt ?? 0, target?.LastDamage ?? 0);
         asciiCanvas.Text(32, 432, localization.Translate($"VIDA {playerState.Health}/{playerState.MaxHealth}", $"HEALTH {playerState.Health}/{playerState.MaxHealth}"), UiTheme.Red, 15);
         asciiCanvas.Text(32, 453, asciiCanvas.Bar(playerState.Health, playerState.MaxHealth), UiTheme.Red, 16);
         asciiCanvas.Text(32, 481, localization.Translate($"ENERGIA {playerState.Energy}/{playerState.MaxEnergy}", $"ENERGY {playerState.Energy}/{playerState.MaxEnergy}"), UiTheme.Teal, 15);
@@ -51,7 +59,7 @@ internal sealed class HudRenderer
         }
 
         DrawJournalSummary();
-        asciiCanvas.Text(272, 121, runState.Screen == "torch_aim" ? localization.Translate("> TOCHA: WASD / SETAS. ESC cancela.", "> TORCH: WASD / ARROWS. ESC cancels.") : runState.IsAiming ? localization.Translate("> MIRA: WASD / SETAS. ESC cancela.", "> AIM: WASD / ARROWS. ESC cancels.") : dungeonState.IsMerchantFloor ? localization.Translate("[E] Converse ao lado de M. [>] Continue sua jornada.", "[E] Talk next to M. [>] Continue your journey.") : localization.Translate("[>] Encontre a passagem para as profundezas.", "[>] Find the passage into the depths."), runState.IsAiming ? UiTheme.Gold : UiTheme.Teal, 15);
+        asciiCanvas.Text(272, 121, runState.Screen == "torch_aim" ? localization.Translate("> TOCHA: WASD / SETAS. ESC cancela.", "> TORCH: WASD / ARROWS. ESC cancels.") : runState.IsAiming ? localization.Translate("> MIRA: WASD / SETAS. ESC cancela.", "> AIM: WASD / ARROWS. ESC cancels.") : dungeonState.IsMerchantFloor ? localization.Translate("[E] Converse ao lado de M. [>] Continue sua jornada.", "[E] Talk next to M. [>] Continue your journey.") : dungeonState.Modifier != FloorModifier.None ? FloorEventText.Description(dungeonState.Modifier, localization.English) : localization.Translate("[>] Encontre a passagem para as profundezas.", "[>] Find the passage into the depths."), runState.IsAiming ? UiTheme.Gold : UiTheme.Teal, 15);
         var actionFrame = actionEffectsRenderer.GetFrame();
         for (int y = 0; y < GameRules.Height; y++)
             for (int x = 0; x < GameRules.Width; x++)
@@ -73,8 +81,8 @@ internal sealed class HudRenderer
                     var e = dungeonState.At(pos);
                     if (e != null)
                     {
-                        g = e.Glyph;
-                        c = e == target ? UiTheme.Gold : UiTheme.Red;
+                        g = e.IsElite ? char.ToUpperInvariant(e.Glyph) : e.Glyph;
+                        c = e.IsElite ? FloorEventText.TitleColor(e.Titles[0]) : e == target ? UiTheme.Gold : UiTheme.Red;
                         if (e.Hurt > 0)
                             g = UiTheme.ImpactGlyph(e.Hurt);
                     }
@@ -112,7 +120,7 @@ internal sealed class HudRenderer
         asciiCanvas.Text(283, 655, heroCombatStats.CanShoot ? $"[F] {localization.Translate("Basico", "Basic")}  |  {heroCombatStats.ShotCost} EN  |  {heroCombatStats.ShotDice}" : !heroCombatStats.CanMelee ? localization.Translate("[F] Equipe um arco/cajado compativel.", "[F] Equip a compatible bow/staff.") : localization.Translate($"[Mover contra inimigo] Ataque basico: {heroCombatStats.MeleeDice}", $"[Bump into enemy] Basic attack: {heroCombatStats.MeleeDice}"), UiTheme.Ink, 15);
         asciiCanvas.Rule(685);
         asciiCanvas.Text(32, 707, localization.Translate("WASD mover | Q habilidade | P pocao | E interagir | ESPACO esperar | TAB trocar alvo | ESC pausa", "WASD move | Q ability | P potion | E interact | SPACE wait | TAB switch target | ESC pause"), UiTheme.Ink, 15);
-        asciiCanvas.Text(32, 749, localization.Translate("Y tocha fixa   t tocha caida   O barril   o oleo   ^ armadilha   ~ agua   * fogo", "Y fixed torch   t fallen torch   O barrel   o oil   ^ trap   ~ water   * fire"), UiTheme.Dim, 13);
+        asciiCanvas.Text(32, 749, localization.Translate("Y tocha fixa   t tocha caida   O barril   o oleo   ^ espinhos Z choque % esporos V fogo   ~ agua", "Y fixed torch   t fallen torch   O barrel   o oil   ^ spikes Z shock % spores V flame   ~ water"), UiTheme.Dim, 13);
         asciiCanvas.Text(32, 779, localization.Translate("@ voce   |-+ parede   > escada   ! pocao   $ ouro   * cristal   C bau   M mercador", "@ you   |-+ wall   > stairs   ! potion   $ gold   * crystal   C chest   M merchant"), UiTheme.Dim, 13);
     }
 

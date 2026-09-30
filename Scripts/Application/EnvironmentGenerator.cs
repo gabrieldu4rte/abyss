@@ -47,6 +47,6 @@ internal sealed class EnvironmentGenerator(DungeonState dungeon, PlayerState pla
         int barrels = random.NextDouble() < .50 ? (random.NextDouble() < .20 ? 2 : 1) : 0;
         foreach (var p in hazards.Take(barrels)) world.Fixtures[p] = Fixture.OilBarrel;
         int traps = random.NextDouble() < .35 ? (random.NextDouble() < .20 ? 2 : 1) : 0;
-        foreach (var p in hazards.Skip(barrels).Take(traps)) world.Fixtures[p] = Fixture.PoisonTrap;
+        foreach (var p in hazards.Skip(barrels).Take(traps)) world.Fixtures[p] = TrapRules.ForBiome(world.Biome);
     }
 }

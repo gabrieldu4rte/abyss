@@ -30,7 +30,7 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
             if (dungeon.Walk(q) && q != dungeon.Stairs && !Water(q)) World.Oil.Add(q);
         journal.Say("O barril tombou e espalhou oleo pelo chao.", "The barrel tipped over, spilling oil across the floor.");
     }
-    internal void Ignite(Vector2I origin)
+    internal void Ignite(Vector2I origin, bool report = true)
     {
         if (dungeon.IsMerchantFloor || !dungeon.Walk(origin) || Water(origin)) return;
         var pending = new Queue<Vector2I>();
@@ -42,13 +42,13 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
             if (!burning.Add(p) || !dungeon.Walk(p) || Water(p) || p == dungeon.Stairs) continue;
             if (World.Fixtures.TryGetValue(p, out var fixture) && fixture == Fixture.OilBarrel) SpillOil(p);
             bool oil = World.Oil.Remove(p);
-            World.Fire[p] = 4;
+            World.Fire[p] = dungeon.Modifier == FloorModifier.HotDraft ? 6 : 4;
             foreach (var q in GameRules.Directions.Select(d => p + d))
             {
                 if (World.Oil.Contains(q) || (oil && GameRules.Dist(q, origin) <= 2)) pending.Enqueue(q);
             }
         }
-        journal.Say("As chamas se espalham! Afaste-se do oleo.", "Flames spread! Stay clear of the oil.");
+        if (report) journal.Say("As chamas se espalham! Afaste-se do oleo.", "Flames spread! Stay clear of the oil.");
     }
     internal bool ThrowTorch(Vector2I direction)
     {
@@ -82,7 +82,12 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
             journal.Say("Sua tocha se apagou. Acenda outra no inventario.", "Your torch burned out. Light another in your inventory.");
         }
         TriggerTrap(player.Position, null);
-        foreach (var enemy in dungeon.Enemies.ToArray()) TriggerTrap(enemy.Position, enemy);
+        if (player.Health <= 0) return;
+        foreach (var enemy in dungeon.Enemies.ToArray())
+        {
+            if (player.Health <= 0) return;
+            if (enemy.Health > 0 && dungeon.Enemies.Contains(enemy)) TriggerTrap(enemy.Position, enemy);
+        }
         if (World.Fire.ContainsKey(player.Position)) HurtHero(FireDamage, "Fogo", "Fire");
         if (World.HeroPoisonTurns > 0 && player.Health > 0)
         {
@@ -98,7 +103,7 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
                 if (remaining <= 1) World.PoisonedEnemies.Remove(enemy); else World.PoisonedEnemies[enemy] = remaining - 1;
             }
             if (damage == 0) continue;
-            journal.Say($"Ambiente -> {Localization.MonsterName(enemy.Glyph, false)}: {damage} dano.", $"Environment -> {Localization.MonsterName(enemy.Glyph, true)}: {damage} damage.");
+            journal.Say($"Ambiente -> {FloorEventText.EnemyName(enemy, false)}: {damage} dano.", $"Environment -> {FloorEventText.EnemyName(enemy, true)}: {damage} damage.");
             combat.Hit(enemy, damage, false);
         }
         foreach (var enemy in World.PoisonedEnemies.Keys.Where(e => !dungeon.Enemies.Contains(e)).ToArray()) World.PoisonedEnemies.Remove(enemy);
@@ -108,10 +113,32 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
     private int FireDamage => 3 + Math.Min(5, GameRules.CycleIndex(dungeon.Floor));
     private void TriggerTrap(Vector2I p, Enemy? enemy)
     {
-        if (!World.Fixtures.TryGetValue(p, out var fixture) || fixture != Fixture.PoisonTrap) return;
+        if (!World.Fixtures.TryGetValue(p, out var fixture) || !TrapRules.IsTrap(fixture)) return;
         World.Fixtures[p] = Fixture.SpentTrap;
-        if (enemy == null) World.HeroPoisonTurns = 3; else World.PoisonedEnemies[enemy] = 3;
-        journal.Say("Uma armadilha libera veneno!", "A trap releases poison!");
+        int bonus = Math.Min(4, GameRules.CycleIndex(dungeon.Floor));
+        switch (fixture)
+        {
+            case Fixture.PoisonTrap:
+                if (enemy == null) World.HeroPoisonTurns = 3; else World.PoisonedEnemies[enemy] = 3;
+                journal.Say("Esporos venenosos escapam da armadilha!", "Poisonous spores escape the trap!");
+                break;
+            case Fixture.SpikeTrap:
+                journal.Say("Espinhos saltam do piso!", "Spikes spring from the floor!");
+                if (enemy == null) HurtHero(5 + bonus, "Espinhos", "Spikes");
+                else combat.Hit(enemy, 5 + bonus, false);
+                break;
+            case Fixture.ShockTrap:
+                journal.Say("Uma descarga atinge as casas adjacentes!", "A discharge strikes adjacent cells!");
+                if (GameRules.Dist(player.Position, p) <= 1 && dungeon.Los(p, player.Position)) HurtHero(3 + bonus, "Descarga", "Discharge");
+                if (player.Health <= 0) return;
+                foreach (var target in dungeon.Enemies.Where(e => GameRules.Dist(e.Position, p) <= 1 && dungeon.Los(p, e.Position)).ToArray()) combat.Hit(target, 3 + bonus, false);
+                break;
+            case Fixture.FlameTrap:
+                journal.Say("Um jato de fogo irrompe do piso!", "A jet of flame erupts from the floor!");
+                foreach (var q in new[] { p }.Concat(GameRules.Directions.Select(d => p + d)))
+                    if (dungeon.Walk(q) && q != dungeon.Stairs && !Water(q)) Ignite(q, false);
+                break;
+        }
     }
     private void HurtHero(int damage, string pt, string en)
     {

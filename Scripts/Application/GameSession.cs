@@ -44,6 +44,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
     internal JournalFormatter JournalFormatter { get; }
     internal Localization Localization { get; }
     internal EnemyNavigator EnemyNavigator { get; }
+    internal FloorEventGenerator FloorEventGenerator { get; }
     internal EnvironmentGenerator EnvironmentGenerator { get; }
     internal EnvironmentService EnvironmentService { get; }
 
@@ -68,9 +69,10 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         ActionEffectsRenderer = new ActionEffectsRenderer(AsciiCanvas, DungeonState, VisualEffects.Actions);
         HudRenderer = new HudRenderer(AsciiCanvas, DungeonState, ExpeditionJournal, HeroCombatStats, InventoryState, Localization, PlayerState, RunState, VisualEffects, ActionEffectsRenderer);
         CombatService = new CombatService(DungeonState, ExpeditionJournal, HeroCombatStats, InventoryState, Localization, LootService, PlayerState, ProgressionService, RunState, VisualEffects, RandomStream);
+        FloorEventGenerator = new FloorEventGenerator(DungeonState, PlayerState, RunState, ExpeditionJournal);
         EnvironmentGenerator = new EnvironmentGenerator(DungeonState, PlayerState, RunState);
         EnvironmentService = new EnvironmentService(DungeonState, InventoryState, PlayerState, RunState, ExpeditionJournal, CombatService, VisualEffects);
-        DungeonGenerator = new DungeonGenerator(DungeonState, ExpeditionJournal, LootService, MenuState, MerchantState, PlayerState, VisualEffects, RandomStream, InventoryState, EnvironmentGenerator);
+        DungeonGenerator = new DungeonGenerator(DungeonState, ExpeditionJournal, LootService, MenuState, MerchantState, PlayerState, VisualEffects, RandomStream, InventoryState, EnvironmentGenerator, FloorEventGenerator);
         UiComponents = new UiComponents(AsciiCanvas, Localization, MenuState);
         MerchantRenderer = new MerchantRenderer(AsciiCanvas, InventoryState, Localization, MenuState, MerchantService, PlayerState, UiComponents);
         PauseRenderer = new PauseRenderer(AsciiCanvas, DungeonState, ExpeditionJournal, HeroCombatStats, InventoryRenderer, InventoryState, JournalFormatter, Localization, MenuState, PlayerState, UiComponents);
@@ -173,7 +175,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         }
 
         if (PlayerState.Health > 0) EnvironmentService.Tick();
-        if (RunState.Turn % 6 == 0)
+        if (RunState.Turn % (DungeonState.Modifier == FloorModifier.ThinAir ? 12 : 6) == 0)
             PlayerState.Energy = Math.Min(PlayerState.MaxEnergy, PlayerState.Energy + 1);
         DungeonGenerator.Reveal();
     }

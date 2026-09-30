@@ -90,6 +90,7 @@ State is owned by a session rather than static global variables. Mutable collect
 | `LootService` | Chest contents, rarity rolls, enemy gold, equipment rewards |
 | `DungeonGenerator` | Procedural floors, merchant rooms, visibility updates |
 | `EnvironmentGenerator` | Seeded biome details and safe fixture placement |
+| `FloorEventGenerator` | Independent rare floor modifiers and single-elite promotion |
 | `EnvironmentService` | Torch throwing, barrel spills, ignition, poison, and turn-based fuel |
 | `EnemyAi` | Dispatch to registered enemy behavior policies |
 | `EnemyNavigator` | Occupancy-aware breadth-first pathfinding |
@@ -152,7 +153,7 @@ Trade uses the same gear objects as the inventory. Equipped-item identity is pre
 
 ### Generation and visuals
 
-Every five-floor cycle changes the biome in this repeating order: Ancient Ruins, Forgotten Cisterns, Fungal Caves, Ember Forges. Terrain remains walkable and the existing room/corridor connectivity is preserved. Water appears on 65% of cistern floors and 25% of other floors, in one small patch (occasionally two in cisterns). Barrels appear on 50% of floors and poison traps on 35%, with at most two of each. Merchant rooms have no pools or hazards. These features are optional, leaving most rooms clear. Each biome has its own palette and details: rubble and bones, connected shallow pools, fungi, or ash. Wall edges use ASCII outlines. Water ripples, torch flames, fire, and warm lighting animate using glyphs and color changes only.
+Every five-floor cycle changes the biome in this repeating order: Ancient Ruins, Forgotten Cisterns, Fungal Caves, Ember Forges. Terrain remains walkable and the existing room/corridor connectivity is preserved. Water appears on 65% of cistern floors and 25% of other floors, in one small patch (occasionally two in cisterns). Barrels appear on 50% of floors and biome traps on 35%, with at most two of each. Merchant rooms have no pools or hazards. These features are optional, leaving most rooms clear. Each biome has its own palette and details: rubble and bones, connected shallow pools, fungi, or ash. Wall edges use ASCII outlines. Water ripples, torch flames, fire, and warm lighting animate using glyphs and color changes only.
 
 `EnvironmentGenerator` uses a separate random stream derived from the expedition seed and floor, so cosmetic generation does not consume combat or loot rolls. Fixtures avoid the player, stairs, enemies, and pickups at generation time. Hazard placement also avoids the arrival area. Merchant rooms contain decorative details and collectible lights, with no generated barrels or traps; ignition is disabled in the refuge.
 
@@ -169,9 +170,33 @@ Every five-floor cycle changes the biome in this repeating order: Ancient Ruins,
 
 - Hitting an oil barrel (`O`) spills oil (`o`) onto its tile and adjacent dry walkable tiles. A thrown torch ignites it; connected oil and nearby barrels can chain together. Water and walls stop propagation. Stairs remain protected.
 - Fire lasts four completed turns and deals `3 + min(5, cycleIndex)` damage per affected actor per turn, including the ignition turn. It can hurt both the player and enemies.
-- Poison traps (`^`) trigger once under either actor, become spent (`_`), and inflict 2 damage for three turns, including activation. Poison continues after leaving the trap or changing floors.
+- Each biome has one trap type, always single-use under either actor: ruin spikes (`^`) deal `5 + min(4, cycleIndex)` direct damage; cistern discharges (`Z`) deal `3 + min(4, cycleIndex)` to the triggering cell and adjacent actors in line of sight; fungal spores (`%`) deal 2 poison damage for three turns; forge jets (`V`) ignite a cross of dry floor cells. Triggered plates become spent (`_`). Poison continues after leaving the trap or changing floors. Flames obey the normal water, wall and stair safeguards.
 - Environmental effects resolve once after enemy actions, followed by a visibility refresh. Environmental enemy kills use the normal defeat/reward path exactly once. Lethal environmental damage ends the expedition.
 - Wall torches, barrel spills, and hazards are separate from the base map tiles. `EnvironmentAppearance` samples their visual state without advancing turns or changing resources.
+
+## Rare enemies and floor modifiers
+
+`FloorEventGenerator` runs after normal content and environment placement, using its own stream derived from the run seed and depth. It never adds rare events to merchant refuges. The modifier and elite rolls are independent.
+
+### Elite encounters
+
+Each ordinary or guardian floor has an 8% chance to promote one existing non-boss enemy. Promotion is limited to one elite per generated floor; Wardens retain their existing role and stats. Elites have 40% more health (rounded up), +1 attack, +1 defense and +1 damage. One or two unique titles are selected from Cruel, Ironbound, Relentless, Dread, Profane and Ancient. Titles have distinct colors; elites use uppercase map glyphs and a colored portrait frame. Combat and reward logs identify their titles.
+
+Defeating an elite has a 35% chance to grant one equipment item of Rare quality or better, using the depth-scaled rare-or-better rarity distribution. Environmental kills use the same reward path. Repeated damage against an already defeated enemy cannot duplicate rewards. The elite still awards normal species experience and gold.
+
+### Floor variants
+
+There is a 12% total chance for one floor modifier, selected from eligible variants:
+
+| Variant | Effect |
+| --- | --- |
+| Lightless Depths | Sight radius is two cells, regardless of equipped torches, fixed lights or fire; walls still occlude sight. |
+| Infestation | Every regular enemy is the same randomly selected species. This variant is excluded from natural guardian-floor generation. |
+| Hot Draft | Newly ignited fire lasts six turns instead of four. |
+| Thin Air | Natural energy recovery occurs every twelve turns instead of six; active waiting and consumables keep their normal effects. |
+| Hidden Caches | Up to two additional chests are placed on unoccupied, reachable floor cells away from arrival and stairs. |
+
+The HUD and entry journal describe the modifier in the selected language. Effects are scoped to their floor and reset on generation of the next floor. The adventure compendium includes the biome traps, elites and altered lands.
 
 ## Startup and screen transitions
 
@@ -218,6 +243,7 @@ Coverage includes:
 - Skill/projectile animation lifecycle, shot directions, wall/range clipping, fog, and cosmetic-only timing.
 - Localized introduction timing, skip/continue, automatic completion, bidirectional fades, transition input gating, and quit confirmation.
 - Platform-port substitution, AI policy dispatch, and architectural dependency boundaries.
+- 800 rare-generation scenarios plus four trap effects, five floor variants, title/color diversity, elite stat bonuses, optional rare rewards, and safe guardian/refuge handling.
 - 420 environmental generation scenarios plus torch lifetime, lighting/occlusion, inventory-only throwing, safe rooms, fire chains, water, poison, environmental defeat, and torch economy.
 - Frozen environmental gameplay checkpoints covering maps, actions, rewards, inventory, light, terrain, hazards, logs, effects, and merchant transactions. The original 1,273 pre-refactor checkpoints remain archived in `Tests/Fixtures/behavior.sha256`.
 
@@ -244,6 +270,7 @@ Flags after `--` are handled by the game:
 - `--freeze-animation`: with capture, disable frame processing for repeatable visual comparisons.
 - `--action-demo=warrior|mage|archer|rogue|bolt|arrow`: preview an outgoing action in a deterministic room.
 - `--effect-time=SECONDS`: advance the action preview to a specific animation time before capture.
+- `--rare-demo=None|Blackout|Infestation|HotDraft|ThinAir|HiddenCache`: preview a floor variant with a visible elite.
 - `--critical-demo=0|1|2|3`: preview a critically injured warrior, mage, archer, or rogue; supports `--view=pause` and `--view=dead`.
 - `--biome-demo=0|1|2|3`: seeded full-map environmental preview (diagnostics only).
 - `--fog-demo` / `--dark-demo`: use ordinary torch visibility or reduced unlit visibility in a biome preview.

@@ -166,7 +166,7 @@ internal sealed partial class RegressionSuite
         for (int seed = 1; seed <= 100; seed++)
         {
             game.Start(seed);
-            if (game.InventoryState.Potions != 5 || game.DungeonState.Items.Values.Count(g => g == '!') > 1 || game.DungeonState.Items.Values.Count(g => g == '*') > 1 || game.DungeonState.Items.Values.Count(g => g == '$') != 2 || game.DungeonState.Items.Values.Count(g => g == 'C') > 1)
+            if (game.InventoryState.Potions != 5 || game.DungeonState.Items.Values.Count(g => g == '!') > 1 || game.DungeonState.Items.Values.Count(g => g == '*') > 1 || game.DungeonState.Items.Values.Count(g => g == '$') != 2 || game.DungeonState.Items.Values.Count(g => g == 'C') > (game.DungeonState.Modifier == FloorModifier.HiddenCache ? 3 : 1))
                 throw new Exception("Loot scarcity failed");
         }
 

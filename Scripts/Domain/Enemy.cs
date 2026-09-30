@@ -1,9 +1,20 @@
 using Godot;
+using System;
+using System.Linq;
 using static Abyss.Rules.TabletopRules;
 
 namespace Abyss.Domain;
 internal sealed class Enemy
 {
+    internal EliteTitle[] Titles { get; private set; } = Array.Empty<EliteTitle>();
+    internal bool IsElite => Titles.Length > 0;
+    internal void PromoteElite(params EliteTitle[] titles)
+    {
+        if (IsElite || Glyph == 'B' || titles.Length == 0) return;
+        Titles = titles.Distinct().Take(2).ToArray();
+        MaxHealth = (int)Math.Ceiling(MaxHealth * 1.4);
+        Health = MaxHealth;
+    }
     public Vector2I Position { get; set; }
     public int Health { get; set; }
     public int MaxHealth { get; set; }
@@ -19,10 +30,10 @@ internal sealed class Enemy
     public int Tier => (Depth - 1) / 5;
     public int Training => 1 + Tier / 2;
     public int CombatModifier => Glyph is 'r' or 'g' ? Stats.Dex : Stats.Str;
-    public int AttackBonus => Training + CombatModifier;
+    public int AttackBonus => Training + CombatModifier + (IsElite ? 1 : 0);
     public int ArmorClass => (Glyph == 'B' ? 13 : Glyph == 's' ? 11 : 10) + Tier / 3;
-    public int Armor => ArmorClass + Stats.Con;
-    public DamageDice Dice => new(Glyph == 'B' ? 2 : 1, Glyph is 'B' or 'r' ? 3 : 4, CombatModifier + Tier * (Glyph == 'B' ? 2 : 1));
+    public int Armor => ArmorClass + Stats.Con + (IsElite ? 1 : 0);
+    public DamageDice Dice => new(Glyph == 'B' ? 2 : 1, Glyph is 'B' or 'r' ? 3 : 4, CombatModifier + Tier * (Glyph == 'B' ? 2 : 1) + (IsElite ? 1 : 0));
 
     public Enemy(Vector2I p, char glyph, int depth)
     {

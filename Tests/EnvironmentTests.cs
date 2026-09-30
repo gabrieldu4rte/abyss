@@ -14,6 +14,7 @@ internal sealed partial class RegressionSuite
         {
             g.Start(731);
             g.DungeonState.Enemies.Clear(); g.DungeonState.Items.Clear(); world.Clear();
+            g.DungeonState.Modifier = FloorModifier.None;
             for (int x = 1; x < GameRules.Width - 1; x++)
                 for (int y = 1; y < GameRules.Height - 1; y++) g.DungeonState.Tiles[x, y] = '.';
             g.DungeonState.Stairs = new Vector2I(60, 25);
@@ -31,11 +32,14 @@ internal sealed partial class RegressionSuite
                     Assert(g.DungeonState.Walk(fixture.Key) && fixture.Key != g.DungeonState.Stairs && fixture.Key != g.PlayerState.Position && !g.DungeonState.Items.ContainsKey(fixture.Key) && g.DungeonState.At(fixture.Key) == null, "Environment overlaps reserved content.");
                 int water = world.Details.Count(d => d.Value == '~');
                 int barrels = world.Fixtures.Count(f => f.Value == Fixture.OilBarrel);
-                int traps = world.Fixtures.Count(f => f.Value == Fixture.PoisonTrap);
+                int traps = world.Fixtures.Count(f => TrapRules.IsTrap(f.Value));
                 Assert(water <= (world.Biome == Biome.Cistern ? 26 : 13) && barrels <= 2 && traps <= 2, "Environmental density exceeds sparse generation limits.");
                 if (water == 0) dryFloors++;
                 if (barrels == 0) barrelFreeFloors++;
                 if (traps == 0) trapFreeFloors++;
+                Assert(world.Fixtures.Values.Where(TrapRules.IsTrap).All(f => f == TrapRules.ForBiome(world.Biome)), "Trap does not match its biome.");
+                
+                g.EnvironmentGenerator.Generate();
                 var first = string.Join(";", world.Details) + string.Join(";", world.Fixtures);
                 g.EnvironmentGenerator.Generate();
                 Assert(first == string.Join(";", world.Details) + string.Join(";", world.Fixtures), "Environment generation is not deterministic.");

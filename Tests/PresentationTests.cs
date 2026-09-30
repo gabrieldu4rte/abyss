@@ -167,7 +167,7 @@ internal sealed partial class RegressionSuite
         game.GameInput.HandleKey(Key.Key4);
         if (game.MenuState.PauseTab != 3)
             throw new Exception("Help tab order failed");
-        for (int topic = 0; topic < 8; topic++)
+        for (int topic = 0; topic < 9; topic++)
         {
             game.MenuState.HelpTopic = topic;
             foreach (bool language in new[]

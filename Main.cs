@@ -23,6 +23,7 @@ public partial class Main : Node2D
 			SetProcessUnhandledKeyInput(false);
 		new LaunchScenarios(game).Configure(args);
         EnvironmentPreview.Configure(game, args);
+        RareEncounterPreview.Configure(game, args);
         game.Transitions.Enabled = capture == null;
         if (!args.Any(a => a.StartsWith("--view=") || a.Contains("demo")) || args.Contains("--view=intro"))
             game.OpeningStory.Begin();

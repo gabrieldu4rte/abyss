@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Abyss.Domain;
 internal enum Biome { Ruins, Cistern, FungalCaves, EmberForge }
-internal enum Fixture { OilBarrel, WallTorch, PoisonTrap, SpentTrap }
+internal enum Fixture { OilBarrel, WallTorch, PoisonTrap, SpentTrap, SpikeTrap, ShockTrap, FlameTrap }
 internal sealed class EnvironmentState
 {
     internal Biome Biome { get; set; }

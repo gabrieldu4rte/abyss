@@ -6,6 +6,7 @@ using System.Collections.Generic;
 namespace Abyss.Application;
 internal sealed class DungeonGenerator
 {
+    private readonly FloorEventGenerator floorEvents;
     private readonly InventoryState inventoryState;
     private readonly EnvironmentGenerator environmentGenerator;
     private readonly DungeonState dungeonState;
@@ -16,10 +17,11 @@ internal sealed class DungeonGenerator
     private readonly PlayerState playerState;
     private readonly VisualEffects visualEffects;
     private readonly RandomStream random;
-    internal DungeonGenerator(DungeonState dungeonState, ExpeditionJournal expeditionJournal, LootService lootService, MenuState menuState, MerchantState merchantState, PlayerState playerState, VisualEffects visualEffects, RandomStream random, InventoryState inventoryState, EnvironmentGenerator environmentGenerator)
+    internal DungeonGenerator(DungeonState dungeonState, ExpeditionJournal expeditionJournal, LootService lootService, MenuState menuState, MerchantState merchantState, PlayerState playerState, VisualEffects visualEffects, RandomStream random, InventoryState inventoryState, EnvironmentGenerator environmentGenerator, FloorEventGenerator floorEvents)
     {
         this.dungeonState = dungeonState;
         this.inventoryState = inventoryState;
+        this.floorEvents = floorEvents;
         this.environmentGenerator = environmentGenerator;
         this.expeditionJournal = expeditionJournal;
         this.lootService = lootService;
@@ -35,6 +37,7 @@ internal sealed class DungeonGenerator
     internal void GenerateMerchantRoom()
     {
         dungeonState.IsMerchantFloor = true;
+        dungeonState.Modifier = FloorModifier.None;
         dungeonState.Enemies.Clear();
         dungeonState.Items.Clear();
         visualEffects.ResetEffects();
@@ -75,6 +78,7 @@ internal sealed class DungeonGenerator
             for (int y = 0; y < GameRules.Height; y++)
                 dungeonState.Tiles[x, y] = '#';
         dungeonState.IsMerchantFloor = false;
+        dungeonState.Modifier = FloorModifier.None;
         merchantState.MerchantStock.Clear();
         menuState.PendingTrade = null;
         if (merchantOverride ?? (MerchantEligible && random.Generator.NextDouble() < .10))
@@ -158,6 +162,7 @@ internal sealed class DungeonGenerator
         }
 
         environmentGenerator.Generate();
+        floorEvents.Generate();
         Reveal();
     }
 
@@ -170,8 +175,10 @@ internal sealed class DungeonGenerator
             for (int x = 0; x < GameRules.Width; x++)
             {
                 var p = new Vector2I(x, y);
-                if ((p - playerState.Position).LengthSquared() <= 100 &&
-                    (inventoryState.HasLight || (p - playerState.Position).LengthSquared() <= 9 || lights.Any(light => GameRules.Dist(light, p) <= 2 && dungeonState.Los(light, p))) &&
+                if ((dungeonState.Modifier == FloorModifier.Blackout
+                    ? (p - playerState.Position).LengthSquared() <= 4
+                    : (p - playerState.Position).LengthSquared() <= 100 &&
+                    (inventoryState.HasLight || (p - playerState.Position).LengthSquared() <= 9 || lights.Any(light => GameRules.Dist(light, p) <= 2 && dungeonState.Los(light, p)))) &&
                     dungeonState.Los(playerState.Position, p))
                     dungeonState.Explored[x, y] = dungeonState.Visible[x, y] = true;
             }

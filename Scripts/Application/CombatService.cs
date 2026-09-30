@@ -54,7 +54,7 @@ internal sealed class CombatService
         expeditionJournal.LastRollEn = $"You: {total}";
         if (!roll.Hit)
         {
-            expeditionJournal.Say($"Voce -> {Localization.MonsterName(enemy.Glyph, false)}: {total}. Errou.", $"You -> {Localization.MonsterName(enemy.Glyph, true)}: {total}. You miss.");
+            expeditionJournal.Say($"Voce -> {FloorEventText.EnemyName(enemy, false)}: {total}. Errou.", $"You -> {FloorEventText.EnemyName(enemy, true)}: {total}. You miss.");
             return;
         }
 
@@ -69,7 +69,7 @@ internal sealed class CombatService
                 playerState.Health = Math.Min(playerState.MaxHealth, playerState.Health + Math.Min(2, Math.Max(0, enemy.Health)));
         }
 
-        expeditionJournal.Say($"Voce -> {Localization.MonsterName(enemy.Glyph, false)}: {total}. {(roll.Critical ? "CRITICO! " : "")}{damage} dano ({dice}).", $"You -> {Localization.MonsterName(enemy.Glyph, true)}: {total}. {(roll.Critical ? "CRITICAL! " : "")}{damage} damage ({dice}).");
+        expeditionJournal.Say($"Voce -> {FloorEventText.EnemyName(enemy, false)}: {total}. {(roll.Critical ? "CRITICO! " : "")}{damage} dano ({dice}).", $"You -> {FloorEventText.EnemyName(enemy, true)}: {total}. {(roll.Critical ? "CRITICAL! " : "")}{damage} damage ({dice}).");
         Hit(enemy, damage, false);
     }
 
@@ -81,28 +81,29 @@ internal sealed class CombatService
             return;
         var roll = ResolveAttack(random.Generator.Next(1, 21), enemy.AttackBonus, heroCombatStats.Defense + (evade ? 4 : 0));
         string total = $"d20({roll.Natural}){UiTheme.Signed(roll.Bonus)}={roll.Total} vs {roll.Defense}";
-        expeditionJournal.LastRollPt = $"{Localization.MonsterName(enemy.Glyph, false)}: {total}";
-        expeditionJournal.LastRollEn = $"{Localization.MonsterName(enemy.Glyph, true)}: {total}";
+        expeditionJournal.LastRollPt = $"{FloorEventText.EnemyName(enemy, false)}: {total}";
+        expeditionJournal.LastRollEn = $"{FloorEventText.EnemyName(enemy, true)}: {total}";
         if (!roll.Hit)
         {
-            expeditionJournal.Say($"{Localization.MonsterName(enemy.Glyph, false)} -> voce: {total}. Errou.", $"{Localization.MonsterName(enemy.Glyph, true)} -> you: {total}. Missed.");
+            expeditionJournal.Say($"{FloorEventText.EnemyName(enemy, false)} -> voce: {total}. Errou.", $"{FloorEventText.EnemyName(enemy, true)} -> you: {total}. Missed.");
             return;
         }
 
         int damage = Math.Max(1, RollDamage(random.Generator, enemy.Dice, roll.Critical) - inventoryState.DamageReduction);
         playerState.Health = Math.Max(0, playerState.Health - damage);
         visualEffects.HeroHurt(enemy, damage);
-        expeditionJournal.Say($"{Localization.MonsterName(enemy.Glyph, false)} -> voce: {total}. {(roll.Critical ? "CRITICO! " : "")}-{damage} PV.", $"{Localization.MonsterName(enemy.Glyph, true)} -> you: {total}. {(roll.Critical ? "CRITICAL! " : "")}-{damage} HP.");
+        expeditionJournal.Say($"{FloorEventText.EnemyName(enemy, false)} -> voce: {total}. {(roll.Critical ? "CRITICO! " : "")}-{damage} PV.", $"{FloorEventText.EnemyName(enemy, true)} -> you: {total}. {(roll.Critical ? "CRITICAL! " : "")}-{damage} HP.");
         if (playerState.Health == 0)
             runState.Screen = "dead";
     }
 
     internal void Hit(Enemy e, int damage, bool report = true)
     {
+        if (e.Health <= 0) return;
         e.Health -= damage;
         visualEffects.EnemyHurt(e, damage);
         if (report)
-            expeditionJournal.Say($"Voce atinge {Localization.MonsterName(e.Glyph, false)} por {damage}.", $"You hit {Localization.MonsterName(e.Glyph, true)} for {damage} damage.");
+            expeditionJournal.Say($"Voce atinge {FloorEventText.EnemyName(e, false)} por {damage}.", $"You hit {FloorEventText.EnemyName(e, true)} for {damage} damage.");
         if (e.Health > 0)
             return;
         dungeonState.Enemies.Remove(e);
@@ -113,8 +114,13 @@ internal sealed class CombatService
         playerState.Gold += goldReward;
         int reward = GameRules.EnemyXp(e.Glyph, e.Depth);
         if (goldReward > 0)
-            expeditionJournal.Say($"{Localization.MonsterName(e.Glyph, false)} deixou {goldReward} ouro.", $"{Localization.MonsterName(e.Glyph, true)} dropped {goldReward} gold.");
-        expeditionJournal.Say($"{Localization.MonsterName(e.Glyph, false)} derrotado. +{reward} XP.", $"{Localization.MonsterName(e.Glyph, true)} defeated. +{reward} XP.");
+            expeditionJournal.Say($"{FloorEventText.EnemyName(e, false)} deixou {goldReward} ouro.", $"{FloorEventText.EnemyName(e, true)} dropped {goldReward} gold.");
+        expeditionJournal.Say($"{FloorEventText.EnemyName(e, false)} derrotado. +{reward} XP.", $"{FloorEventText.EnemyName(e, true)} defeated. +{reward} XP.");
+        if (e.IsElite && random.Generator.NextDouble() < .35)
+        {
+            var eliteLoot = lootService.DropEquipment(e.Depth, true);
+            expeditionJournal.Say($"Elite: {localization.GearNameFor(eliteLoot, false)}.", $"Elite: {localization.GearNameFor(eliteLoot, true)}.");
+        }
         if (e.Glyph == 'B')
         {
             inventoryState.Potions++;
