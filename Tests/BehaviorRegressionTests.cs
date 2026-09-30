@@ -27,7 +27,7 @@ internal sealed partial class RegressionSuite
                 for (int x = 0; x < GameRules.Width; x++)
                     b.Append($"{game.DungeonState.Tiles[x, y]}{game.DungeonState.Explored[x, y]}{game.DungeonState.Visible[x, y]}");
             foreach (Enemy e in game.DungeonState.Enemies)
-                b.Append($"\nE:{e.Position}|{e.Health}|{e.MaxHealth}|{e.Depth}|{e.Glyph}|{string.Join(",", e.Titles)}|{e.Stats}|{e.Alerted}|{e.SearchTurns}|{e.PatrolTarget}|{e.LastSeen}|{e.Hurt}|{e.LastDamage}");
+                b.Append($"\nE:{e.Position}|{e.Health}|{e.MaxHealth}|{e.Depth}|{e.Glyph}|{string.Join(",", e.Titles)}|{e.Stats}|{e.Alerted}|{e.SearchTurns}|{e.PatrolTarget}|{e.LastSeen}|{e.Hurt}|{e.LastDamage}|{e.AbilityEnergy}|{e.AbilityCooldown}|{e.AbilityWindup}|{string.Join(";", e.AbilityCells.OrderBy(p => p.Y).ThenBy(p => p.X))}");
             foreach (var item in game.DungeonState.Items.OrderBy(p => p.Key.Y).ThenBy(p => p.Key.X))
                 b.Append($"\nI:{item.Key}:{item.Value}");
             string GearText(Gear? g) => g == null ? "none" : $"{g.Kind}:{g.Quality}:{g.Grade}";

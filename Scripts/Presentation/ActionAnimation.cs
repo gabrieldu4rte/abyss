@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Abyss.Presentation;
 
-internal enum ActionAnimationKind { Whirlwind, ArcaneNova, PiercingArrow, ShadowStep, ArcaneBolt, Arrow, Torch }
+internal enum ActionAnimationKind { Whirlwind, ArcaneNova, PiercingArrow, ShadowStep, ArcaneBolt, Arrow, Torch, SeismicImpact, FloodWave, SporeBurst, FurnaceCross }
 internal readonly record struct ActionGlyph(Vector2I Position, char Character, Color Color);
 
 internal sealed class ActionAnimation
@@ -18,7 +18,7 @@ internal sealed class ActionAnimation
     internal int Radius { get; }
     internal double Elapsed { get; private set; }
     internal double TravelTime => Math.Clamp((Path.Count - 1) * .07, .18, .65);
-    internal double Duration => Kind is ActionAnimationKind.Whirlwind or ActionAnimationKind.ArcaneNova ? .85 : TravelTime + .22;
+    internal double Duration => Kind >= ActionAnimationKind.SeismicImpact ? .95 : Kind is ActionAnimationKind.Whirlwind or ActionAnimationKind.ArcaneNova ? .85 : TravelTime + .22;
     internal bool Finished => Elapsed >= Duration;
 
     internal ActionAnimation(ActionAnimationKind kind, Vector2I origin, IEnumerable<Vector2I> path,
@@ -41,6 +41,9 @@ internal sealed class ActionAnimation
         var color = Kind switch
         {
             ActionAnimationKind.ArcaneNova or ActionAnimationKind.ArcaneBolt => new Color("b994ff"),
+            ActionAnimationKind.FloodWave => new Color("70cfff"),
+            ActionAnimationKind.SporeBurst => new Color("b5e87a"),
+            ActionAnimationKind.FurnaceCross => new Color("ff8844"),
             ActionAnimationKind.Torch => new Color("ffac55"),
             ActionAnimationKind.ShadowStep => new Color("bd85de"),
             ActionAnimationKind.PiercingArrow => new Color("8ff0c5"),
@@ -73,6 +76,24 @@ internal sealed class ActionAnimation
                 foreach (var target in Targets)
                     if (Elapsed >= Math.Max(0, (GameRules.Dist(Origin, target) - .6) / Radius * .65))
                         yield return new(target, '*', color);
+            yield break;
+        }
+
+        if (Kind >= ActionAnimationKind.SeismicImpact)
+        {
+            int phase = (int)(Elapsed * 15);
+            foreach (var target in Targets)
+            {
+                int distance = GameRules.Dist(Origin, target);
+                if (Kind != ActionAnimationKind.SporeBurst && Elapsed < distance * .065) continue;
+                string ramp = Kind switch {
+                    ActionAnimationKind.SeismicImpact => "#:+.",
+                    ActionAnimationKind.FloodWave => "~=~-",
+                    ActionAnimationKind.SporeBurst => "%*.:",
+                    _ => "^*+^"
+                };
+                yield return new(target, ramp[(phase + distance + target.X + target.Y) % ramp.Length], color);
+            }
             yield break;
         }
 

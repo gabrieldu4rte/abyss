@@ -17,7 +17,8 @@ internal sealed class FloorEventGenerator(DungeonState dungeon, PlayerState play
         dungeon.Modifier = modifier;
         if (modifier == FloorModifier.Infestation)
         {
-            char glyph = "rsg"[random.Next(3)];
+            string roster = EnemyCatalog.Roster(dungeon.Floor);
+            char glyph = roster[random.Next(roster.Length)];
             for (int i = 0; i < dungeon.Enemies.Count; i++)
                 if (dungeon.Enemies[i].Glyph != 'B') dungeon.Enemies[i] = new Enemy(dungeon.Enemies[i].Position, glyph, dungeon.Floor);
         }

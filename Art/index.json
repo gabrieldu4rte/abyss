@@ -124,5 +124,77 @@
     "rows": 60,
     "source": "rogue_critical.png",
     "file": "rogue_critical.txt"
+  },
+  "revenant": {
+    "columns": 100,
+    "rows": 60,
+    "source": "revenant.png",
+    "file": "revenant.txt"
+  },
+  "drowned": {
+    "columns": 100,
+    "rows": 60,
+    "source": "drowned.png",
+    "file": "drowned.txt"
+  },
+  "leech": {
+    "columns": 100,
+    "rows": 60,
+    "source": "leech.png",
+    "file": "leech.txt"
+  },
+  "sporeling": {
+    "columns": 100,
+    "rows": 60,
+    "source": "sporeling.png",
+    "file": "sporeling.txt"
+  },
+  "cave_crawler": {
+    "columns": 100,
+    "rows": 60,
+    "source": "cave_crawler.png",
+    "file": "cave_crawler.txt"
+  },
+  "myconid": {
+    "columns": 100,
+    "rows": 60,
+    "source": "myconid.png",
+    "file": "myconid.txt"
+  },
+  "cinder_hound": {
+    "columns": 100,
+    "rows": 60,
+    "source": "cinder_hound.png",
+    "file": "cinder_hound.txt"
+  },
+  "ember_imp": {
+    "columns": 100,
+    "rows": 60,
+    "source": "ember_imp.png",
+    "file": "ember_imp.txt"
+  },
+  "forged_sentinel": {
+    "columns": 100,
+    "rows": 60,
+    "source": "forged_sentinel.png",
+    "file": "forged_sentinel.txt"
+  },
+  "tide_warden": {
+    "columns": 100,
+    "rows": 60,
+    "source": "tide_warden.png",
+    "file": "tide_warden.txt"
+  },
+  "spore_warden": {
+    "columns": 100,
+    "rows": 60,
+    "source": "spore_warden.png",
+    "file": "spore_warden.txt"
+  },
+  "forge_warden": {
+    "columns": 100,
+    "rows": 60,
+    "source": "forge_warden.png",
+    "file": "forge_warden.txt"
   }
 }

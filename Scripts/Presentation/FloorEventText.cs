@@ -12,5 +12,5 @@ internal static class FloorEventText
     })[(int)modifier];
     internal static string Title(EliteTitle title, bool english) => (english ? new[] { "CRUEL", "IRONBOUND", "RELENTLESS", "DREAD", "PROFANE", "ANCIENT" } : new[] { "CRUEL", "BLINDADO", "IMPLACAVEL", "SOMBRIO", "PROFANO", "ANCESTRAL" })[(int)title];
     internal static Color TitleColor(EliteTitle title) => new(new[] { "f08070", "86b4e0", "edbd6a", "b695ee", "82caa2", "e9a3d4" }[(int)title]);
-    internal static string EnemyName(Enemy enemy, bool english) => Localization.MonsterName(enemy.Glyph, english) + (enemy.IsElite ? " [ELITE: " + string.Join(" / ", enemy.Titles.Select(t => Title(t, english))) + "]" : "");
+    internal static string EnemyName(Enemy enemy, bool english) => EnemyText.Name(enemy.Glyph, enemy.Depth, english) + (enemy.IsElite ? " [ELITE: " + string.Join(" / ", enemy.Titles.Select(t => Title(t, english))) + "]" : "");
 }

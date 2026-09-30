@@ -4,7 +4,7 @@ using System;
 namespace Abyss.Rules;
 internal static class GameRules
 {
-    internal static int EnemyXp(char glyph, int depth) => glyph == 'B' ? 18 + depth * 2 : (glyph == 'g' ? 4 : glyph == 's' ? 3 : 2) + (depth - 1) / 2;
+    internal static int EnemyXp(char glyph, int depth) => glyph == 'B' ? 18 + depth * 2 : EnemyCatalog.Get(glyph, depth).Experience + (depth - 1) / 2;
     internal const int Width = 64;
     internal const int Height = 27;
     internal static bool IsBossFloor(int depth) => depth % 5 == 0;

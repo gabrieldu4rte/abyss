@@ -194,9 +194,9 @@ internal sealed class MenuController
     internal void HandleHelp(Key key)
     {
         if (UiTheme.Previous(key))
-            menuState.HelpTopic = (menuState.HelpTopic + 8) % 9;
+            menuState.HelpTopic = (menuState.HelpTopic + 9) % 10;
         if (UiTheme.Next(key))
-            menuState.HelpTopic = (menuState.HelpTopic + 1) % 9;
+            menuState.HelpTopic = (menuState.HelpTopic + 1) % 10;
     }
 
     internal void HandleShop(Key key)

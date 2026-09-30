@@ -162,6 +162,7 @@ internal sealed partial class RegressionSuite
             TestHeldMovement();
             TestEnvironment();
             TestRareEncounters();
+            TestBestiary();
             TestBehaviorRegression();
             TestArchitecture();
             TestActionAnimations();

@@ -286,3 +286,22 @@ Flags after `--` are handled by the game:
 - Add behavior policies at the composition root and keep their contracts small.
 - Run the headless suite after changes to mechanics, state transitions, or generation. Inspect affected screens after layout changes.
 - Do not commit `.godot/`, build outputs, or local capture artifacts.
+
+## Biome bestiary and Warden abilities
+
+`EnemyCatalog` defines immutable combat profiles, biome rosters and portrait keys. `Enemy` carries instance state; `EnemyText` supplies bilingual names. Spawning and infestation both select from the current biome roster. Elite promotion remains limited to one regular enemy per floor, and safe merchant floors remain empty of enemies.
+
+| Biome | Regular species | Warden | Ability |
+| --- | --- | --- | --- |
+| Ruins | Skeleton, Goblin, Revenant | Ruin Warden | Seismic impact: radius-two shockwave |
+| Cistern | Rat, Drowned, Giant leech | Tide Warden | Flood wave: five-tile reach, three-tile width; creates water, removes oil/fire and drains 2 energy on hit |
+| Fungal caves | Sporeling, Cave crawler, Myconid | Spore Sovereign | Spore burst: radius-one cloud at the marked player position; three poison ticks on hit |
+| Ember forge | Cinder hound, Ember imp, Forged sentinel | Forge Warden | Furnace cross: four-tile arms; leaves fire for two ticks, four in hot drafts |
+
+- Each Warden is tied to its biome and still guards the stair room. Leaving the room cancels a prepared ability.
+- Abilities cost 4 energy from a pool of 6, restore 1 per active turn and have four recovery turns. Wardens begin with two recovery turns.
+- Preparation marks fixed tiles with colored `!` glyphs. The player has two actions to escape before resolution; the ability replaces the Warden's normal action.
+- Ability attacks use d20 against the unified defense. Seismic impact uses Strength; the other abilities use Intelligence. Existing tier scaling, critical hits and armor reduction apply.
+- `WardenAbilities` owns turn-based preparation and resolution. `ActionEffects` renders separate shock, wave, spore and flame animations without advancing gameplay or consuming combat randomness.
+- `BestiaryTests` checks all rosters and portraits, 120 generated boss floors, ability costs, windup, escape, room boundaries, status effects and animation timing.
+- `--warden-demo=0|1|2|3` previews a prepared ability. Add `--warden-cast` to inspect the release animation, optionally with `--capture` and `--freeze-animation`.

@@ -29,6 +29,9 @@ internal sealed class ActionEffects(DungeonState dungeonState)
         Add((ActionAnimationKind)classIndex, origin, path, positions, radius);
     }
 
+    internal void PlayWarden(Biome biome, Vector2I origin, IEnumerable<Vector2I> cells)
+        => Add((ActionAnimationKind)((int)ActionAnimationKind.SeismicImpact + (int)biome), origin, new[] { origin }, cells, 5);
+
     private void Add(ActionAnimationKind kind, Vector2I origin, IEnumerable<Vector2I> path, IEnumerable<Vector2I> targets, int radius)
     {
         var visible = new HashSet<Vector2I>();

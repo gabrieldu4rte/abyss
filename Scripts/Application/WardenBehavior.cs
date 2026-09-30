@@ -1,5 +1,5 @@
 namespace Abyss.Application;
-internal sealed class WardenBehavior(CombatService combatService, DungeonState dungeonState, ExpeditionJournal expeditionJournal, PlayerState playerState, EnemyNavigator navigator) : IEnemyBehavior
+internal sealed class WardenBehavior(CombatService combatService, DungeonState dungeonState, ExpeditionJournal expeditionJournal, PlayerState playerState, EnemyNavigator navigator, WardenAbilities abilities) : IEnemyBehavior
 {
     public bool Supports(Enemy enemy) => enemy.Glyph == 'B';
     public void Act(Enemy enemy, bool evade, bool mayAttack)
@@ -12,6 +12,8 @@ internal sealed class WardenBehavior(CombatService combatService, DungeonState d
             enemy.Alerted = true;
             expeditionJournal.Say("Voce entrou na sala da escada. O Guardiao desperta!", "You entered the stair room. The Warden awakens!");
         }
+        if (!inside) abilities.Cancel(enemy);
+        else if (abilities.Act(enemy, evade)) return;
         if (inside && GameRules.Dist(playerState.Position, enemy.Position) == 1)
         {
             if (mayAttack)

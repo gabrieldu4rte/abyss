@@ -30,6 +30,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
     internal CombatService CombatService { get; }
     internal InventoryService InventoryService { get; }
     internal EnemyAi EnemyAi { get; }
+    internal WardenAbilities WardenAbilities { get; }
     internal ProgressionService ProgressionService { get; }
     internal DungeonGenerator DungeonGenerator { get; }
     internal GameInput GameInput { get; }
@@ -77,7 +78,8 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         MerchantRenderer = new MerchantRenderer(AsciiCanvas, InventoryState, Localization, MenuState, MerchantService, PlayerState, UiComponents);
         PauseRenderer = new PauseRenderer(AsciiCanvas, DungeonState, ExpeditionJournal, HeroCombatStats, InventoryRenderer, InventoryState, JournalFormatter, Localization, MenuState, PlayerState, UiComponents);
         EnemyNavigator = new EnemyNavigator(DungeonState, PlayerState);
-        EnemyAi = new EnemyAi(new IEnemyBehavior[] { new WardenBehavior(CombatService, DungeonState, ExpeditionJournal, PlayerState, EnemyNavigator), new RoamingBehavior(CombatService, DungeonState, PlayerState, RandomStream, EnemyNavigator) });
+        WardenAbilities = new WardenAbilities(CombatService, DungeonState, PlayerState, ExpeditionJournal, VisualEffects);
+        EnemyAi = new EnemyAi(new IEnemyBehavior[] { new WardenBehavior(CombatService, DungeonState, ExpeditionJournal, PlayerState, EnemyNavigator, WardenAbilities), new RoamingBehavior(CombatService, DungeonState, PlayerState, RandomStream, EnemyNavigator) });
         PlayerActions = new PlayerActions(CombatService, this, DungeonState, this, ExpeditionJournal, HeroCombatStats, InventoryState, LootService, MenuState, PlayerState, RunState, VisualEffects, RandomStream, EnvironmentService);
         MenuRenderer = new MenuRenderer(AsciiCanvas, DungeonState, Localization, MenuState, PlayerState, RunState, UiComponents);
         MenuController = new MenuController(Host, InventoryService, InventoryState, JournalFormatter, LanguagePreferences, MenuState, MerchantService, PlayerActions, PlayerState, RunState, this);

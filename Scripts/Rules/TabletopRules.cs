@@ -53,12 +53,7 @@ public static class TabletopRules
         _ => new(11, 15, 11, 12)};
     public static Attributes MonsterAttributes(char glyph, int depth)
     {
-        var baseStats = glyph switch
-        {
-            'r' => new Attributes(8, 10, 8, 2),
-            's' => new(10, 10, 10, 4),
-            'g' => new(10, 12, 10, 8),
-            _ => new(12, 10, 12, 12)};
+        var baseStats = EnemyCatalog.Get(glyph, depth).Attributes;
         int growth = (depth - 1) / 5;
         return new(baseStats.Strength + growth, baseStats.Dexterity + growth / 2, baseStats.Constitution + growth, baseStats.Intelligence + growth / 2);
     }

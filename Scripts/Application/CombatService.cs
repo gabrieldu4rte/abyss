@@ -97,6 +97,28 @@ internal sealed class CombatService
             runState.Screen = "dead";
     }
 
+    internal bool ResolveWardenAbility(Enemy enemy, bool evade)
+    {
+        if (enemy.Health <= 0 || !enemy.IsWarden || !enemy.Alerted || !dungeonState.StairsRoom.HasPoint(playerState.Position) || !enemy.AbilityCells.Contains(playerState.Position) || !dungeonState.Los(enemy.Position, playerState.Position)) return false;
+        int modifier = enemy.HomeBiome == Biome.Ruins ? enemy.Stats.Str : enemy.Stats.Int;
+        var roll = ResolveAttack(random.Generator.Next(1, 21), enemy.Training + modifier + 1, heroCombatStats.Defense + (evade ? 4 : 0));
+        string total = $"d20({roll.Natural}){UiTheme.Signed(roll.Bonus)}={roll.Total} vs {roll.Defense}";
+        expeditionJournal.LastRollPt = $"{EnemyText.Ability(enemy.HomeBiome, false)}: {total}";
+        expeditionJournal.LastRollEn = $"{EnemyText.Ability(enemy.HomeBiome, true)}: {total}";
+        if (!roll.Hit)
+        {
+            expeditionJournal.Say(expeditionJournal.LastRollPt + ". Errou.", expeditionJournal.LastRollEn + ". Missed.");
+            return false;
+        }
+        var dice = new DamageDice(enemy.HomeBiome == Biome.Ruins ? 2 : 1, enemy.HomeBiome is Biome.Ruins or Biome.FungalCaves ? 4 : 6, modifier + enemy.Tier);
+        int damage = Math.Max(1, RollDamage(random.Generator, dice, roll.Critical) - inventoryState.DamageReduction);
+        playerState.Health = Math.Max(0, playerState.Health - damage);
+        visualEffects.HeroHurt(enemy, damage);
+        expeditionJournal.Say($"{expeditionJournal.LastRollPt}. -{damage} PV ({dice}).", $"{expeditionJournal.LastRollEn}. -{damage} HP ({dice}).");
+        if (playerState.Health == 0) runState.Screen = "dead";
+        return true;
+    }
+
     internal void Hit(Enemy e, int damage, bool report = true)
     {
         if (e.Health <= 0) return;
