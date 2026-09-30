@@ -169,6 +169,7 @@ internal sealed partial class RegressionSuite
             TestArchitecture();
             TestActionAnimations();
             TestScreenTransitions();
+            TestAudio();
             GD.Print("SELF-TEST PASS: d20, criticals, 2d10 healing, attributes, scarce loot, scaling, costs, ranged restrictions, monster names, localization, menus, portraits, damage effects; 550 generated floors through depth 1000, reachability, occupancy, deterministic seeds, all classes, combat, healing, endless descent, boss gates and rewards; patrol, sight, pursuit, search, boss-room confinement.");
             game.Host.Quit();
         }

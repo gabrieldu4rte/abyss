@@ -55,6 +55,7 @@ internal sealed class WardenAbilities(CombatService combat, DungeonState dungeon
                 if (marked && p != enemy.Position && dungeon.Walk(p) && dungeon.Los(enemy.Position, p)) enemy.AbilityCells.Add(p);
             }
         if (!enemy.AbilityCells.Contains(player.Position)) { enemy.AbilityCells.Clear(); return false; }
+        effects.Sounds.Play("wardencharge");
         enemy.AbilityEnergy -= 4; enemy.AbilityWindup = 2;
         journal.Say($"{EnemyText.Name(enemy.Glyph, enemy.Depth, false)} prepara {EnemyText.Ability(enemy.HomeBiome, false)}. Evite as marcas [!] nos proximos dois turnos!", $"{EnemyText.Name(enemy.Glyph, enemy.Depth, true)} prepares {EnemyText.Ability(enemy.HomeBiome, true)}. Leave the [!] marks within two turns!");
         return true;

@@ -48,6 +48,7 @@ internal sealed class CombatService
             return;
         if (!ranged && !ability && (GameRules.Dist(playerState.Position, enemy.Position) != 1 || !dungeonState.Los(playerState.Position, enemy.Position)))
             return;
+        if (!ranged && !ability) visualEffects.Sounds.Play("swing");
         visualEffects.Focus = enemy;
         visualEffects.FocusHold = UiTheme.HurtDuration;
         var roll = ResolveAttack(random.Generator.Next(1, 21), AttackBonus(enemy, ranged, ability), TargetDefense(enemy, ranged, ability), ability && playerState.ClassIndex == 3 ? 19 : 20);
@@ -56,6 +57,7 @@ internal sealed class CombatService
         expeditionJournal.LastRollEn = $"You: {total}";
         if (!roll.Hit)
         {
+            visualEffects.Sounds.Play("miss");
             expeditionJournal.Say($"Voce -> {FloorEventText.EnemyName(enemy, false)}: {total}. Errou.", $"You -> {FloorEventText.EnemyName(enemy, true)}: {total}. You miss.");
             return;
         }
@@ -87,6 +89,7 @@ internal sealed class CombatService
         expeditionJournal.LastRollEn = $"{FloorEventText.EnemyName(enemy, true)}: {total}";
         if (!roll.Hit)
         {
+            visualEffects.Sounds.Play("miss");
             expeditionJournal.Say($"{FloorEventText.EnemyName(enemy, false)} -> voce: {total}. Errou.", $"{FloorEventText.EnemyName(enemy, true)} -> you: {total}. Missed.");
             return;
         }
@@ -109,6 +112,7 @@ internal sealed class CombatService
         expeditionJournal.LastRollEn = $"{EnemyText.Ability(enemy.HomeBiome, true)}: {total}";
         if (!roll.Hit)
         {
+            visualEffects.Sounds.Play("miss");
             expeditionJournal.Say(expeditionJournal.LastRollPt + ". Errou.", expeditionJournal.LastRollEn + ". Missed.");
             return false;
         }

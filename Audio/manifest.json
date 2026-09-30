@@ -1,0 +1,138 @@
+{
+  "step": {
+    "seconds": 0.065,
+    "peak": 0.4531
+  },
+  "swing": {
+    "seconds": 0.13,
+    "peak": 0.4531
+  },
+  "miss": {
+    "seconds": 0.1,
+    "peak": 0.4844
+  },
+  "herohurt": {
+    "seconds": 0.18,
+    "peak": 0.5
+  },
+  "enemyhurt": {
+    "seconds": 0.1,
+    "peak": 0.4688
+  },
+  "arrow": {
+    "seconds": 0.14,
+    "peak": 0.5
+  },
+  "arcanebolt": {
+    "seconds": 0.24,
+    "peak": 0.5312
+  },
+  "whirlwind": {
+    "seconds": 0.42,
+    "peak": 0.5
+  },
+  "arcanenova": {
+    "seconds": 0.55,
+    "peak": 0.5312
+  },
+  "piercingarrow": {
+    "seconds": 0.32,
+    "peak": 0.5312
+  },
+  "shadowstep": {
+    "seconds": 0.25,
+    "peak": 0.5312
+  },
+  "torch": {
+    "seconds": 0.2,
+    "peak": 0.4844
+  },
+  "seismicimpact": {
+    "seconds": 0.5,
+    "peak": 0.5312
+  },
+  "floodwave": {
+    "seconds": 0.48,
+    "peak": 0.5312
+  },
+  "sporeburst": {
+    "seconds": 0.42,
+    "peak": 0.5
+  },
+  "furnacecross": {
+    "seconds": 0.5,
+    "peak": 0.5312
+  },
+  "pickup": {
+    "seconds": 0.16,
+    "peak": 0.5469
+  },
+  "chest": {
+    "seconds": 0.32,
+    "peak": 0.5469
+  },
+  "potion": {
+    "seconds": 0.3,
+    "peak": 0.5312
+  },
+  "equip": {
+    "seconds": 0.14,
+    "peak": 0.5312
+  },
+  "levelup": {
+    "seconds": 0.65,
+    "peak": 0.5469
+  },
+  "stairs": {
+    "seconds": 0.38,
+    "peak": 0.5469
+  },
+  "death": {
+    "seconds": 0.85,
+    "peak": 0.5469
+  },
+  "menu": {
+    "seconds": 40.0,
+    "peak": 0.2194
+  },
+  "confirm": {
+    "seconds": 0.12,
+    "peak": 0.5469
+  },
+  "trap": {
+    "seconds": 0.24,
+    "peak": 0.4844
+  },
+  "break": {
+    "seconds": 0.16,
+    "peak": 0.5
+  },
+  "wardencharge": {
+    "seconds": 0.55,
+    "peak": 0.5312
+  },
+  "ruins": {
+    "seconds": 40.0,
+    "peak": 0.2182
+  },
+  "cistern": {
+    "seconds": 40.0,
+    "peak": 0.1926
+  },
+  "fungal": {
+    "seconds": 40.0,
+    "peak": 0.1915
+  },
+  "forge": {
+    "seconds": 40.0,
+    "peak": 0.1997
+  },
+  "refuge": {
+    "seconds": 40.0,
+    "peak": 0.2206
+  },
+  "warden": {
+    "seconds": 40.0,
+    "peak": 0.1949
+  }
+}

@@ -322,3 +322,13 @@ Flags after `--` are handled by the game:
 - Captures, diagnostic demos and automated tests use isolated in-memory progression, so previews cannot unlock the player's collection. Existing play history predating this feature cannot be reconstructed.
 - `BestiaryProgressTests` covers all sixteen entries, bilingual lore, nonlethal hits, duplicate death handling, elite aggregation, environmental kills, navigation, persistence and real file replacement.
 - `--bestiary-demo` previews an unlocked page; add `--bestiary-locked` to preview a new collection.
+
+## Music and sound
+
+- `Audio/` contains seven original forty-second ambient loops and twenty-eight short chiptune effects. The score uses low drones, sparse modal notes and soft echoes for the menu, four biomes, merchant refuge and Warden encounters.
+- `Tools/generate_audio.py` reproducibly synthesizes the assets using Python's standard library. Effects combine pulse/triangle oscillators, stepped pitch and sample-and-hold noise with short envelopes. Assets are mono PCM16 WAV at 22,050 Hz; `Audio/manifest.json` lists durations and measured peaks.
+- `SoundEffects` queues bounded cosmetic cues. `GameAudioController` selects music from screen/biome/encounter state, coalesces identical cues per frame and never consumes combat randomness or turns. `IGameAudio` allows isolated tests.
+- `GodotGameAudio` uses ten effect voices and two music players with 1.8-second crossfades. WAV data is cached, music loops at sample boundaries and streams are disposed when the scene exits. Pausing retains the current ambient track.
+- F7 cycles music volume; F8 cycles effects volume through 0/25/50/75/100 percent. These shortcuts work across screens and are shown in expedition settings. Preferences persist in `user://audio.cfg`; diagnostic modes do not overwrite them.
+- `--audio-check` loads/schedules every asset through the Godot backend and exits. Headless self-tests validate encoding, levels, cue routing, movement, music selection and volume controls. Captures and ordinary unit tests do not play audio.
+- Include `Audio/*.wav` as original non-resource files in any export preset, alongside the existing text-art assets: the backend reads the canonical WAV bytes directly rather than imported audio resources.

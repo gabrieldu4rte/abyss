@@ -4,6 +4,7 @@ using System.Linq;
 namespace Abyss.Application;
 internal sealed class InventoryService
 {
+    private readonly SoundEffects sounds;
     private readonly ITurnScheduler turns;
     private readonly ExpeditionJournal expeditionJournal;
     private readonly InventoryState inventoryState;
@@ -12,9 +13,10 @@ internal sealed class InventoryService
     private readonly PlayerState playerState;
     private readonly RunState runState;
     private readonly RandomStream random;
-    internal InventoryService(ITurnScheduler turns, ExpeditionJournal expeditionJournal, InventoryState inventoryState, Localization localization, MenuState menuState, PlayerState playerState, RunState runState, RandomStream random)
+    internal InventoryService(ITurnScheduler turns, ExpeditionJournal expeditionJournal, InventoryState inventoryState, Localization localization, MenuState menuState, PlayerState playerState, RunState runState, RandomStream random, SoundEffects sounds)
     {
         this.turns = turns;
+        this.sounds = sounds;
         this.expeditionJournal = expeditionJournal;
         this.inventoryState = inventoryState;
         this.localization = localization;
@@ -68,6 +70,7 @@ internal sealed class InventoryService
             inventoryState.Equipped[slot] = gear;
         }
 
+        sounds.Play("equip");
         runState.IsAiming = false;
         expeditionJournal.Say($"Equipamento alterado: {localization.GearNameFor(gear, false)}.", $"Equipment changed: {localization.GearNameFor(gear, true)}.");
         runState.Screen = "game";
@@ -83,6 +86,7 @@ internal sealed class InventoryService
         }
 
         int roll = random.Generator.Next(1, 7) + random.Generator.Next(1, 7), healing = Math.Min(playerState.MaxEnergy - playerState.Energy, roll);
+        sounds.Play("potion");
         playerState.Energy += healing;
         inventoryState.EnergyPotions--;
         runState.Screen = "game";

@@ -1,6 +1,8 @@
 namespace Abyss.Presentation;
 internal sealed class MenuState
 {
+    internal int MusicVolume { get; set; } = 50;
+    internal int EffectsVolume { get; set; } = 75;
     internal int PauseTab { get; set; }
     internal int JournalPage { get; set; }
     internal bool English { get; set; }

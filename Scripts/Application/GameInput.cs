@@ -55,6 +55,13 @@ internal sealed class GameInput
 
     internal void HandleKey(Key key)
     {
+        if (key == Key.F7) { menuState.MusicVolume = (menuState.MusicVolume + 25) % 125; return; }
+        if (key == Key.F8) { menuState.EffectsVolume = (menuState.EffectsVolume + 25) % 125; return; }
+        if (runState.Screen != "game" && runState.Screen != "torch_aim" && runState.Screen != "intro")
+        {
+            if (UiTheme.Confirm(key)) visualEffects.Sounds.Play("confirm");
+            else if (UiTheme.Previous(key) || UiTheme.Next(key) || key is Key.Left or Key.Right or Key.Tab) visualEffects.Sounds.Play("menu");
+        }
         if (key == Key.F11)
         {
             host.ToggleFullscreen();

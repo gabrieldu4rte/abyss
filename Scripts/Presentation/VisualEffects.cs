@@ -7,10 +7,11 @@ internal sealed class VisualEffects
 {
     private readonly DungeonState dungeonState;
     private readonly PlayerState playerState;
+    internal SoundEffects Sounds { get; } = new();
     internal ActionEffects Actions { get; }
     internal VisualEffects(DungeonState dungeonState, PlayerState playerState)
     {
-        Actions = new ActionEffects(dungeonState);
+        Actions = new ActionEffects(dungeonState, Sounds);
         this.dungeonState = dungeonState;
         this.playerState = playerState;
     }
@@ -23,6 +24,7 @@ internal sealed class VisualEffects
     internal readonly List<DamageEffect> Effects = new();
     internal void ResetEffects()
     {
+        Sounds.Clear();
         Effects.Clear();
         Actions.Clear();
         HeroHurtRemaining = FocusHold = 0;
@@ -32,6 +34,7 @@ internal sealed class VisualEffects
 
     internal void EnemyHurt(Enemy e, int damage)
     {
+        Sounds.Play("enemyhurt");
         e.Hurt = UiTheme.HurtDuration;
         e.LastDamage = damage;
         Focus = e;
@@ -41,6 +44,7 @@ internal sealed class VisualEffects
 
     internal void HeroHurt(Enemy source, int damage)
     {
+        Sounds.Play("herohurt");
         HeroHurtRemaining = UiTheme.HurtDuration;
         HeroDamage = damage;
         if (FocusHold <= 0)

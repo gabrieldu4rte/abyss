@@ -113,6 +113,9 @@ internal sealed class PauseRenderer
         asciiCanvas.DrawAsciiImage(32, 200, AsciiArt.Camp, 490, 470, new Color("fff6df"), 2);
         asciiCanvas.Text(600, 233, localization.Translate("CONFIGURACOES DA EXPEDICAO", "EXPEDITION SETTINGS"), UiTheme.Gold, 24);
         uiComponents.MenuItem(600, 300, 0, localization.Translate("IDIOMA", "LANGUAGE"));
+        asciiCanvas.Text(600, 430, localization.Translate($"[F7] MUSICA: {menuState.MusicVolume}%", $"[F7] MUSIC: {menuState.MusicVolume}%"), UiTheme.Teal, 18);
+        asciiCanvas.Text(600, 470, localization.Translate($"[F8] EFEITOS: {menuState.EffectsVolume}%", $"[F8] EFFECTS: {menuState.EffectsVolume}%"), UiTheme.Teal, 18);
+        asciiCanvas.Text(600, 512, localization.Translate("Pressione para ajustar; 0% silencia.", "Press to adjust; 0% mutes."), UiTheme.Dim, 16);
         uiComponents.MenuItem(600, 340, 1, localization.Translate("VOLTAR AO MENU PRINCIPAL", "RETURN TO MAIN MENU"));
     }
 

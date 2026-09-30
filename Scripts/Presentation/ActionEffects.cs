@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Abyss.Presentation;
 
-internal sealed class ActionEffects(DungeonState dungeonState)
+internal sealed class ActionEffects(DungeonState dungeonState, SoundEffects sounds)
 {
     private readonly List<ActionAnimation> animations = new();
     internal IReadOnlyList<ActionAnimation> Animations => animations;
@@ -34,6 +34,7 @@ internal sealed class ActionEffects(DungeonState dungeonState)
 
     private void Add(ActionAnimationKind kind, Vector2I origin, IEnumerable<Vector2I> path, IEnumerable<Vector2I> targets, int radius)
     {
+        sounds.Play(kind.ToString().ToLowerInvariant());
         var visible = new HashSet<Vector2I>();
         for (int y = 1; y < GameRules.Height - 1; y++)
             for (int x = 1; x < GameRules.Width - 1; x++)

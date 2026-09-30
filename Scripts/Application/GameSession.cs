@@ -6,6 +6,7 @@ using static Abyss.Rules.TabletopRules;
 namespace Abyss.Application;
 internal sealed class GameSession : ITurnScheduler, IRunLifecycle
 {
+    internal GameAudioController AudioController { get; }
     internal IGameHost Host { get; }
     internal IAsciiCanvas Canvas { get; }
     internal ScreenTransitions Transitions { get; }
@@ -52,7 +53,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
     internal EnvironmentGenerator EnvironmentGenerator { get; }
     internal EnvironmentService EnvironmentService { get; }
 
-    internal GameSession(IGameHost host, IAsciiCanvas canvas, ILanguageSettings settings, IBestiaryStore? bestiaryStore = null)
+    internal GameSession(IGameHost host, IAsciiCanvas canvas, ILanguageSettings settings, IBestiaryStore? bestiaryStore = null, IGameAudio? audio = null)
     {
         Host = host;
         BestiaryProgress = new BestiaryProgress(BestiaryState, bestiaryStore);
@@ -60,13 +61,14 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         Canvas = Transitions;
         Settings = settings;
         VisualEffects = new VisualEffects(DungeonState, PlayerState);
+        AudioController = new GameAudioController(audio, RunState, MenuState, PlayerState, DungeonState, VisualEffects);
         MerchantService = new MerchantService(ExpeditionJournal, InventoryState, MenuState, MerchantState, PlayerState, RunState);
         LanguagePreferences = new LanguagePreferences(MenuState, Settings);
         HeroCombatStats = new HeroCombatStats(PlayerState, InventoryState);
         Localization = new Localization(MenuState);
         OpeningStory = new OpeningStory(RunState, Localization);
         AsciiCanvas = new AsciiCanvas(Canvas, VisualEffects);
-        InventoryService = new InventoryService(this, ExpeditionJournal, InventoryState, Localization, MenuState, PlayerState, RunState, RandomStream);
+        InventoryService = new InventoryService(this, ExpeditionJournal, InventoryState, Localization, MenuState, PlayerState, RunState, RandomStream, VisualEffects.Sounds);
         ProgressionService = new ProgressionService(ExpeditionJournal, HeroCombatStats, PlayerState);
         LootService = new LootService(DungeonState, ExpeditionJournal, InventoryState, Localization, RandomStream);
         JournalFormatter = new JournalFormatter(ExpeditionJournal, Localization);
@@ -97,6 +99,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
     internal double Clock;
     public void Tick(double delta)
     {
+        AudioController.Update(delta);
         Clock += delta;
         Transitions.Advance(delta);
         OpeningStory.Advance(delta);

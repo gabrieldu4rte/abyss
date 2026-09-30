@@ -13,12 +13,14 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
         if (!World.Fixtures.TryGetValue(p, out var fixture)) return false;
         if (fixture == Fixture.WallTorch)
         {
+            effects.Sounds.Play("break");
             World.Fixtures.Remove(p);
             dungeon.Items[p] = 't';
             journal.Say("A tocha caiu. Pise nela para recolher.", "The torch fell. Step onto it to collect it.");
             return true;
         }
         if (fixture != Fixture.OilBarrel) return false;
+        effects.Sounds.Play("break");
         SpillOil(p);
         if (World.Fire.Keys.Any(q => GameRules.Dist(q, p) <= 1)) Ignite(p);
         return true;
@@ -117,6 +119,7 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
     private void TriggerTrap(Vector2I p, Enemy? enemy)
     {
         if (!World.Fixtures.TryGetValue(p, out var fixture) || !TrapRules.IsTrap(fixture)) return;
+        effects.Sounds.Play("trap");
         World.Fixtures[p] = Fixture.SpentTrap;
         int bonus = Math.Min(4, GameRules.CycleIndex(dungeon.Floor));
         switch (fixture)
@@ -147,6 +150,7 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
     {
         if (player.Health <= 0) return;
         player.Health = Math.Max(0, player.Health - damage);
+        effects.Sounds.Play("herohurt");
         effects.HeroHurtRemaining = UiTheme.HurtDuration;
         effects.HeroDamage = damage;
         effects.Effects.Add(new DamageEffect { Position = player.Position, Damage = damage, Hero = true });

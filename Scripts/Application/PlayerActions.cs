@@ -134,6 +134,7 @@ internal sealed class PlayerActions
         }
         else
         {
+            visualEffects.Sounds.Play("step");
             playerState.Position = p;
             Pickup();
         }
@@ -145,6 +146,7 @@ internal sealed class PlayerActions
     {
         if (!dungeonState.Items.Remove(playerState.Position, out char g))
             return;
+        visualEffects.Sounds.Play(g == 'C' ? "chest" : "pickup");
         if (g == 't')
         {
             inventoryState.SpareTorches++;
@@ -264,6 +266,7 @@ internal sealed class PlayerActions
         expeditionJournal.LastPotionHealing = Math.Min(playerState.MaxHealth - playerState.Health, healing.Total);
         inventoryState.Potions--;
         playerState.Health += expeditionJournal.LastPotionHealing;
+        visualEffects.Sounds.Play("potion");
         expeditionJournal.Say($"Pocao: 2d10 [{healing.First}+{healing.Second}] = {healing.Total}. Curou {expeditionJournal.LastPotionHealing} PV.", $"Potion: 2d10 [{healing.First}+{healing.Second}] = {healing.Total}. Healed {expeditionJournal.LastPotionHealing} HP.");
         turns.EndTurn();
     }
