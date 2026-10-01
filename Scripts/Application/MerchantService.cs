@@ -21,6 +21,12 @@ internal sealed class MerchantService
         this.runState = runState;
     }
 
+    private void StockResale(Offer offer)
+    {
+        merchantState.MerchantStock.RemoveAll(o => o.Quantity <= 0);
+        if (merchantState.MerchantStock.Count < 5) merchantState.MerchantStock.Add(offer);
+    }
+
     internal List<Offer> ShopOffers()
     {
         if (!menuState.ShopSelling)
@@ -57,7 +63,7 @@ internal sealed class MerchantService
                     if (ReferenceEquals(inventoryState.Equipped[i], gear))
                         inventoryState.Equipped[i] = null;
                 inventoryState.Backpack.RemoveAt(index);
-                merchantState.MerchantStock.Add(new Offer { Gear = gear });
+                StockResale(new Offer { Gear = gear });
                 runState.IsAiming = false;
             }
             else
@@ -75,7 +81,7 @@ internal sealed class MerchantService
                 else inventoryState.SpareTorches--;
                 var existing = merchantState.MerchantStock.FirstOrDefault(o => o.Gear == null && o.Potion == offer.Potion);
                 if (existing == null)
-                    merchantState.MerchantStock.Add(new Offer { Potion = offer.Potion });
+                    StockResale(new Offer { Potion = offer.Potion });
                 else
                     existing.Quantity++;
             }

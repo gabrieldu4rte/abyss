@@ -1,6 +1,7 @@
 namespace Abyss.Presentation;
 internal sealed class GameRenderer
 {
+    private readonly BlacksmithRenderer blacksmith;
     private readonly AsciiCanvas asciiCanvas;
     private readonly MenuState menuState;
     private readonly ScreenTransitions transitions;
@@ -11,8 +12,9 @@ internal sealed class GameRenderer
     private readonly MerchantRenderer merchantRenderer;
     private readonly PauseRenderer pauseRenderer;
     private readonly RunState runState;
-    internal GameRenderer(AsciiCanvas asciiCanvas, HudRenderer hudRenderer, Localization localization, MenuRenderer menuRenderer, MerchantRenderer merchantRenderer, PauseRenderer pauseRenderer, RunState runState, MenuState menuState, ScreenTransitions transitions, OpeningStory openingStory)
+    internal GameRenderer(AsciiCanvas asciiCanvas, HudRenderer hudRenderer, Localization localization, MenuRenderer menuRenderer, MerchantRenderer merchantRenderer, PauseRenderer pauseRenderer, RunState runState, MenuState menuState, ScreenTransitions transitions, OpeningStory openingStory, BlacksmithRenderer blacksmith)
     {
+        this.blacksmith = blacksmith;
         this.asciiCanvas = asciiCanvas;
         this.menuState = menuState;
         this.transitions = transitions;
@@ -28,6 +30,7 @@ internal sealed class GameRenderer
     public void Draw()
     {
         string route = runState.Screen + (runState.Screen == "pause" ? $":{menuState.PauseTab}" : runState.Screen == "shop" ? $":{menuState.ShopSelling}:{menuState.PendingTrade != null}" : "");
+        if (runState.Screen == "blacksmith") route += $":{menuState.PendingUpgrade != null}";
         transitions.BeginFrame(route);
         DrawContent();
         transitions.EndFrame();
@@ -53,6 +56,9 @@ internal sealed class GameRenderer
                 return;
             case "pause":
                 pauseRenderer.DrawPause();
+                return;
+            case "blacksmith":
+                blacksmith.Draw();
                 return;
             case "shop":
                 merchantRenderer.DrawShop();

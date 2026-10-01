@@ -4,7 +4,7 @@ from PIL import Image, ImageOps, ImageFilter
 import json
 ROOT = Path(__file__).resolve().parent.parent
 RAMP = " .,:;irsXA253hMHGS#9B&@"
-PORTRAITS = {'revenant','drowned','leech','sporeling','cave_crawler','myconid','cinder_hound','ember_imp','forged_sentinel','tide_warden','spore_warden','forge_warden','warrior','mage','archer','rogue','warrior_critical','mage_critical','archer_critical','rogue_critical','rat','skeleton','goblin','warden','unknown','merchant'}
+PORTRAITS = {'revenant','drowned','leech','sporeling','cave_crawler','myconid','cinder_hound','ember_imp','forged_sentinel','tide_warden','spore_warden','forge_warden','warrior','mage','archer','rogue','warrior_critical','mage_critical','archer_critical','rogue_critical','rat','skeleton','goblin','warden','unknown','merchant','lost_blacksmith'}
 def convert(source, destination, columns):
     rgba=Image.open(source).convert('RGBA')
     image=Image.new('RGBA',rgba.size,(0,0,0,255))

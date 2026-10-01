@@ -196,5 +196,11 @@
     "rows": 60,
     "source": "forge_warden.png",
     "file": "forge_warden.txt"
+  },
+  "lost_blacksmith": {
+    "columns": 100,
+    "rows": 60,
+    "source": "lost_blacksmith.png",
+    "file": "lost_blacksmith.txt"
   }
 }

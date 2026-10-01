@@ -23,7 +23,7 @@ internal sealed class EnemyNavigator(DungeonState dungeonState, PlayerState play
             foreach (var direction in GameRules.Directions)
             {
                 var b = a + direction;
-                if (!dungeonState.Walk(b) || previous.ContainsKey(b) || (stayInRoom && !dungeonState.StairsRoom.HasPoint(b)))
+                if (!dungeonState.Walk(b) || dungeonState.IsSanctuary(b) || previous.ContainsKey(b) || (stayInRoom && !dungeonState.StairsRoom.HasPoint(b)))
                     continue;
                 if (dungeonState.At(b) != null || (b == playerState.Position && b != destination))
                     continue;

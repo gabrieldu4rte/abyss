@@ -33,18 +33,19 @@ internal sealed class HudRenderer
     {
         asciiCanvas.Text(32, 91, localization.Translate($"ANDAR {dungeonState.Floor}", $"FLOOR {dungeonState.Floor}"), UiTheme.Gold, 18);
         asciiCanvas.Text(272, 91, EnvironmentAppearance.Name(dungeonState.Environment.Biome, localization), UiTheme.Teal, 16);
-        var target = visualEffects.FocusEnemy();
+        bool showBlacksmith = dungeonState.IsSanctuary(playerState.Position) && dungeonState.Visible[dungeonState.BlacksmithPosition.X, dungeonState.BlacksmithPosition.Y];
+        var target = showBlacksmith ? null : visualEffects.FocusEnemy();
         if (target?.IsElite == true && !dungeonState.IsMerchantFloor)
         {
             for (int i = 0; i < target.Titles.Length; i++)
                 asciiCanvas.Text(1012, 85 + i * 20, (i == 0 ? "ELITE / " : "") + FloorEventText.Title(target.Titles[i], localization.English), FloorEventText.TitleColor(target.Titles[i]), 14);
         }
         else
-            asciiCanvas.Text(1012, 91, dungeonState.IsMerchantFloor ? localization.Translate("MERCADOR", "MERCHANT") : localization.Translate("ALVO SELECIONADO", "SELECTED TARGET"), dungeonState.IsMerchantFloor ? UiTheme.Gold : UiTheme.Red, 16);
+            asciiCanvas.Text(1012, 91, showBlacksmith ? localization.Translate("FERREIRO PERDIDO", "LOST BLACKSMITH") : dungeonState.IsMerchantFloor ? localization.Translate("MERCADOR", "MERCHANT") : localization.Translate("ALVO SELECIONADO", "SELECTED TARGET"), showBlacksmith || dungeonState.IsMerchantFloor ? UiTheme.Gold : UiTheme.Red, 16);
         if (dungeonState.Modifier != FloorModifier.None)
             asciiCanvas.Text(650, 91, FloorEventText.Name(dungeonState.Modifier, localization.English), UiTheme.Gold, 13);
         asciiCanvas.Portrait(24, 121, HeroPortrait.Select(playerState), "@ " + localization.ClassName(playerState.ClassIndex), UiTheme.Teal, visualEffects.HeroHurtRemaining, visualEffects.HeroDamage);
-        asciiCanvas.Portrait(1012, 121, dungeonState.IsMerchantFloor ? AsciiArt.Merchant : AsciiArt.Enemy(target), dungeonState.IsMerchantFloor ? localization.Translate("MERCADOR", "MERCHANT") : localization.EnemyName(target), dungeonState.IsMerchantFloor ? UiTheme.Gold : target == null ? UiTheme.Dim : target.IsElite ? FloorEventText.TitleColor(target.Titles[0]) : UiTheme.Red, target?.Hurt ?? 0, target?.LastDamage ?? 0);
+        asciiCanvas.Portrait(1012, 121, showBlacksmith ? AsciiArt.Blacksmith : dungeonState.IsMerchantFloor ? AsciiArt.Merchant : AsciiArt.Enemy(target), showBlacksmith ? localization.Translate("FERREIRO PERDIDO", "LOST BLACKSMITH") : dungeonState.IsMerchantFloor ? localization.Translate("MERCADOR", "MERCHANT") : localization.EnemyName(target), showBlacksmith || dungeonState.IsMerchantFloor ? UiTheme.Gold : target == null ? UiTheme.Dim : target.IsElite ? FloorEventText.TitleColor(target.Titles[0]) : UiTheme.Red, target?.Hurt ?? 0, target?.LastDamage ?? 0);
         asciiCanvas.Text(32, 432, localization.Translate($"VIDA {playerState.Health}/{playerState.MaxHealth}", $"HEALTH {playerState.Health}/{playerState.MaxHealth}"), UiTheme.Red, 15);
         asciiCanvas.Text(32, 453, asciiCanvas.Bar(playerState.Health, playerState.MaxHealth), UiTheme.Red, 16);
         asciiCanvas.Text(32, 481, localization.Translate($"ENERGIA {playerState.Energy}/{playerState.MaxEnergy}", $"ENERGY {playerState.Energy}/{playerState.MaxEnergy}"), UiTheme.Teal, 15);
@@ -60,7 +61,7 @@ internal sealed class HudRenderer
         }
 
         DrawJournalSummary();
-        asciiCanvas.Text(272, 121, runState.Screen == "torch_aim" ? localization.Translate("> TOCHA: WASD / SETAS. ESC cancela.", "> TORCH: WASD / ARROWS. ESC cancels.") : runState.IsAiming ? localization.Translate("> MIRA: WASD / SETAS. ESC cancela.", "> AIM: WASD / ARROWS. ESC cancels.") : dungeonState.IsMerchantFloor ? localization.Translate("[E] Converse ao lado de M. [>] Continue sua jornada.", "[E] Talk next to M. [>] Continue your journey.") : dungeonState.Enemies.Any(e => e.IsWarden && e.AbilityWindup > 0 && dungeonState.Visible[e.Position.X, e.Position.Y]) ? localization.Translate("[!] O guardiao prepara um ataque. Afaste-se das marcas!", "[!] The Warden prepares an attack. Leave the marked tiles!") : dungeonState.Modifier != FloorModifier.None ? FloorEventText.Description(dungeonState.Modifier, localization.English) : localization.Translate("[>] Encontre a passagem para as profundezas.", "[>] Find the passage into the depths."), runState.IsAiming ? UiTheme.Gold : UiTheme.Teal, 15);
+        asciiCanvas.Text(272, 121, runState.Screen == "torch_aim" ? localization.Translate("> TOCHA: WASD / SETAS. ESC cancela.", "> TORCH: WASD / ARROWS. ESC cancels.") : runState.IsAiming ? localization.Translate("> MIRA: WASD / SETAS. ESC cancela.", "> AIM: WASD / ARROWS. ESC cancels.") : dungeonState.IsSanctuary(playerState.Position) ? localization.Translate("Ferreiro Perdido [F]: [E] conversar. Runas protegem esta sala.", "Lost Blacksmith [F]: [E] talk. Runes protect this room.") : dungeonState.IsMerchantFloor ? localization.Translate("[E] Converse ao lado de M. [>] Continue sua jornada.", "[E] Talk next to M. [>] Continue your journey.") : dungeonState.Enemies.Any(e => e.IsWarden && e.AbilityWindup > 0 && dungeonState.Visible[e.Position.X, e.Position.Y]) ? localization.Translate("[!] O guardiao prepara um ataque. Afaste-se das marcas!", "[!] The Warden prepares an attack. Leave the marked tiles!") : dungeonState.Modifier != FloorModifier.None ? FloorEventText.Description(dungeonState.Modifier, localization.English) : localization.Translate("[>] Encontre a passagem para as profundezas.", "[>] Find the passage into the depths."), runState.IsAiming ? UiTheme.Gold : UiTheme.Teal, 15);
         var actionFrame = actionEffectsRenderer.GetFrame();
         for (int y = 0; y < GameRules.Height; y++)
             for (int x = 0; x < GameRules.Width; x++)
@@ -94,6 +95,8 @@ internal sealed class HudRenderer
                         c = UiTheme.Gold;
                     }
 
+                    if (dungeonState.IsSanctuary(pos) && g == '.') { g = ':'; c = UiTheme.Teal; }
+                    if (dungeonState.BlacksmithRoom.HasValue && pos == dungeonState.BlacksmithPosition) { g = 'F'; c = UiTheme.Gold; }
                     if (pos == playerState.Position)
                     {
                         g = visualEffects.HeroHurtRemaining > 0 ? UiTheme.ImpactGlyph(visualEffects.HeroHurtRemaining) : '@';

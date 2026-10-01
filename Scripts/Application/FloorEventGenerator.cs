@@ -29,7 +29,7 @@ internal sealed class FloorEventGenerator(DungeonState dungeon, PlayerState play
                 for (int x = 1; x < GameRules.Width - 1; x++)
                 {
                     var p = new Vector2I(x, y);
-                    if (dungeon.Walk(p) && p != dungeon.Stairs && GameRules.Dist(p, player.Position) > 5 && dungeon.At(p) == null && !dungeon.Items.ContainsKey(p) && !dungeon.Environment.Fixtures.ContainsKey(p)) cells.Add(p);
+                    if (dungeon.Walk(p) && !dungeon.IsSanctuary(p) && p != dungeon.Stairs && GameRules.Dist(p, player.Position) > 5 && dungeon.At(p) == null && !dungeon.Items.ContainsKey(p) && !dungeon.Environment.Fixtures.ContainsKey(p)) cells.Add(p);
                 }
             for (int i = 0; i < 2 && cells.Count > 0; i++)
             {

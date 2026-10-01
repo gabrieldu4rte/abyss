@@ -10,7 +10,7 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
     internal bool Water(Vector2I p) => World.Details.TryGetValue(p, out var c) && c == '~';
     internal void Wet(Vector2I p)
     {
-        if (!dungeon.Walk(p) || p == dungeon.Stairs) return;
+        if (!dungeon.Walk(p) || dungeon.IsSanctuary(p) || p == dungeon.Stairs) return;
         World.Fire.Remove(p);
         if (World.TemporaryWater.TryGetValue(p, out var existing)) World.TemporaryWater[p] = (2, existing.Original);
         else if (!Water(p)) World.TemporaryWater[p] = (2, World.Details.TryGetValue(p, out var old) ? old : null);
@@ -37,19 +37,19 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
     {
         World.Fixtures.Remove(p);
         foreach (var q in new[] { p }.Concat(GameRules.Directions.Select(d => p + d)))
-            if (dungeon.Walk(q) && q != dungeon.Stairs && !Water(q)) World.Oil.Add(q);
+            if (dungeon.Walk(q) && !dungeon.IsSanctuary(q) && q != dungeon.Stairs && !Water(q)) World.Oil.Add(q);
         journal.Say("O barril tombou e espalhou oleo pelo chao.", "The barrel tipped over, spilling oil across the floor.");
     }
     internal void Ignite(Vector2I origin, bool report = true)
     {
-        if (dungeon.IsMerchantFloor || !dungeon.Walk(origin) || Water(origin)) return;
+        if (dungeon.IsSanctuary(origin) || dungeon.IsMerchantFloor || !dungeon.Walk(origin) || Water(origin)) return;
         var pending = new Queue<Vector2I>();
         var burning = new HashSet<Vector2I>();
         pending.Enqueue(origin);
         while (pending.Count > 0)
         {
             var p = pending.Dequeue();
-            if (!burning.Add(p) || !dungeon.Walk(p) || Water(p) || p == dungeon.Stairs) continue;
+            if (dungeon.IsSanctuary(p) || !burning.Add(p) || !dungeon.Walk(p) || Water(p) || p == dungeon.Stairs) continue;
             if (World.Fixtures.TryGetValue(p, out var fixture) && fixture == Fixture.OilBarrel) SpillOil(p);
             bool oil = World.Oil.Remove(p);
             World.Fire[p] = dungeon.Modifier == FloorModifier.HotDraft ? 6 : 4;
@@ -180,13 +180,13 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
             case Fixture.FlameTrap:
                 journal.Say("Um jato de fogo irrompe do piso!", "A jet of flame erupts from the floor!");
                 foreach (var q in new[] { p }.Concat(GameRules.Directions.Select(d => p + d)))
-                    if (dungeon.Walk(q) && q != dungeon.Stairs && !Water(q)) Ignite(q, false);
+                    if (dungeon.Walk(q) && !dungeon.IsSanctuary(q) && q != dungeon.Stairs && !Water(q)) Ignite(q, false);
                 break;
         }
     }
     private void HurtHero(int damage, string pt, string en)
     {
-        if (player.Health <= 0) return;
+        if (player.Health <= 0 || dungeon.IsSanctuary(player.Position)) return;
         vitals.Damage(damage);
         effects.Sounds.Play("herohurt");
         effects.HeroHurtRemaining = UiTheme.HurtDuration;

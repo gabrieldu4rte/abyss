@@ -5,6 +5,9 @@ using System.Collections.Generic;
 namespace Abyss.Domain;
 internal sealed class DungeonState
 {
+    internal Rect2I? BlacksmithRoom { get; set; }
+    internal Vector2I BlacksmithPosition { get; set; }
+    internal bool IsSanctuary(Vector2I p) => BlacksmithRoom?.HasPoint(p) == true;
     internal FloorModifier Modifier { get; set; }
     internal EnvironmentState Environment { get; } = new();
     internal bool IsMerchantFloor { get; set; }

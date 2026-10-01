@@ -357,3 +357,16 @@ Twelve named items extend `Gear` with a stable `ItemId`. They retain the base ki
 | Legendary | Hood of Shadow Legends | Lethal damage without an active torch triggers shadow birds and escape to the nearest unoccupied stair-room cell with one HP and zero energy. The hood is removed from equipment/backpack and the remaining damage response is interrupted. |
 
 `HeroVitals` centralizes healing and lethal damage, while `NamedEquipmentEffects` handles hit-triggered properties. Pushes respect occupied cells, walls and Warden-room confinement. `TemporaryWater` preserves prior terrain. Blindness pauses enemy movement and ability preparation. Diagnostics remain turn-neutral and audio/animations use existing assets. `NamedItemTests` exercises all twelve properties and loot availability; `--item-demo=ItemId` previews an item in inventory.
+
+## Merchant capacity and Lost Blacksmith
+
+- Merchant visits begin with five offers: two equipment pieces, health potions, energy potions, and torches. Consumables retain stack quantities. Reopening the shop never rerolls inventory.
+- Sold items fill vacant stock slots. With five active offers, the merchant still buys items but does not list additional resale offers. Depleted entries are removed before adding a new offer.
+- The Lost Blacksmith has a 3% chance on ordinary floors after floor one. Merchant and Warden floors are excluded. A separate seed-derived random stream selects a room excluding arrival and stairs; corridors and exits remain intact.
+- Teal rune tiles mark his sanctuary; `F` marks the NPC. Monsters, pickups and hazards cannot spawn inside. Enemy navigation and knockback cannot enter; hostile attacks and environmental damage cannot hurt the player there. Fire and oil cannot spread inside.
+- Stand beside him and press `E`. Arrows select equipment, Enter opens confirmation, and Escape cancels or leaves. Confirmation defaults to cancellation.
+- Generic equipment improves one rarity per transaction: Common to Rare costs 60 gold, Rare to Epic costs 180, and Epic to Legendary costs 450. Kind and grade remain unchanged; existing rarity statistics, effects and level requirements apply.
+- All twelve named items (`Special != ItemId.None`) are excluded, as is legendary equipment. Transactions revalidate ownership and gold and consume each pending request once.
+- Equipped upgrades replace the exact reference in both backpack and equipment. If the new level requirement is not met, the item remains unequipped in the backpack; confirmation explains this beforehand. Upgrades do not advance turns.
+- `BlacksmithService` owns eligibility, prices and transactions; `BlacksmithRenderer` owns the bilingual ASCII interface. `DungeonState.IsSanctuary` is shared by generation, navigation, displacement, combat and environment services.
+- `--blacksmith-demo` previews the menu; add `--upgrade-confirm` for confirmation or `--view=game` for the room. Self-tests cover occurrence, protection, confirmation, costs, equipment identity, exclusions and stock capacity.

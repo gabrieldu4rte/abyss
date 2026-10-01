@@ -4,6 +4,7 @@ using System;
 namespace Abyss.Application;
 internal sealed class MenuController
 {
+    private readonly BlacksmithService blacksmith;
     private readonly IGameHost host;
     private readonly InventoryService inventoryService;
     private readonly InventoryState inventoryState;
@@ -15,8 +16,9 @@ internal sealed class MenuController
     private readonly PlayerState playerState;
     private readonly RunState runState;
     private readonly IRunLifecycle lifecycle;
-    internal MenuController(IGameHost host, InventoryService inventoryService, InventoryState inventoryState, JournalFormatter journalFormatter, LanguagePreferences languagePreferences, MenuState menuState, MerchantService merchantService, PlayerActions playerActions, PlayerState playerState, RunState runState, IRunLifecycle lifecycle)
+    internal MenuController(IGameHost host, InventoryService inventoryService, InventoryState inventoryState, JournalFormatter journalFormatter, LanguagePreferences languagePreferences, MenuState menuState, MerchantService merchantService, PlayerActions playerActions, PlayerState playerState, RunState runState, IRunLifecycle lifecycle, BlacksmithService blacksmith)
     {
+        this.blacksmith = blacksmith;
         this.host = host;
         this.inventoryService = inventoryService;
         this.inventoryState = inventoryState;
@@ -179,6 +181,8 @@ internal sealed class MenuController
         }
         else if (runState.Screen == "pause")
             HandlePause(key);
+        else if (runState.Screen == "blacksmith")
+            blacksmith.Handle(key);
         else if (runState.Screen == "shop")
             HandleShop(key);
         else if (runState.Screen == "confirm_quit")

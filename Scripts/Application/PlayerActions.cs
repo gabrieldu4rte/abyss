@@ -97,6 +97,14 @@ internal sealed class PlayerActions
 
     internal void Interact()
     {
+        if (dungeonState.BlacksmithRoom.HasValue && GameRules.Dist(playerState.Position, dungeonState.BlacksmithPosition) == 1)
+        {
+            runState.Screen = "blacksmith";
+            menuState.BlacksmithIndex = 0;
+            menuState.PendingUpgrade = null;
+            menuState.ShopNotice = ("", "");
+            return;
+        }
         if (dungeonState.IsMerchantFloor && GameRules.Dist(playerState.Position, dungeonState.MerchantPosition) == 1)
         {
             runState.Screen = "shop";
@@ -122,6 +130,11 @@ internal sealed class PlayerActions
             return;
         }
 
+        if (dungeonState.BlacksmithRoom.HasValue && p == dungeonState.BlacksmithPosition)
+        {
+            expeditionJournal.Say("[E] Conversar com o Ferreiro Perdido.", "[E] Talk to the Lost Blacksmith.");
+            return;
+        }
         if (environment.Strike(p)) { turns.EndTurn(); return; }
         var enemy = dungeonState.At(p);
         if (enemy != null)
@@ -200,7 +213,12 @@ internal sealed class PlayerActions
                 break;
             path.Add(p);
             if (inventoryState.Weapon?.Special == ItemId.FluidStaff) environment.Wet(p);
-            if (environment.Strike(p))
+            if (dungeonState.BlacksmithRoom.HasValue && p == dungeonState.BlacksmithPosition)
+        {
+            expeditionJournal.Say("[E] Conversar com o Ferreiro Perdido.", "[E] Talk to the Lost Blacksmith.");
+            return;
+        }
+        if (environment.Strike(p))
             {
                 visualEffects.Actions.PlayProjectile(origin, path, playerState.ClassIndex == 1);
                 turns.EndTurn();

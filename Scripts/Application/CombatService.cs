@@ -102,7 +102,7 @@ internal sealed class CombatService
 
     internal void ResolveEnemyAttack(Enemy enemy, bool evade)
     {
-        if (GameRules.Dist(playerState.Position, enemy.Position) != 1 || !dungeonState.Los(enemy.Position, playerState.Position))
+        if (dungeonState.IsSanctuary(playerState.Position) || GameRules.Dist(playerState.Position, enemy.Position) != 1 || !dungeonState.Los(enemy.Position, playerState.Position))
             return;
         if (enemy.Glyph == 'B' && (!enemy.Alerted || !dungeonState.StairsRoom.HasPoint(playerState.Position)))
             return;

@@ -7,7 +7,7 @@ internal sealed class RoamingBehavior(CombatService combatService, DungeonState 
     public bool Supports(Enemy enemy) => enemy.Glyph != 'B';
     public void Act(Enemy enemy, bool evade, bool mayAttack)
     {
-        bool seesPlayer = GameRules.Dist(enemy.Position, playerState.Position) < 13 && dungeonState.Los(enemy.Position, playerState.Position);
+        bool seesPlayer = !dungeonState.IsSanctuary(playerState.Position) && GameRules.Dist(enemy.Position, playerState.Position) < 13 && dungeonState.Los(enemy.Position, playerState.Position);
         if (seesPlayer)
         {
             enemy.Alerted = true;
@@ -41,7 +41,7 @@ internal sealed class RoamingBehavior(CombatService combatService, DungeonState 
                 for (int x = 1; x < GameRules.Width - 1; x++)
                 {
                     var p = new Vector2I(x, y);
-                    if (dungeonState.Walk(p) && p != enemy.Position && p != playerState.Position && dungeonState.At(p) == null)
+                    if (dungeonState.Walk(p) && !dungeonState.IsSanctuary(p) && p != enemy.Position && p != playerState.Position && dungeonState.At(p) == null)
                         destinations.Add(p);
                 }
 

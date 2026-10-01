@@ -30,6 +30,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
     internal AsciiCanvas AsciiCanvas { get; }
     internal MerchantRenderer MerchantRenderer { get; }
     internal PauseRenderer PauseRenderer { get; }
+    internal BlacksmithService BlacksmithService { get; }
     internal MerchantService MerchantService { get; }
     internal CombatService CombatService { get; }
     internal InventoryService InventoryService { get; }
@@ -64,6 +65,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         Settings = settings;
         VisualEffects = new VisualEffects(DungeonState, PlayerState);
         AudioController = new GameAudioController(audio, RunState, MenuState, PlayerState, DungeonState, VisualEffects);
+        BlacksmithService = new BlacksmithService(InventoryState, PlayerState, MenuState, RunState, ExpeditionJournal);
         MerchantService = new MerchantService(ExpeditionJournal, InventoryState, MenuState, MerchantState, PlayerState, RunState);
         LanguagePreferences = new LanguagePreferences(MenuState, Settings);
         HeroCombatStats = new HeroCombatStats(PlayerState, InventoryState);
@@ -84,7 +86,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         EnvironmentService = new EnvironmentService(DungeonState, InventoryState, PlayerState, RunState, ExpeditionJournal, CombatService, VisualEffects, HeroVitals);
         NamedEquipmentEffects = new NamedEquipmentEffects(InventoryState, DungeonState, PlayerState, CombatService, EnvironmentService, HeroCombatStats, RandomStream, VisualEffects, ExpeditionJournal);
         CombatService.HeroHit += NamedEquipmentEffects.OnHit;
-        DungeonGenerator = new DungeonGenerator(DungeonState, ExpeditionJournal, LootService, MenuState, MerchantState, PlayerState, VisualEffects, RandomStream, InventoryState, EnvironmentGenerator, FloorEventGenerator);
+        DungeonGenerator = new DungeonGenerator(DungeonState, ExpeditionJournal, LootService, MenuState, MerchantState, PlayerState, VisualEffects, RandomStream, InventoryState, EnvironmentGenerator, FloorEventGenerator, RunState);
         UiComponents = new UiComponents(AsciiCanvas, Localization, MenuState);
         MerchantRenderer = new MerchantRenderer(AsciiCanvas, InventoryState, Localization, MenuState, MerchantService, PlayerState, UiComponents);
         BestiaryRenderer = new BestiaryRenderer(AsciiCanvas, BestiaryState, MenuState, Localization);
@@ -94,8 +96,8 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         EnemyAi = new EnemyAi(new IEnemyBehavior[] { new WardenBehavior(CombatService, DungeonState, ExpeditionJournal, PlayerState, EnemyNavigator, WardenAbilities), new RoamingBehavior(CombatService, DungeonState, PlayerState, RandomStream, EnemyNavigator) });
         PlayerActions = new PlayerActions(CombatService, this, DungeonState, this, ExpeditionJournal, HeroCombatStats, InventoryState, LootService, MenuState, PlayerState, RunState, VisualEffects, RandomStream, EnvironmentService, HeroVitals);
         MenuRenderer = new MenuRenderer(AsciiCanvas, DungeonState, Localization, MenuState, PlayerState, RunState, UiComponents);
-        MenuController = new MenuController(Host, InventoryService, InventoryState, JournalFormatter, LanguagePreferences, MenuState, MerchantService, PlayerActions, PlayerState, RunState, this);
-        GameRenderer = new GameRenderer(AsciiCanvas, HudRenderer, Localization, MenuRenderer, MerchantRenderer, PauseRenderer, RunState, MenuState, Transitions, OpeningStory);
+        MenuController = new MenuController(Host, InventoryService, InventoryState, JournalFormatter, LanguagePreferences, MenuState, MerchantService, PlayerActions, PlayerState, RunState, this, BlacksmithService);
+        GameRenderer = new GameRenderer(AsciiCanvas, HudRenderer, Localization, MenuRenderer, MerchantRenderer, PauseRenderer, RunState, MenuState, Transitions, OpeningStory, new BlacksmithRenderer(AsciiCanvas, Localization, InventoryState, PlayerState, MenuState, UiComponents));
         GameInput = new GameInput(this, ExpeditionJournal, Host, MenuController, MenuState, PlayerActions, PlayerState, RunState, VisualEffects, Transitions, OpeningStory);
     }
 

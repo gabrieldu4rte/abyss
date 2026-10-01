@@ -17,8 +17,10 @@ internal sealed class DungeonGenerator
     private readonly PlayerState playerState;
     private readonly VisualEffects visualEffects;
     private readonly RandomStream random;
-    internal DungeonGenerator(DungeonState dungeonState, ExpeditionJournal expeditionJournal, LootService lootService, MenuState menuState, MerchantState merchantState, PlayerState playerState, VisualEffects visualEffects, RandomStream random, InventoryState inventoryState, EnvironmentGenerator environmentGenerator, FloorEventGenerator floorEvents)
+    private readonly RunState run;
+    internal DungeonGenerator(DungeonState dungeonState, ExpeditionJournal expeditionJournal, LootService lootService, MenuState menuState, MerchantState merchantState, PlayerState playerState, VisualEffects visualEffects, RandomStream random, InventoryState inventoryState, EnvironmentGenerator environmentGenerator, FloorEventGenerator floorEvents, RunState run)
     {
+        this.run = run;
         this.dungeonState = dungeonState;
         this.inventoryState = inventoryState;
         this.floorEvents = floorEvents;
@@ -36,6 +38,8 @@ internal sealed class DungeonGenerator
 
     internal void GenerateMerchantRoom()
     {
+        dungeonState.BlacksmithRoom = null;
+        dungeonState.BlacksmithPosition = Vector2I.Zero;
         dungeonState.IsMerchantFloor = true;
         dungeonState.Modifier = FloorModifier.None;
         dungeonState.Enemies.Clear();
@@ -56,7 +60,7 @@ internal sealed class DungeonGenerator
         dungeonState.MerchantPosition = new Vector2I(28, 11);
         dungeonState.Stairs = new Vector2I(36, 11);
         dungeonState.Tiles[dungeonState.Stairs.X, dungeonState.Stairs.Y] = '>';
-        for (int i = 0; i < 6; i++)
+        for (int i = 0; i < 2; i++)
             merchantState.MerchantStock.Add(new Offer { Gear = lootService.CreateEquipment(dungeonState.Floor) });
         merchantState.MerchantStock.Add(new Offer { Potion = 0, Quantity = random.Generator.Next(2, 5) });
         merchantState.MerchantStock.Add(new Offer { Potion = 1, Quantity = random.Generator.Next(1, 4) });
@@ -68,7 +72,7 @@ internal sealed class DungeonGenerator
         expeditionJournal.Say("Uma luz acolhedora. Voce encontrou o mercador.", "A welcoming light. You found the merchant.");
     }
 
-    internal void Generate(bool? merchantOverride = null)
+    internal void Generate(bool? merchantOverride = null, bool? blacksmithOverride = null)
     {
         visualEffects.ResetEffects();
         dungeonState.Enemies.Clear();
@@ -78,6 +82,9 @@ internal sealed class DungeonGenerator
         for (int x = 0; x < GameRules.Width; x++)
             for (int y = 0; y < GameRules.Height; y++)
                 dungeonState.Tiles[x, y] = '#';
+        dungeonState.BlacksmithRoom = null;
+        dungeonState.BlacksmithPosition = Vector2I.Zero;
+        menuState.PendingUpgrade = null;
         dungeonState.IsMerchantFloor = false;
         dungeonState.Modifier = FloorModifier.None;
         merchantState.MerchantStock.Clear();
@@ -124,12 +131,18 @@ internal sealed class DungeonGenerator
         playerState.Position = rooms[0].GetCenter();
         dungeonState.Stairs = dungeonState.StairsRoom.GetCenter();
         dungeonState.Tiles[dungeonState.Stairs.X, dungeonState.Stairs.Y] = '>';
+        var encounterRandom = new Random(unchecked(run.Seed * 104729 ^ dungeonState.Floor * 65537 ^ 32749));
+        if (rooms.Count > 2 && (blacksmithOverride ?? (dungeonState.Floor > 1 && !GameRules.IsBossFloor(dungeonState.Floor) && encounterRandom.NextDouble() < .03)))
+        {
+            dungeonState.BlacksmithRoom = rooms[encounterRandom.Next(1, rooms.Count - 1)];
+            dungeonState.BlacksmithPosition = dungeonState.BlacksmithRoom.Value.GetCenter();
+        }
         var free = new List<Vector2I>();
         for (int y = 1; y < GameRules.Height - 1; y++)
             for (int x = 1; x < GameRules.Width - 1; x++)
             {
                 var p = new Vector2I(x, y);
-                if (dungeonState.Walk(p) && p != dungeonState.Stairs && GameRules.Dist(p, playerState.Position) > 6)
+                if (dungeonState.Walk(p) && !dungeonState.IsSanctuary(p) && p != dungeonState.Stairs && GameRules.Dist(p, playerState.Position) > 6)
                     free.Add(p);
             }
 

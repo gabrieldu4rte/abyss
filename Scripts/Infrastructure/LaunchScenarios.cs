@@ -11,6 +11,18 @@ internal sealed class LaunchScenarios(GameSession game)
             game.MenuState.English = true;
         if (args.Contains("--portuguese"))
             game.MenuState.English = false;
+        if (args.Contains("--blacksmith-demo"))
+        {
+            game.Start(712);
+            game.DungeonState.Floor = 4;
+            game.DungeonGenerator.Generate(false, true);
+            game.PlayerState.Position = game.DungeonState.BlacksmithPosition + Vector2I.Down;
+            game.PlayerState.Gold = 500;
+            game.InventoryState.Backpack.Add(NamedItemCatalog.Create(ItemId.SparkSword));
+            game.DungeonGenerator.Reveal();
+            game.PlayerActions.Interact();
+            if (args.Contains("--upgrade-confirm")) game.BlacksmithService.Handle(Key.Enter);
+        }
         var namedItem = args.FirstOrDefault(a => a.StartsWith("--item-demo="));
         if (namedItem != null)
         {

@@ -129,7 +129,7 @@ internal sealed class PauseRenderer
             localization.Translate("VOCACOES", "CALLINGS"),
             localization.Translate("EQUIPAMENTOS E RELIQUIAS", "EQUIPMENT AND RELICS"),
             localization.Translate("PROVISOES", "SUPPLIES"),
-            localization.Translate("O MERCADOR", "THE MERCHANT"),
+            localization.Translate("VIAJANTES E OFICIOS", "TRAVELERS AND TRADES"),
             localization.Translate("LUZ E PERIGOS", "LIGHT AND HAZARDS"),
             localization.Translate("ENCONTROS RAROS", "RARE ENCOUNTERS")
         };

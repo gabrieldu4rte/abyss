@@ -1,6 +1,8 @@
 namespace Abyss.Presentation;
 internal sealed class MenuState
 {
+    internal Gear? PendingUpgrade { get; set; }
+    internal int BlacksmithIndex { get; set; }
     internal int MusicVolume { get; set; } = 50;
     internal int EffectsVolume { get; set; } = 75;
     internal int PauseTab { get; set; }

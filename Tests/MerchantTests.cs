@@ -11,7 +11,7 @@ internal sealed partial class RegressionSuite
         game.Start(91);
         game.DungeonState.Floor = 16;
         game.DungeonGenerator.Generate(true);
-        if (!game.DungeonState.IsMerchantFloor || game.DungeonState.Enemies.Count != 0 || game.DungeonState.Items.Count != 0 || !game.DungeonState.Walk(game.DungeonState.Stairs) || !game.DungeonState.Walk(game.DungeonState.MerchantPosition) || game.MerchantState.MerchantStock.Count != 9)
+        if (!game.DungeonState.IsMerchantFloor || game.DungeonState.Enemies.Count != 0 || game.DungeonState.Items.Count != 0 || !game.DungeonState.Walk(game.DungeonState.Stairs) || !game.DungeonState.Walk(game.DungeonState.MerchantPosition) || game.MerchantState.MerchantStock.Count != 5)
             throw new Exception("Unsafe or incomplete merchant room");
         var originalStock = game.MerchantState.MerchantStock.ToArray();
         var originalPlayer = game.PlayerState.Position;

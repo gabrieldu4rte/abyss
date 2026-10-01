@@ -18,7 +18,7 @@ internal sealed class EnvironmentGenerator(DungeonState dungeon, PlayerState pla
             for (int x = 1; x < GameRules.Width - 1; x++)
             {
                 var p = new Vector2I(x, y);
-                if (!dungeon.Walk(p) || p == dungeon.Stairs || p == player.Position || dungeon.Items.ContainsKey(p) || dungeon.At(p) != null || (dungeon.IsMerchantFloor && p == dungeon.MerchantPosition)) continue;
+                if (!dungeon.Walk(p) || dungeon.IsSanctuary(p) || p == dungeon.Stairs || p == player.Position || dungeon.Items.ContainsKey(p) || dungeon.At(p) != null || (dungeon.IsMerchantFloor && p == dungeon.MerchantPosition)) continue;
                 free.Add(p);
                 if (random.NextDouble() < .23)
                     world.Details[p] = world.Biome switch { Biome.Ruins => random.Next(2) == 0 ? ':' : '%', Biome.Cistern => ',', Biome.FungalCaves => random.Next(2) == 0 ? '"' : ';', _ => random.Next(2) == 0 ? ',' : ':' };

@@ -15,3 +15,5 @@ These sources are retained for future conversions. `.gdignore` prevents Godot fr
 Critical-health variants: `warrior_critical.png`, `mage_critical.png`, `archer_critical.png`, and `rogue_critical.png`. These were edited from the original portraits with the integrated imagegen tool, preserving identity and equipment while showing exhaustion and superficial injuries. Exact prompts are in `critical-portrait-prompts.json`.
 
 Biome bestiary: twelve new source portraits were generated with the integrated imagegen tool. Exact prompts are stored in [bestiary-prompts.json](bestiary-prompts.json). Nine regular enemies and three Wardens join the existing rat, skeleton, goblin and ruin Warden. Each new portrait is converted to a 100-column ASCII grid and matching tone map.
+
+Lost Blacksmith: `lost_blacksmith.png`, generated with the integrated imagegen tool using the merchant as a style reference. The exact prompt is in [lost-blacksmith-prompt.txt](lost-blacksmith-prompt.txt). Converted to a 100-column ASCII portrait with an eight-level tone map, displayed through the same portrait frame as the merchant.
