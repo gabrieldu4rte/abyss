@@ -4,6 +4,7 @@ using System;
 namespace Abyss.Application;
 internal sealed class MenuController
 {
+    private readonly SettingsController settingsController;
     private readonly BlacksmithService blacksmith;
     private readonly IGameHost host;
     private readonly InventoryService inventoryService;
@@ -16,8 +17,9 @@ internal sealed class MenuController
     private readonly PlayerState playerState;
     private readonly RunState runState;
     private readonly IRunLifecycle lifecycle;
-    internal MenuController(IGameHost host, InventoryService inventoryService, InventoryState inventoryState, JournalFormatter journalFormatter, LanguagePreferences languagePreferences, MenuState menuState, MerchantService merchantService, PlayerActions playerActions, PlayerState playerState, RunState runState, IRunLifecycle lifecycle, BlacksmithService blacksmith)
+    internal MenuController(IGameHost host, InventoryService inventoryService, InventoryState inventoryState, JournalFormatter journalFormatter, LanguagePreferences languagePreferences, MenuState menuState, MerchantService merchantService, PlayerActions playerActions, PlayerState playerState, RunState runState, IRunLifecycle lifecycle, BlacksmithService blacksmith, SettingsController settingsController)
     {
+        this.settingsController = settingsController;
         this.blacksmith = blacksmith;
         this.host = host;
         this.inventoryService = inventoryService;
@@ -61,6 +63,11 @@ internal sealed class MenuController
             return;
         }
 
+        if (menuState.PauseTab == 4 && key != Key.Tab && !(key >= Key.Key1 && key <= Key.Key5))
+        {
+            settingsController.Handle(key, true);
+            return;
+        }
         int previous = menuState.PauseTab;
         if (key == Key.Left || key == Key.A)
             menuState.PauseTab = (menuState.PauseTab + 4) % 5;
@@ -70,6 +77,7 @@ internal sealed class MenuController
             menuState.PauseTab = (int)key - (int)Key.Key1;
         if (previous != menuState.PauseTab)
         {
+            menuState.SettingsIndex = 0;
             menuState.MenuIndex = 0;
             return;
         }
@@ -91,18 +99,6 @@ internal sealed class MenuController
 
         if (menuState.PauseTab == 3)
             HandleHelp(key);
-        if (menuState.PauseTab == 4)
-        {
-            if (UiTheme.Previous(key) || UiTheme.Next(key))
-                menuState.MenuIndex = 1 - menuState.MenuIndex;
-            if (UiTheme.Confirm(key))
-            {
-                if (menuState.MenuIndex == 0)
-                    OpenLanguage("pause");
-                else
-                    AskReturnToMenu();
-            }
-        }
     }
 
     internal void OpenLanguage(string from)
@@ -133,7 +129,7 @@ internal sealed class MenuController
                 if (menuState.MenuIndex == 0)
                     runState.Screen = "classes";
                 else if (menuState.MenuIndex == 1)
-                    OpenLanguage("home");
+                    settingsController.Open();
                 else
                 {
                     menuState.ExitYes = false;
@@ -141,6 +137,8 @@ internal sealed class MenuController
                 }
             }
         }
+        else if (runState.Screen == "settings")
+            settingsController.Handle(key, false);
         else if (runState.Screen == "language")
         {
             if (UiTheme.Previous(key) || UiTheme.Next(key) || key == Key.Left || key == Key.Right)

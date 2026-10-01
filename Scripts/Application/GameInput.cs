@@ -4,6 +4,7 @@ using System;
 namespace Abyss.Application;
 internal sealed class GameInput
 {
+    private readonly SettingsController settingsController;
     private readonly ScreenTransitions transitions;
     private readonly OpeningStory openingStory;
     private readonly ITurnScheduler turns;
@@ -15,8 +16,9 @@ internal sealed class GameInput
     private readonly PlayerState playerState;
     private readonly RunState runState;
     private readonly VisualEffects visualEffects;
-    internal GameInput(ITurnScheduler turns, ExpeditionJournal expeditionJournal, IGameHost host, MenuController menuController, MenuState menuState, PlayerActions playerActions, PlayerState playerState, RunState runState, VisualEffects visualEffects, ScreenTransitions transitions, OpeningStory openingStory)
+    internal GameInput(ITurnScheduler turns, ExpeditionJournal expeditionJournal, IGameHost host, MenuController menuController, MenuState menuState, PlayerActions playerActions, PlayerState playerState, RunState runState, VisualEffects visualEffects, ScreenTransitions transitions, OpeningStory openingStory, SettingsController settingsController)
     {
+        this.settingsController = settingsController;
         this.turns = turns;
         this.transitions = transitions;
         this.openingStory = openingStory;
@@ -32,8 +34,10 @@ internal sealed class GameInput
 
     public void HandleEvent(InputEvent e)
     {
-        if (e is not InputEventKey k || k.Echo)
-            return;
+        if (e is not InputEventKey k) return;
+        bool volumeRepeat = (runState.Screen == "settings" || runState.Screen == "pause" && menuState.PauseTab == 4)
+            && menuState.SettingsIndex is 1 or 2 && k.Keycode is Key.Left or Key.Right or Key.A or Key.D;
+        if (k.Echo && !volumeRepeat) return;
         if (!k.Pressed)
         {
             if (k.Keycode == HeldMovementKey)
@@ -64,7 +68,7 @@ internal sealed class GameInput
         }
         if (key == Key.F11)
         {
-            host.ToggleFullscreen();
+            settingsController.ToggleFullscreen();
             return;
         }
 

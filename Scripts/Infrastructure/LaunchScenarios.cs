@@ -23,6 +23,15 @@ internal sealed class LaunchScenarios(GameSession game)
             game.PlayerActions.Interact();
             if (args.Contains("--upgrade-confirm")) game.BlacksmithService.Handle(Key.Enter);
         }
+        var display = args.FirstOrDefault(a => a.StartsWith("--display-demo="));
+        if (display != null)
+        {
+            string[] size = display.Split('=')[1].Split('x');
+            int index = Array.IndexOf(SettingsController.Resolutions, new Vector2I(int.Parse(size[0]), int.Parse(size[1])));
+            if (index >= 0) game.MenuState.ResolutionIndex = index;
+            game.MenuState.Fullscreen = args.Contains("--fullscreen-preview");
+            game.SettingsController.LoadDisplay();
+        }
         var namedItem = args.FirstOrDefault(a => a.StartsWith("--item-demo="));
         if (namedItem != null)
         {
@@ -62,7 +71,9 @@ internal sealed class LaunchScenarios(GameSession game)
         if (view != null)
         {
             var name = view.Substring(7);
-            if (name == "help")
+            if (name == "main-settings")
+                game.SettingsController.Open();
+            else if (name == "help")
             {
                 game.RunState.Screen = "pause";
                 game.MenuState.PauseTab = 3;

@@ -71,7 +71,12 @@ internal sealed partial class RegressionSuite
         }
 
         public void Quit(int exitCode = 0) => QuitCalls++;
-        public void ToggleFullscreen() => FullscreenChanges++;
+        internal DisplayPreferences? Display;
+        public void ApplyDisplay(DisplayPreferences preferences)
+        {
+            if (Display?.Fullscreen != preferences.Fullscreen) FullscreenChanges++;
+            Display = preferences;
+        }
     }
 
     private sealed class TestCanvas : IAsciiCanvas

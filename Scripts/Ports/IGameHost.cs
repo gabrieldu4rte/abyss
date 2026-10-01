@@ -4,5 +4,5 @@ internal interface IGameHost
     void RequestRedraw();
     void Quit(int exitCode = 0);
     void Hide();
-    void ToggleFullscreen();
+    void ApplyDisplay(DisplayPreferences preferences);
 }

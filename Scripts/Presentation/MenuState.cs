@@ -3,6 +3,10 @@ internal sealed class MenuState
 {
     internal Gear? PendingUpgrade { get; set; }
     internal int BlacksmithIndex { get; set; }
+    internal int SettingsIndex { get; set; }
+    internal bool Fullscreen { get; set; }
+    internal int ResolutionIndex { get; set; } = 2;
+    internal bool DisplaySaveFailed { get; set; }
     internal int MusicVolume { get; set; } = 50;
     internal int EffectsVolume { get; set; } = 75;
     internal int PauseTab { get; set; }

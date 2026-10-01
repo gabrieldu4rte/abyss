@@ -14,12 +14,17 @@ internal sealed partial class RegressionSuite
         game.MenuState.MenuIndex = 0;
         game.GameInput.HandleKey(Key.Down);
         game.GameInput.HandleKey(Key.Enter);
+        if (game.RunState.Screen != "settings")
+            throw new Exception("Home settings navigation failed");
+        game.GameInput.HandleKey(Key.Enter);
         if (game.RunState.Screen != "language")
-            throw new Exception("Home language navigation failed");
+            throw new Exception("Settings language navigation failed");
         game.GameInput.HandleKey(Key.Key2);
         game.GameInput.HandleKey(Key.Enter);
-        if (!game.MenuState.English || game.RunState.Screen != "home" || game.Localization.ClassName(0) != "WARRIOR")
+        if (!game.MenuState.English || game.RunState.Screen != "settings" || game.Localization.ClassName(0) != "WARRIOR")
             throw new Exception("English selection failed");
+        game.GameInput.HandleKey(Key.Escape);
+        game.GameInput.HandleKey(Key.Key1);
         game.GameInput.HandleKey(Key.Enter);
         if (game.RunState.Screen != "classes")
             throw new Exception("Class screen failed");
@@ -71,7 +76,7 @@ internal sealed partial class RegressionSuite
         game.GameInput.HandleKey(Key.Escape);
         if (game.RunState.Screen != "pause" || game.MenuState.PauseTab != 4)
             throw new Exception("Settings return tab lost");
-        game.GameInput.HandleKey(Key.Down);
+        game.GameInput.HandleKey(Key.Up);
         game.GameInput.HandleKey(Key.Enter);
         if (game.RunState.Screen != "confirm_exit")
             throw new Exception("Missing exit confirmation");

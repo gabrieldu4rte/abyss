@@ -27,7 +27,7 @@ internal sealed class MenuRenderer
         asciiCanvas.Art(32, 169, AsciiArt.Tower, UiTheme.Dim);
         asciiCanvas.Text(655, 210, localization.Translate("A luz termina aqui.", "The light ends here."), UiTheme.Gold, 30);
         uiComponents.MenuItem(655, 414, 0, localization.Translate("INICIAR JOGO", "START GAME"));
-        uiComponents.MenuItem(655, 473, 1, localization.Translate("IDIOMA", "LANGUAGE"));
+        uiComponents.MenuItem(655, 473, 1, localization.Translate("CONFIGURACOES", "SETTINGS"));
         uiComponents.MenuItem(655, 532, 2, localization.Translate("SAIR DO JOGO", "QUIT GAME"));
         uiComponents.Footer("[SETAS / W S] selecionar   [ENTER] confirmar   [F11] tela cheia", "[ARROWS / W S] select   [ENTER] confirm   [F11] fullscreen");
     }

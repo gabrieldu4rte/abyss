@@ -4,6 +4,7 @@ using System;
 namespace Abyss.Presentation;
 internal sealed class PauseRenderer
 {
+    private readonly SettingsRenderer settingsRenderer;
     private readonly BestiaryRenderer bestiaryRenderer;
     private readonly AsciiCanvas asciiCanvas;
     private readonly DungeonState dungeonState;
@@ -16,8 +17,9 @@ internal sealed class PauseRenderer
     private readonly MenuState menuState;
     private readonly PlayerState playerState;
     private readonly UiComponents uiComponents;
-    internal PauseRenderer(AsciiCanvas asciiCanvas, DungeonState dungeonState, ExpeditionJournal expeditionJournal, HeroCombatStats heroCombatStats, InventoryRenderer inventoryRenderer, InventoryState inventoryState, JournalFormatter journalFormatter, Localization localization, MenuState menuState, PlayerState playerState, UiComponents uiComponents, BestiaryRenderer bestiaryRenderer)
+    internal PauseRenderer(AsciiCanvas asciiCanvas, DungeonState dungeonState, ExpeditionJournal expeditionJournal, HeroCombatStats heroCombatStats, InventoryRenderer inventoryRenderer, InventoryState inventoryState, JournalFormatter journalFormatter, Localization localization, MenuState menuState, PlayerState playerState, UiComponents uiComponents, BestiaryRenderer bestiaryRenderer, SettingsRenderer settingsRenderer)
     {
+        this.settingsRenderer = settingsRenderer;
         this.bestiaryRenderer = bestiaryRenderer;
         this.asciiCanvas = asciiCanvas;
         this.dungeonState = dungeonState;
@@ -56,12 +58,17 @@ internal sealed class PauseRenderer
             else DrawHelpTopics();
         }
         else if (menuState.PauseTab == 4)
-            DrawPauseSettings();
+            settingsRenderer.Draw(true);
         else
             inventoryRenderer.DrawInventory();
         if (menuState.PauseTab == 3 && menuState.BestiaryOpen)
         {
             uiComponents.Footer("[A D / TAB] abas   [SETAS] bioma / criatura   [ESC] compendio", "[A D / TAB] tabs   [ARROWS] biome / creature   [ESC] compendium");
+            return;
+        }
+        if (menuState.PauseTab == 4)
+        {
+            uiComponents.Footer("[TAB / 1-5] abas   [W S / CIMA/BAIXO] selecionar   [A D / ESQ/DIR] ajustar   [ESC] continuar", "[TAB / 1-5] tabs   [W S / UP/DOWN] select   [A D / LEFT/RIGHT] adjust   [ESC] resume");
             return;
         }
         uiComponents.Footer("[1-5 / A D / TAB] abas   [CIMA/BAIXO] navegar   [ENTER] confirmar   [ESC] continuar", "[1-5 / A D / TAB] tabs   [UP/DOWN] navigate   [ENTER] confirm   [ESC] resume");
@@ -106,17 +113,6 @@ internal sealed class PauseRenderer
             asciiCanvas.Text(310, 252, localization.Translate("Nenhum registro nesta expedicao.", "No entries in this expedition."), UiTheme.Dim, 16);
         for (int i = 0; i < UiTheme.JournalPageSize && menuState.JournalPage * UiTheme.JournalPageSize + i < lines.Count; i++)
             asciiCanvas.Text(310, 250 + i * 25, lines[menuState.JournalPage * UiTheme.JournalPageSize + i], i % 2 == 0 ? UiTheme.Ink : UiTheme.Dim, 16);
-    }
-
-    internal void DrawPauseSettings()
-    {
-        asciiCanvas.DrawAsciiImage(32, 200, AsciiArt.Camp, 490, 470, new Color("fff6df"), 2);
-        asciiCanvas.Text(600, 233, localization.Translate("CONFIGURACOES DA EXPEDICAO", "EXPEDITION SETTINGS"), UiTheme.Gold, 24);
-        uiComponents.MenuItem(600, 300, 0, localization.Translate("IDIOMA", "LANGUAGE"));
-        asciiCanvas.Text(600, 430, localization.Translate($"[F7] MUSICA: {menuState.MusicVolume}%", $"[F7] MUSIC: {menuState.MusicVolume}%"), UiTheme.Teal, 18);
-        asciiCanvas.Text(600, 470, localization.Translate($"[F8] EFEITOS: {menuState.EffectsVolume}%", $"[F8] EFFECTS: {menuState.EffectsVolume}%"), UiTheme.Teal, 18);
-        asciiCanvas.Text(600, 512, localization.Translate("Pressione para ajustar; 0% silencia.", "Press to adjust; 0% mutes."), UiTheme.Dim, 16);
-        uiComponents.MenuItem(600, 340, 1, localization.Translate("VOLTAR AO MENU PRINCIPAL", "RETURN TO MAIN MENU"));
     }
 
     internal void DrawHelpTopics()

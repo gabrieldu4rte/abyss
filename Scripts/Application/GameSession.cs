@@ -6,6 +6,8 @@ using static Abyss.Rules.TabletopRules;
 namespace Abyss.Application;
 internal sealed class GameSession : ITurnScheduler, IRunLifecycle
 {
+    internal SettingsController SettingsController { get; }
+    internal SettingsRenderer SettingsRenderer { get; }
     internal GameAudioController AudioController { get; }
     internal IGameHost Host { get; }
     internal IAsciiCanvas Canvas { get; }
@@ -56,7 +58,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
     internal NamedEquipmentEffects NamedEquipmentEffects { get; }
     internal EnvironmentService EnvironmentService { get; }
 
-    internal GameSession(IGameHost host, IAsciiCanvas canvas, ILanguageSettings settings, IBestiaryStore? bestiaryStore = null, IGameAudio? audio = null)
+    internal GameSession(IGameHost host, IAsciiCanvas canvas, ILanguageSettings settings, IBestiaryStore? bestiaryStore = null, IGameAudio? audio = null, IDisplaySettings? displaySettings = null)
     {
         Host = host;
         BestiaryProgress = new BestiaryProgress(BestiaryState, bestiaryStore);
@@ -68,6 +70,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         BlacksmithService = new BlacksmithService(InventoryState, PlayerState, MenuState, RunState, ExpeditionJournal);
         MerchantService = new MerchantService(ExpeditionJournal, InventoryState, MenuState, MerchantState, PlayerState, RunState);
         LanguagePreferences = new LanguagePreferences(MenuState, Settings);
+        SettingsController = new SettingsController(MenuState, RunState, Host, LanguagePreferences, displaySettings, audio);
         HeroCombatStats = new HeroCombatStats(PlayerState, InventoryState);
         Localization = new Localization(MenuState);
         OpeningStory = new OpeningStory(RunState, Localization);
@@ -88,17 +91,18 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         CombatService.HeroHit += NamedEquipmentEffects.OnHit;
         DungeonGenerator = new DungeonGenerator(DungeonState, ExpeditionJournal, LootService, MenuState, MerchantState, PlayerState, VisualEffects, RandomStream, InventoryState, EnvironmentGenerator, FloorEventGenerator, RunState);
         UiComponents = new UiComponents(AsciiCanvas, Localization, MenuState);
+        SettingsRenderer = new SettingsRenderer(AsciiCanvas, Localization, MenuState, UiComponents);
         MerchantRenderer = new MerchantRenderer(AsciiCanvas, InventoryState, Localization, MenuState, MerchantService, PlayerState, UiComponents);
         BestiaryRenderer = new BestiaryRenderer(AsciiCanvas, BestiaryState, MenuState, Localization);
-        PauseRenderer = new PauseRenderer(AsciiCanvas, DungeonState, ExpeditionJournal, HeroCombatStats, InventoryRenderer, InventoryState, JournalFormatter, Localization, MenuState, PlayerState, UiComponents, BestiaryRenderer);
+        PauseRenderer = new PauseRenderer(AsciiCanvas, DungeonState, ExpeditionJournal, HeroCombatStats, InventoryRenderer, InventoryState, JournalFormatter, Localization, MenuState, PlayerState, UiComponents, BestiaryRenderer, SettingsRenderer);
         EnemyNavigator = new EnemyNavigator(DungeonState, PlayerState);
         WardenAbilities = new WardenAbilities(CombatService, DungeonState, PlayerState, ExpeditionJournal, VisualEffects);
         EnemyAi = new EnemyAi(new IEnemyBehavior[] { new WardenBehavior(CombatService, DungeonState, ExpeditionJournal, PlayerState, EnemyNavigator, WardenAbilities), new RoamingBehavior(CombatService, DungeonState, PlayerState, RandomStream, EnemyNavigator) });
         PlayerActions = new PlayerActions(CombatService, this, DungeonState, this, ExpeditionJournal, HeroCombatStats, InventoryState, LootService, MenuState, PlayerState, RunState, VisualEffects, RandomStream, EnvironmentService, HeroVitals);
         MenuRenderer = new MenuRenderer(AsciiCanvas, DungeonState, Localization, MenuState, PlayerState, RunState, UiComponents);
-        MenuController = new MenuController(Host, InventoryService, InventoryState, JournalFormatter, LanguagePreferences, MenuState, MerchantService, PlayerActions, PlayerState, RunState, this, BlacksmithService);
-        GameRenderer = new GameRenderer(AsciiCanvas, HudRenderer, Localization, MenuRenderer, MerchantRenderer, PauseRenderer, RunState, MenuState, Transitions, OpeningStory, new BlacksmithRenderer(AsciiCanvas, Localization, InventoryState, PlayerState, MenuState, UiComponents));
-        GameInput = new GameInput(this, ExpeditionJournal, Host, MenuController, MenuState, PlayerActions, PlayerState, RunState, VisualEffects, Transitions, OpeningStory);
+        MenuController = new MenuController(Host, InventoryService, InventoryState, JournalFormatter, LanguagePreferences, MenuState, MerchantService, PlayerActions, PlayerState, RunState, this, BlacksmithService, SettingsController);
+        GameRenderer = new GameRenderer(AsciiCanvas, HudRenderer, Localization, MenuRenderer, MerchantRenderer, PauseRenderer, RunState, MenuState, Transitions, OpeningStory, new BlacksmithRenderer(AsciiCanvas, Localization, InventoryState, PlayerState, MenuState, UiComponents), SettingsRenderer);
+        GameInput = new GameInput(this, ExpeditionJournal, Host, MenuController, MenuState, PlayerActions, PlayerState, RunState, VisualEffects, Transitions, OpeningStory, SettingsController);
     }
 
     internal Random RandomGenerator { get => RandomStream.Generator; set => RandomStream.Generator = value; }

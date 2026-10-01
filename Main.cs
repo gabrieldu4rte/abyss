@@ -12,7 +12,7 @@ public partial class Main : Node2D
         var args = OS.GetCmdlineUserArgs();
         bool diagnostic = args.Any(a => a == "--self-test" || a == "--audio-check" || a.Contains("demo") || a.StartsWith("--capture="));
         audio = args.Contains("--self-test") || args.Any(a => a.StartsWith("--capture=")) ? null : new GodotGameAudio(this, !diagnostic);
-        game = new GameSession(new GodotGameHost(this), new GodotAsciiCanvas(this), new GodotLanguageSettings(), diagnostic ? null : new GodotBestiaryStore(), audio);
+        game = new GameSession(new GodotGameHost(this), new GodotAsciiCanvas(this), new GodotLanguageSettings(), diagnostic ? null : new GodotBestiaryStore(), audio, diagnostic ? null : new GodotDisplaySettings());
         audio?.LoadSettings(game.MenuState);
         game.AsciiCanvas.Font = GD.Load<Font>("res://Mono.ttf");
 		if (args.Contains("--self-test"))
@@ -32,6 +32,7 @@ public partial class Main : Node2D
             await ToSignal(GetTree().CreateTimer(.2), SceneTreeTimer.SignalName.Timeout);
             GetTree().Quit(); return;
         }
+        if (!diagnostic) game.SettingsController.LoadDisplay();
         game.LanguagePreferences.LoadLanguage();
 		var capture = args.FirstOrDefault(a => a.StartsWith("--capture="));
 		if (capture != null)

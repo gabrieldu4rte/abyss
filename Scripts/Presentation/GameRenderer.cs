@@ -1,6 +1,7 @@
 namespace Abyss.Presentation;
 internal sealed class GameRenderer
 {
+    private readonly SettingsRenderer settingsRenderer;
     private readonly BlacksmithRenderer blacksmith;
     private readonly AsciiCanvas asciiCanvas;
     private readonly MenuState menuState;
@@ -12,8 +13,9 @@ internal sealed class GameRenderer
     private readonly MerchantRenderer merchantRenderer;
     private readonly PauseRenderer pauseRenderer;
     private readonly RunState runState;
-    internal GameRenderer(AsciiCanvas asciiCanvas, HudRenderer hudRenderer, Localization localization, MenuRenderer menuRenderer, MerchantRenderer merchantRenderer, PauseRenderer pauseRenderer, RunState runState, MenuState menuState, ScreenTransitions transitions, OpeningStory openingStory, BlacksmithRenderer blacksmith)
+    internal GameRenderer(AsciiCanvas asciiCanvas, HudRenderer hudRenderer, Localization localization, MenuRenderer menuRenderer, MerchantRenderer merchantRenderer, PauseRenderer pauseRenderer, RunState runState, MenuState menuState, ScreenTransitions transitions, OpeningStory openingStory, BlacksmithRenderer blacksmith, SettingsRenderer settingsRenderer)
     {
+        this.settingsRenderer = settingsRenderer;
         this.blacksmith = blacksmith;
         this.asciiCanvas = asciiCanvas;
         this.menuState = menuState;
@@ -47,6 +49,9 @@ internal sealed class GameRenderer
         {
             case "home":
                 menuRenderer.DrawHome();
+                return;
+            case "settings":
+                settingsRenderer.Draw(false);
                 return;
             case "language":
                 menuRenderer.DrawLanguage();

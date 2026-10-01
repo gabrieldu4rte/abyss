@@ -98,7 +98,7 @@ State is owned by a session rather than static global variables. Mutable collect
 
 ### Interfaces and extension points
 
-- `IGameHost` isolates redraw requests, quitting, window visibility, and fullscreen changes.
+- `IGameHost` isolates redraw requests, quitting, window visibility, fullscreen mode, and resolution changes.
 - `IAsciiCanvas` isolates glyph drawing and canvas transforms.
 - `ILanguageSettings` isolates persistence of the language preference.
 - `ITurnScheduler` exposes turn completion to action services without exposing the whole session.
@@ -220,7 +220,7 @@ The original raster illustrations in `ArtSources/` are offline conversion inputs
 
 ## Settings and persistence
 
-The only persisted game preference is the language, stored through Godot `ConfigFile` at `user://settings.cfg`, section `display`, key `language` (`pt` or `en`). Missing settings retain the default Portuguese language. Expeditions and inventory are kept in memory; there is no save/load system.
+Preferences are stored through Godot `ConfigFile`: language in `user://settings.cfg` (`display/language`: `pt` or `en`), independent music/effect volumes in `user://audio.cfg`, and fullscreen/resolution in `user://display.cfg`. Missing preferences retain Portuguese, 50% music, 75% effects, and a 1280 x 800 window. Expeditions and inventory are kept in memory; there is no save/load system.
 
 ## Testing and validation
 
@@ -262,7 +262,7 @@ Flags after `--` are handled by the game:
 
 - `--english` / `--portuguese`: override the displayed language for the process.
 - `--demo`: start the seeded mage scenario.
-- `--view=intro|home|classes|language|pause|inventory|journal|settings|help|confirm_exit|confirm_quit|dead`: select a screen; combine with `--demo` for expedition screens.
+- `--view=intro|home|classes|language|main-settings|pause|inventory|journal|settings|help|confirm_exit|confirm_quit|dead`: select a screen; combine with `--demo` for expedition screens.
 - `--damage-demo`, `--ranged-demo`, `--inventory-demo`, `--merchant-demo`: deterministic feature scenarios.
 - `--trade-demo`, `--room-demo`: modify the merchant scenario.
 - `--capture=/absolute/path.png`: save a rendered frame and exit; keyboard input is disabled during capture.
@@ -329,7 +329,7 @@ Flags after `--` are handled by the game:
 - `Tools/generate_audio.py` reproducibly synthesizes the assets using Python's standard library. Effects combine pulse/triangle oscillators, stepped pitch and sample-and-hold noise with short envelopes. Assets are mono PCM16 WAV at 22,050 Hz; `Audio/manifest.json` lists durations and measured peaks.
 - `SoundEffects` queues bounded cosmetic cues. `GameAudioController` selects music from screen/biome/encounter state, coalesces identical cues per frame and never consumes combat randomness or turns. `IGameAudio` allows isolated tests.
 - `GodotGameAudio` uses ten effect voices and two music players with 1.8-second crossfades. WAV data is cached, music loops at sample boundaries and streams are disposed when the scene exits. Pausing retains the current ambient track.
-- F7 cycles music volume; F8 cycles effects volume through 0/25/50/75/100 percent. These shortcuts work across screens and are shown in expedition settings. Preferences persist in `user://audio.cfg`; diagnostic modes do not overwrite them.
+- F7 cycles music volume; F8 cycles effects volume through 0/25/50/75/100 percent. These legacy shortcuts remain available across screens; settings menus expose arrow-key volume controls instead. Preferences persist in `user://audio.cfg`; diagnostic modes do not overwrite them.
 - `--audio-check` loads/schedules every asset through the Godot backend and exits. Headless self-tests validate encoding, levels, cue routing, movement, music selection and volume controls. Captures and ordinary unit tests do not play audio.
 - Include `Audio/*.wav` as original non-resource files in any export preset, alongside the existing text-art assets: the backend reads the canonical WAV bytes directly rather than imported audio resources.
 
@@ -370,3 +370,16 @@ Twelve named items extend `Gear` with a stable `ItemId`. They retain the base ki
 - Equipped upgrades replace the exact reference in both backpack and equipment. If the new level requirement is not met, the item remains unequipped in the backpack; confirmation explains this beforehand. Upgrades do not advance turns.
 - `BlacksmithService` owns eligibility, prices and transactions; `BlacksmithRenderer` owns the bilingual ASCII interface. `DungeonState.IsSanctuary` is shared by generation, navigation, displacement, combat and environment services.
 - `--blacksmith-demo` previews the menu; add `--upgrade-confirm` for confirmation or `--view=game` for the room. Self-tests cover occurrence, protection, confirmation, costs, equipment identity, exclusions and stock capacity.
+
+
+## Shared settings menu
+
+- The main menu Settings entry and pause Settings tab use `SettingsRenderer` and `SettingsController`, sharing the same live preferences.
+- Up/Down or W/S selects language, music, sound effects, fullscreen, resolution, or the return action. Left/Right or A/D adjusts values. Music and effects move independently in 5% steps, clamp to 0-100%, and accept held-key repeats; 0% mutes the selected channel.
+- Enter opens the language picker or toggles fullscreen. F11 remains synchronized with the fullscreen setting. Language and audio changes apply immediately and persist across launches.
+- In pause settings, horizontal arrows adjust values instead of changing tabs. Tab or 1-5 switches tabs; Escape resumes the expedition. Returning to the main menu retains its existing unsaved-progress confirmation. Settings never advance a turn or consume torch fuel.
+- Resolution presets: 1024 x 640, 1280 x 720, 1280 x 800, 1366 x 768, 1600 x 900, 1920 x 1080, 1920 x 1200, 2560 x 1440, and 3840 x 2160.
+- The chosen resolution defines the viewport render target in both windowed and fullscreen modes. `GodotGameHost` uniformly scales and centers the logical 1280 x 800 ASCII layout inside that target. Aspect-preserving viewport scaling letterboxes when needed. Fullscreen uses the desktop display mode; window dimensions are capped to the current monitor's usable area so the window stays reachable even with a larger render target.
+- `DisplayPreferences` holds display values, `IDisplaySettings` isolates persistence, and `GodotDisplaySettings` stores them in `user://display.cfg`. Unsupported saved resolutions fall back to 1280 x 800. Diagnostic previews do not overwrite preferences.
+- `--view=main-settings` previews the main settings screen; `--demo --view=settings` previews the pause tab. Add `--display-demo=1920x1080` to exercise real viewport scaling and `--fullscreen-preview` for fullscreen.
+- Settings tests cover both entry points, immediate audio values, language persistence, volume bounds and key repeats, all resolution presets, F11 synchronization, disk reload, invalid-resolution fallback, save failures, and turn-free navigation.
