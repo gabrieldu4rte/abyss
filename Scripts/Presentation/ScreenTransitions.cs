@@ -9,15 +9,33 @@ internal sealed class ScreenTransitions(IAsciiCanvas target) : IAsciiCanvas
     private List<Action<float>> previous = new();
     private string route = "";
     private double elapsed = 1;
-    private const double HalfDuration = .18;
+    private double halfDuration = .18;
+    private Func<bool>? waitForSound;
     internal bool Enabled { get; set; }
-    internal bool Active => Enabled && elapsed < HalfDuration * 2;
-    internal void Advance(double delta) => elapsed += delta;
+    internal bool Active => Enabled && elapsed < halfDuration * 2;
+    internal void BeginFloorChange(Func<bool>? soundPlaying = null)
+    {
+        if (!Enabled) return;
+        previous = current;
+        waitForSound = soundPlaying;
+        halfDuration = .4;
+        elapsed = 0;
+    }
+    internal void Advance(double delta)
+    {
+        elapsed += delta;
+        if (waitForSound?.Invoke() == true && elapsed >= halfDuration)
+            elapsed = halfDuration;
+        else if (elapsed >= halfDuration)
+            waitForSound = null;
+    }
     internal void BeginFrame(string nextRoute)
     {
         if (route != nextRoute)
         {
             previous = current;
+            waitForSound = null;
+            halfDuration = .18;
             elapsed = Enabled && route.Length > 0 ? 0 : 1;
             route = nextRoute;
         }
@@ -25,8 +43,8 @@ internal sealed class ScreenTransitions(IAsciiCanvas target) : IAsciiCanvas
     }
     internal void EndFrame()
     {
-        bool outgoing = Active && elapsed < HalfDuration;
-        float progress = Active ? (float)(outgoing ? 1 - elapsed / HalfDuration : (elapsed - HalfDuration) / HalfDuration) : 1;
+        bool outgoing = Active && elapsed < halfDuration;
+        float progress = Active ? (float)(outgoing ? 1 - elapsed / halfDuration : (elapsed - halfDuration) / halfDuration) : 1;
         float opacity = progress * progress * (3 - 2 * progress);
         target.DrawSetTransform(Vector2.Zero, 0, Vector2.One);
         foreach (var command in outgoing ? previous : current)

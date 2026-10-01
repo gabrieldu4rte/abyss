@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Abyss.Tests;
 internal sealed partial class RegressionSuite
@@ -57,6 +58,46 @@ internal sealed partial class RegressionSuite
             Render(pair.Item2);
             if (fade.Active || sink.Glyphs[0] != (pair.Item2, 1f)) throw new Exception("Fade did not finish at full opacity.");
         }
+        fade.Advance(1);
+        Render("game");
+        fade.Advance(1);
+        Render("game");
+        bool footstepsPlaying = true;
+        fade.BeginFloorChange(() => footstepsPlaying);
+        if (!fade.Active) throw new Exception("Floor fade did not gate input immediately.");
+        fade.Advance(.2); Render("game");
+        if (Math.Abs(sink.Glyphs[0].Alpha - .5f) > .001) throw new Exception("Floor fade-out timing failed.");
+        fade.Advance(.2); Render("game");
+        if (sink.Glyphs[0].Alpha > .001) throw new Exception("Floor transition did not reach black.");
+        fade.Advance(.5); Render("game");
+        if (sink.Glyphs[0].Alpha > .001 || !fade.Active) throw new Exception("Floor appeared before footsteps finished.");
+        footstepsPlaying = false;
+        fade.Advance(.2); Render("game");
+        if (Math.Abs(sink.Glyphs[0].Alpha - .5f) > .001) throw new Exception("Floor fade-in timing failed.");
+        fade.Advance(.21); Render("game");
+        if (fade.Active || sink.Glyphs[0].Alpha != 1) throw new Exception("Floor fade did not finish.");
+        var audio = new RecordingAudio();
+        var descent = new GameSession(new TestHost(), new TestCanvas(), new TestSettings(), null, audio);
+        descent.Start(812);
+        descent.Transitions.Enabled = true;
+        descent.Transitions.BeginFrame("game"); descent.Transitions.EndFrame();
+        descent.PlayerState.Position = descent.DungeonState.Stairs;
+        descent.Descend();
+        if (descent.DungeonState.Floor != 2 || !descent.Transitions.Active) throw new Exception("Successful descent lacks fade.");
+        descent.PlayerState.Position = descent.DungeonState.Stairs;
+        descent.Descend();
+        if (descent.DungeonState.Floor != 2) throw new Exception("Repeated input descended during fade.");
+        for (int i = 0; i < 9; i++) descent.Tick(.1);
+        if (audio.Cues.Count(c => c == "step") != 3 || descent.RunState.Turn != 0 || !descent.Transitions.Active || !descent.AudioController.DescentPlaying)
+            throw new Exception("Transition did not wait for the last footstep tail.");
+        descent.Tick(.03);
+        if (!descent.AudioController.DescentPlaying || !descent.Transitions.Active) throw new Exception("Last footstep was cut short.");
+        descent.Tick(.5);
+        if (descent.Transitions.Active || descent.AudioController.DescentPlaying) throw new Exception("Descent did not finish after the last footstep.");
+        audio.Cues.Clear();
+        descent.PlayerState.Position = Godot.Vector2I.Zero;
+        descent.Descend(); descent.Tick(1);
+        if (audio.Cues.Contains("step") || descent.Transitions.Active) throw new Exception("Failed descent triggered effects.");
         isolated.Start(520);
         isolated.Transitions.Enabled = true;
         isolated.Transitions.BeginFrame("home");

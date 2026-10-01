@@ -332,3 +332,7 @@ Flags after `--` are handled by the game:
 - F7 cycles music volume; F8 cycles effects volume through 0/25/50/75/100 percent. These shortcuts work across screens and are shown in expedition settings. Preferences persist in `user://audio.cfg`; diagnostic modes do not overwrite them.
 - `--audio-check` loads/schedules every asset through the Godot backend and exits. Headless self-tests validate encoding, levels, cue routing, movement, music selection and volume controls. Captures and ordinary unit tests do not play audio.
 - Include `Audio/*.wav` as original non-resource files in any export preset, alongside the existing text-art assets: the backend reads the canonical WAV bytes directly rather than imported audio resources.
+
+### Floor transitions
+
+Successful descent preserves the outgoing frame, fades to black over 0.4 seconds, holds the black frame until the last footfall finishes (including its 65 ms tail), then reveals the new floor over 0.4 seconds. Three short 8-bit footfalls accompany the transition, spaced 0.35 seconds apart. Input is gated immediately, failed descent does not trigger effects, and animation/audio time consumes no gameplay turns. The same path covers ordinary, Warden and merchant floors.

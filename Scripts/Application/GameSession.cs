@@ -156,6 +156,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
 
     internal void Descend()
     {
+        if (Transitions.Active) return;
         if (PlayerState.Position != DungeonState.Stairs)
         {
             ExpeditionJournal.Say("Procure a escada [>] e pise nela.", "Find the stairs [>] and stand on them.");
@@ -168,6 +169,8 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
             return;
         }
 
+        Transitions.BeginFloorChange(() => AudioController.DescentPlaying);
+        AudioController.PlayDescent();
         DungeonState.Floor++;
         PlayerState.Health = Math.Min(PlayerState.MaxHealth, PlayerState.Health + 2);
         PlayerState.Energy = Math.Min(PlayerState.MaxEnergy, PlayerState.Energy + 3);
