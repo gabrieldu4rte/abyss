@@ -5,12 +5,14 @@ internal sealed class ProgressionService
 {
     private readonly ExpeditionJournal expeditionJournal;
     private readonly HeroCombatStats heroCombatStats;
+    private readonly HeroVitals vitals;
     private readonly PlayerState playerState;
-    internal ProgressionService(ExpeditionJournal expeditionJournal, HeroCombatStats heroCombatStats, PlayerState playerState)
+    internal ProgressionService(ExpeditionJournal expeditionJournal, HeroCombatStats heroCombatStats, PlayerState playerState, HeroVitals vitals)
     {
         this.expeditionJournal = expeditionJournal;
         this.heroCombatStats = heroCombatStats;
         this.playerState = playerState;
+        this.vitals = vitals;
     }
 
     internal void GainXp(int amount)
@@ -42,7 +44,7 @@ internal sealed class ProgressionService
                 };
             int growth = 2 + Math.Max(0, playerState.Attributes.Con) / 2;
             playerState.MaxHealth += growth;
-            playerState.Health = Math.Min(playerState.MaxHealth, playerState.Health + growth);
+            vitals.Heal(growth);
             if (playerState.Level % 2 == 0)
                 playerState.MaxEnergy++;
             playerState.Energy = Math.Min(playerState.MaxEnergy, playerState.Energy + 1);

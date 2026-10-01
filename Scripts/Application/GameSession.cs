@@ -51,6 +51,8 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
     internal EnemyNavigator EnemyNavigator { get; }
     internal FloorEventGenerator FloorEventGenerator { get; }
     internal EnvironmentGenerator EnvironmentGenerator { get; }
+    internal HeroVitals HeroVitals { get; }
+    internal NamedEquipmentEffects NamedEquipmentEffects { get; }
     internal EnvironmentService EnvironmentService { get; }
 
     internal GameSession(IGameHost host, IAsciiCanvas canvas, ILanguageSettings settings, IBestiaryStore? bestiaryStore = null, IGameAudio? audio = null)
@@ -69,16 +71,19 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         OpeningStory = new OpeningStory(RunState, Localization);
         AsciiCanvas = new AsciiCanvas(Canvas, VisualEffects);
         InventoryService = new InventoryService(this, ExpeditionJournal, InventoryState, Localization, MenuState, PlayerState, RunState, RandomStream, VisualEffects.Sounds);
-        ProgressionService = new ProgressionService(ExpeditionJournal, HeroCombatStats, PlayerState);
+        HeroVitals = new HeroVitals(PlayerState, InventoryState, DungeonState, RunState, VisualEffects, ExpeditionJournal);
+        ProgressionService = new ProgressionService(ExpeditionJournal, HeroCombatStats, PlayerState, HeroVitals);
         LootService = new LootService(DungeonState, ExpeditionJournal, InventoryState, Localization, RandomStream);
         JournalFormatter = new JournalFormatter(ExpeditionJournal, Localization);
         InventoryRenderer = new InventoryRenderer(AsciiCanvas, InventoryState, Localization, MenuState, PlayerState);
         ActionEffectsRenderer = new ActionEffectsRenderer(AsciiCanvas, DungeonState, VisualEffects.Actions);
         HudRenderer = new HudRenderer(AsciiCanvas, DungeonState, ExpeditionJournal, HeroCombatStats, InventoryState, Localization, PlayerState, RunState, VisualEffects, ActionEffectsRenderer);
-        CombatService = new CombatService(DungeonState, ExpeditionJournal, HeroCombatStats, InventoryState, Localization, LootService, PlayerState, ProgressionService, RunState, VisualEffects, RandomStream, BestiaryProgress);
+        CombatService = new CombatService(DungeonState, ExpeditionJournal, HeroCombatStats, InventoryState, Localization, LootService, PlayerState, ProgressionService, RunState, VisualEffects, RandomStream, BestiaryProgress, HeroVitals);
         FloorEventGenerator = new FloorEventGenerator(DungeonState, PlayerState, RunState, ExpeditionJournal);
         EnvironmentGenerator = new EnvironmentGenerator(DungeonState, PlayerState, RunState);
-        EnvironmentService = new EnvironmentService(DungeonState, InventoryState, PlayerState, RunState, ExpeditionJournal, CombatService, VisualEffects);
+        EnvironmentService = new EnvironmentService(DungeonState, InventoryState, PlayerState, RunState, ExpeditionJournal, CombatService, VisualEffects, HeroVitals);
+        NamedEquipmentEffects = new NamedEquipmentEffects(InventoryState, DungeonState, PlayerState, CombatService, EnvironmentService, HeroCombatStats, RandomStream, VisualEffects, ExpeditionJournal);
+        CombatService.HeroHit += NamedEquipmentEffects.OnHit;
         DungeonGenerator = new DungeonGenerator(DungeonState, ExpeditionJournal, LootService, MenuState, MerchantState, PlayerState, VisualEffects, RandomStream, InventoryState, EnvironmentGenerator, FloorEventGenerator);
         UiComponents = new UiComponents(AsciiCanvas, Localization, MenuState);
         MerchantRenderer = new MerchantRenderer(AsciiCanvas, InventoryState, Localization, MenuState, MerchantService, PlayerState, UiComponents);
@@ -87,7 +92,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         EnemyNavigator = new EnemyNavigator(DungeonState, PlayerState);
         WardenAbilities = new WardenAbilities(CombatService, DungeonState, PlayerState, ExpeditionJournal, VisualEffects);
         EnemyAi = new EnemyAi(new IEnemyBehavior[] { new WardenBehavior(CombatService, DungeonState, ExpeditionJournal, PlayerState, EnemyNavigator, WardenAbilities), new RoamingBehavior(CombatService, DungeonState, PlayerState, RandomStream, EnemyNavigator) });
-        PlayerActions = new PlayerActions(CombatService, this, DungeonState, this, ExpeditionJournal, HeroCombatStats, InventoryState, LootService, MenuState, PlayerState, RunState, VisualEffects, RandomStream, EnvironmentService);
+        PlayerActions = new PlayerActions(CombatService, this, DungeonState, this, ExpeditionJournal, HeroCombatStats, InventoryState, LootService, MenuState, PlayerState, RunState, VisualEffects, RandomStream, EnvironmentService, HeroVitals);
         MenuRenderer = new MenuRenderer(AsciiCanvas, DungeonState, Localization, MenuState, PlayerState, RunState, UiComponents);
         MenuController = new MenuController(Host, InventoryService, InventoryState, JournalFormatter, LanguagePreferences, MenuState, MerchantService, PlayerActions, PlayerState, RunState, this);
         GameRenderer = new GameRenderer(AsciiCanvas, HudRenderer, Localization, MenuRenderer, MerchantRenderer, PauseRenderer, RunState, MenuState, Transitions, OpeningStory);
@@ -116,6 +121,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
 
     internal void Start(int? fixedSeed = null)
     {
+        HeroVitals.RescuePending = false;
         MenuState.BestiaryOpen = false;
         MenuState.BestiaryBiome = MenuState.BestiaryEntry = 0;
         DungeonState.Environment.Clear();
@@ -180,17 +186,21 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
 
     internal void EndTurn(bool evade = false, Vector2I? previousPlayer = null)
     {
+        if (PlayerState.Health <= 0) return;
+        int rescue = HeroVitals.RescueSerial;
         RunState.Turn++;
+        if (HeroVitals.RescuePending) { HeroVitals.RescuePending = false; DungeonGenerator.Reveal(); return; }
         DungeonGenerator.Reveal();
         foreach (Enemy e in DungeonState.Enemies.ToArray())
         {
             EnemyAi.ActEnemy(e, evade, !previousPlayer.HasValue || previousPlayer.Value == PlayerState.Position || GameRules.Dist(previousPlayer.Value, e.Position) == 1);
-            if (PlayerState.Health <= 0)
-                break;
+            if (PlayerState.Health <= 0 || HeroVitals.RescueSerial != rescue) break;
         }
 
+        if (HeroVitals.RescueSerial != rescue) { HeroVitals.RescuePending = false; DungeonGenerator.Reveal(); return; }
         if (PlayerState.Health > 0) EnvironmentService.Tick();
-        if (RunState.Turn % (DungeonState.Modifier == FloorModifier.ThinAir ? 12 : 6) == 0)
+        if (HeroVitals.RescueSerial != rescue) { HeroVitals.RescuePending = false; DungeonGenerator.Reveal(); return; }
+        if (RunState.Turn % (DungeonState.Modifier == FloorModifier.ThinAir && !InventoryState.Has(ItemId.DeepBreathMantle) ? 12 : 6) == 0)
             PlayerState.Energy = Math.Min(PlayerState.MaxEnergy, PlayerState.Energy + 1);
         DungeonGenerator.Reveal();
     }

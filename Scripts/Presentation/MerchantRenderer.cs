@@ -80,12 +80,12 @@ internal sealed class MerchantRenderer
                 asciiCanvas.Text(345, 501, localization.Translate($"Requer nivel {g.RequiredLevel}: ", $"Requires level {g.RequiredLevel}: ") + classes, playerState.Level >= g.RequiredLevel && g.Allows(playerState.ClassIndex) ? UiTheme.Teal : UiTheme.Red, 15);
                 string stats = localization.GearStats(g);
                 asciiCanvas.Text(345, 535, stats, UiTheme.Ink, 16);
-                asciiCanvas.Text(345, 568, localization.GearEffect(g), UiTheme.Ink, 16);
+                asciiCanvas.WrappedText(345, 568, localization.GearEffect(g), UiTheme.Ink, 16, 88, 23);
                 if (!g.Allows(playerState.ClassIndex) || playerState.Level < g.RequiredLevel)
-                    asciiCanvas.Text(345, 600, localization.Translate("Pode comprar e guardar; ainda nao pode equipar.", "You may buy and keep it, but cannot equip it yet."), UiTheme.Dim, 15);
+                    asciiCanvas.Text(345, 640, localization.Translate("Pode comprar e guardar; ainda nao pode equipar.", "You may buy and keep it, but cannot equip it yet."), UiTheme.Dim, 15);
             }
             else
-                asciiCanvas.Text(345, 510, o.Potion == 2 ? localization.Translate("Ilumina por 100 turnos. Slot proprio; pode ser arremessada.", "Lights 100 turns. Dedicated slot; can be thrown.") : o.Potion == 0 ? localization.Translate("Cura 2d10 PV (2-20).", "Heals 2d10 HP (2-20).") : localization.Translate("Restaura 2d6 energia (2-12).", "Restores 2d6 energy (2-12)."), UiTheme.Ink, 18);
+                asciiCanvas.Text(345, 510, o.Potion == 2 ? localization.Translate($"Ilumina por {inventoryState.TorchLifetime} turnos. Consumivel; pode ser arremessada.", $"Lights {inventoryState.TorchLifetime} turns. Consumable; can be thrown.") : o.Potion == 0 ? localization.Translate("Cura 2d10 PV (2-20).", "Heals 2d10 HP (2-20).") : localization.Translate("Restaura 2d6 energia (2-12).", "Restores 2d6 energy (2-12)."), UiTheme.Ink, 18);
         }
 
         asciiCanvas.Text(345, 668, localization.Translate(menuState.ShopNotice.Pt, menuState.ShopNotice.En), UiTheme.Gold, 17);

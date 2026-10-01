@@ -35,7 +35,7 @@ internal sealed class MerchantService
         return offers;
     }
 
-    internal int TradePrice(Offer offer) => menuState.ShopSelling ? Math.Max(1, offer.Value / 2) : offer.Value;
+    internal int TradePrice(Offer offer) => menuState.ShopSelling ? Math.Max(1, offer.Value / 2) : offer.Gear == null && offer.Potion == 2 && inventoryState.Has(ItemId.CampRing) ? 5 : offer.Value;
     internal void CompleteTrade()
     {
         var offer = menuState.PendingTrade;

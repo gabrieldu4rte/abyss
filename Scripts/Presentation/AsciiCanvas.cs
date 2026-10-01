@@ -130,6 +130,16 @@ internal sealed class AsciiCanvas
         }
     }
 
+    internal void WrappedText(float x, float y, string text, Color color, int size, int columns, int spacing)
+    {
+        string line = "";
+        foreach (string word in text.Split(' '))
+        {
+            if (line.Length > 0 && line.Length + word.Length + 1 > columns) { Text(x,y,line,color,size); y += spacing; line = ""; }
+            line += (line.Length > 0 ? " " : "") + word;
+        }
+        if (line.Length > 0) Text(x,y,line,color,size);
+    }
     internal void Rule(float y) => Text(32, y, new string ('-', 110), UiTheme.Dim);
     internal string Bar(int value, int max, int length = 18)
     {

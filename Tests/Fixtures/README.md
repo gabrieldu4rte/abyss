@@ -19,3 +19,5 @@ The environmental baseline also includes the requested sparse-generation rebalan
 The active environmental baseline now includes the requested biome-specific traps, elite titles/stats/rewards, and rare floor modifiers. Modifier identity and elite titles are serialized explicitly. Dedicated effect and frequency tests run before recording, and the resulting fixture is replayed independently.
 
 The active fixture also includes the requested biome bestiary and Warden abilities. Enemy ability energy, cooldown, windup and sorted marked cells are serialized. Dedicated bestiary/ability tests pass before recording; the changed roster intentionally changes combat outcomes and random action checkpoints (1,270 total).
+
+The named-equipment update intentionally expands loot/merchant random draws and behavior. The active baseline serializes item identity, enemy blindness and temporary water in addition to existing state. Dedicated tests for all twelve named items run before baseline recording and independent replay.

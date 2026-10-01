@@ -28,6 +28,7 @@ internal sealed class InventoryService
 
     internal void ResetInventory()
     {
+        inventoryState.IssuedLegendaries.Clear();
         inventoryState.Backpack.Clear();
         Array.Clear(inventoryState.Equipped);
         inventoryState.Potions = 5;
@@ -85,12 +86,16 @@ internal sealed class InventoryService
             return;
         }
 
-        int roll = random.Generator.Next(1, 7) + random.Generator.Next(1, 7), healing = Math.Min(playerState.MaxEnergy - playerState.Energy, roll);
+        int first = random.Generator.Next(1, 7), second = random.Generator.Next(1, 7);
+        int roll = first + second;
+        bool advantage = inventoryState.Has(ItemId.DeepBreathMantle);
+        if (advantage) { int third = random.Generator.Next(1, 7); roll += third - Math.Min(first, Math.Min(second, third)); }
+        int healing = Math.Min(playerState.MaxEnergy - playerState.Energy, roll);
         sounds.Play("potion");
         playerState.Energy += healing;
         inventoryState.EnergyPotions--;
         runState.Screen = "game";
-        expeditionJournal.Say($"Pocao de energia: 2d6 = {roll}. +{healing} EN.", $"Energy potion: 2d6 = {roll}. +{healing} EN.");
+        expeditionJournal.Say($"Pocao de energia: {(advantage ? "3d6, dois maiores" : "2d6")} = {roll}. +{healing} EN.", $"Energy potion: {(advantage ? "3d6, keep two" : "2d6")} = {roll}. +{healing} EN.");
         turns.EndTurn();
     }
 }

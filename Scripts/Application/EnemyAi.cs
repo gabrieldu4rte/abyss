@@ -6,6 +6,7 @@ internal sealed class EnemyAi(IReadOnlyList<IEnemyBehavior> behaviors)
 {
     internal void ActEnemy(Enemy enemy, bool evade = false, bool mayAttack = true)
     {
+        if (enemy.BlindTurns > 0) { enemy.BlindTurns--; return; }
         foreach (var behavior in behaviors)
             if (behavior.Supports(enemy))
             {

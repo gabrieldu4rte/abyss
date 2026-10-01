@@ -25,7 +25,7 @@ internal sealed class WardenAbilities(CombatService combat, DungeonState dungeon
                 if (cell == dungeon.Stairs) continue;
                 if (enemy.HomeBiome == Biome.Cistern)
                 {
-                    dungeon.Environment.Details[cell] = '~'; dungeon.Environment.Fire.Remove(cell); dungeon.Environment.Oil.Remove(cell);
+                    dungeon.Environment.TemporaryWater.Remove(cell); dungeon.Environment.Details[cell] = '~'; dungeon.Environment.Fire.Remove(cell); dungeon.Environment.Oil.Remove(cell);
                 }
                 if (enemy.HomeBiome == Biome.EmberForge && (!dungeon.Environment.Details.TryGetValue(cell, out var detail) || detail != '~'))
                     dungeon.Environment.Fire[cell] = dungeon.Modifier == FloorModifier.HotDraft ? 4 : 2;

@@ -57,7 +57,7 @@ internal sealed class DungeonGenerator
         dungeonState.Stairs = new Vector2I(36, 11);
         dungeonState.Tiles[dungeonState.Stairs.X, dungeonState.Stairs.Y] = '>';
         for (int i = 0; i < 6; i++)
-            merchantState.MerchantStock.Add(new Offer { Gear = new Gear((GearKind)random.Generator.Next(8), lootService.RollRarity(dungeonState.Floor), (dungeonState.Floor - 1) / 20) });
+            merchantState.MerchantStock.Add(new Offer { Gear = lootService.CreateEquipment(dungeonState.Floor) });
         merchantState.MerchantStock.Add(new Offer { Potion = 0, Quantity = random.Generator.Next(2, 5) });
         merchantState.MerchantStock.Add(new Offer { Potion = 1, Quantity = random.Generator.Next(1, 4) });
         menuState.MerchantQuote = random.Generator.Next(4);

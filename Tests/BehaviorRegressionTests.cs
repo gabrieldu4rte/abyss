@@ -21,16 +21,17 @@ internal sealed partial class RegressionSuite
             foreach (var entry in world.Details.OrderBy(e => e.Key.Y).ThenBy(e => e.Key.X)) b.Append($"\nD:{entry.Key}:{entry.Value}");
             foreach (var entry in world.Fixtures.OrderBy(e => e.Key.Y).ThenBy(e => e.Key.X)) b.Append($"\nX:{entry.Key}:{entry.Value}");
             foreach (var p in world.Oil.OrderBy(p => p.Y).ThenBy(p => p.X)) b.Append($"\nOIL:{p}");
+            foreach (var entry in world.TemporaryWater.OrderBy(e => e.Key.Y).ThenBy(e => e.Key.X)) b.Append($"\nWATER:{entry.Key}:{entry.Value}");
             foreach (var entry in world.Fire.OrderBy(e => e.Key.Y).ThenBy(e => e.Key.X)) b.Append($"\nFIRE:{entry.Key}:{entry.Value}");
             foreach (var entry in world.PoisonedEnemies.OrderBy(e => e.Key.Position.Y).ThenBy(e => e.Key.Position.X)) b.Append($"\nPOISON:{entry.Key.Position}:{entry.Value}");
             for (int y = 0; y < GameRules.Height; y++)
                 for (int x = 0; x < GameRules.Width; x++)
                     b.Append($"{game.DungeonState.Tiles[x, y]}{game.DungeonState.Explored[x, y]}{game.DungeonState.Visible[x, y]}");
             foreach (Enemy e in game.DungeonState.Enemies)
-                b.Append($"\nE:{e.Position}|{e.Health}|{e.MaxHealth}|{e.Depth}|{e.Glyph}|{string.Join(",", e.Titles)}|{e.Stats}|{e.Alerted}|{e.SearchTurns}|{e.PatrolTarget}|{e.LastSeen}|{e.Hurt}|{e.LastDamage}|{e.AbilityEnergy}|{e.AbilityCooldown}|{e.AbilityWindup}|{string.Join(";", e.AbilityCells.OrderBy(p => p.Y).ThenBy(p => p.X))}");
+                b.Append($"\nE:{e.Position}|{e.Health}|{e.MaxHealth}|{e.Depth}|{e.Glyph}|{string.Join(",", e.Titles)}|{e.Stats}|{e.Alerted}|{e.SearchTurns}|{e.PatrolTarget}|{e.LastSeen}|{e.Hurt}|{e.LastDamage}|{e.BlindTurns}|{e.AbilityEnergy}|{e.AbilityCooldown}|{e.AbilityWindup}|{string.Join(";", e.AbilityCells.OrderBy(p => p.Y).ThenBy(p => p.X))}");
             foreach (var item in game.DungeonState.Items.OrderBy(p => p.Key.Y).ThenBy(p => p.Key.X))
                 b.Append($"\nI:{item.Key}:{item.Value}");
-            string GearText(Gear? g) => g == null ? "none" : $"{g.Kind}:{g.Quality}:{g.Grade}";
+            string GearText(Gear? g) => g == null ? "none" : $"{g.Kind}:{g.Quality}:{g.Grade}:{g.Special}";
             foreach (var g in game.InventoryState.Backpack)
                 b.Append("\nG:" + GearText(g));
             foreach (var g in game.InventoryState.Equipped)

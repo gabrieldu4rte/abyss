@@ -336,3 +336,24 @@ Flags after `--` are handled by the game:
 ### Floor transitions
 
 Successful descent preserves the outgoing frame, fades to black over 0.4 seconds, holds the black frame until the last footfall finishes (including its 65 ms tail), then reveals the new floor over 0.4 seconds. Three short 8-bit footfalls accompany the transition, spaced 0.35 seconds apart. Input is gated immediately, failed descent does not trigger effects, and animation/audio time consumes no gameplay turns. The same path covers ordinary, Warden and merchant floors.
+
+## Named equipment
+
+Twelve named items extend `Gear` with a stable `ItemId`. They retain the base kind's dice, attribute scaling, rarity, level requirement and value. Their unique property replaces the generic epic/legendary impact, life drain, protection or focus effect. Named robes/hoods are wearable by every class; weapon restrictions remain unchanged. After rolling rarity, equipment generation has a 40% chance to select an available named item of that rarity. This applies to chest/elite/Warden rewards and merchant stock. Each named legendary is issued at most once per expedition, including shop stock; selling it transfers the same object rather than generating a duplicate.
+
+| Rarity | Item | Effect |
+| --- | --- | --- |
+| Rare | Spark Sword | Physical hits against targets on oil have a 50% chance to ignite it without another action. |
+| Rare | Venom Bow | Natural 20 poisons surviving targets for three ticks of two damage; fungal biome enemies are immune. |
+| Rare | Insulating Leather | Blocks discharge splash from other cells; reduces periodic fire damage by one. Standing on the discharge itself remains dangerous. |
+| Rare | Camp Ring | Fresh torches cost five gold; a full torch lasts 120 turns while worn. Fuel is stored as a remaining fraction, so equipment changes cannot refill it. |
+| Epic | Staff of Fluid Control | Basic projectiles extinguish fire and leave two-turn water along their traversed cells. Original terrain is restored; existing water remains. |
+| Epic | Precise Throwing Gauntlets | Torch throws traverse the visible line until a wall, hit each enemy once for one fire damage and push it one cell. Oil along the path can ignite. |
+| Epic | Deep Breath Mantle | Restores six-turn recovery in Thin Air; energy potions roll three d6 and sum the highest two. |
+| Epic | Executioner's Blade | Rogue attacks automatically pay one direct HP before rolling and gain one d6 on hit. Misses still pay; lethal payment aborts the attack. |
+| Legendary | Spellforge Blade | Critical hits cause a nonrecursive radius-two seismic burst for 2d4 + STR and a one-cell push, without energy cost. |
+| Legendary | Revenge Hunter's Bow | Rolls two d20 and keeps the higher against elites/Wardens; removes the normal long-range accuracy penalty and retains full damage. |
+| Legendary | Sandflower Relic | Actual healing blinds enemies within three cells for five enemy responses and permanently marks nearby walls. Floor-descent recovery is excluded. |
+| Legendary | Hood of Shadow Legends | Lethal damage without an active torch triggers shadow birds and escape to the nearest unoccupied stair-room cell with one HP and zero energy. The hood is removed from equipment/backpack and the remaining damage response is interrupted. |
+
+`HeroVitals` centralizes healing and lethal damage, while `NamedEquipmentEffects` handles hit-triggered properties. Pushes respect occupied cells, walls and Warden-room confinement. `TemporaryWater` preserves prior terrain. Blindness pauses enemy movement and ability preparation. Diagnostics remain turn-neutral and audio/animations use existing assets. `NamedItemTests` exercises all twelve properties and loot availability; `--item-demo=ItemId` previews an item in inventory.

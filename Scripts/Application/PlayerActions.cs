@@ -7,6 +7,7 @@ using static Abyss.Rules.TabletopRules;
 namespace Abyss.Application;
 internal sealed class PlayerActions
 {
+    private readonly HeroVitals vitals;
     private readonly EnvironmentService environment;
     private readonly CombatService combatService;
     private readonly IRunLifecycle lifecycle;
@@ -21,10 +22,11 @@ internal sealed class PlayerActions
     private readonly RunState runState;
     private readonly VisualEffects visualEffects;
     private readonly RandomStream random;
-    internal PlayerActions(CombatService combatService, IRunLifecycle lifecycle, DungeonState dungeonState, ITurnScheduler turns, ExpeditionJournal expeditionJournal, HeroCombatStats heroCombatStats, InventoryState inventoryState, LootService lootService, MenuState menuState, PlayerState playerState, RunState runState, VisualEffects visualEffects, RandomStream random, EnvironmentService environment)
+    internal PlayerActions(CombatService combatService, IRunLifecycle lifecycle, DungeonState dungeonState, ITurnScheduler turns, ExpeditionJournal expeditionJournal, HeroCombatStats heroCombatStats, InventoryState inventoryState, LootService lootService, MenuState menuState, PlayerState playerState, RunState runState, VisualEffects visualEffects, RandomStream random, EnvironmentService environment, HeroVitals vitals)
     {
         this.combatService = combatService;
         this.environment = environment;
+        this.vitals = vitals;
         this.lifecycle = lifecycle;
         this.dungeonState = dungeonState;
         this.turns = turns;
@@ -197,6 +199,7 @@ internal sealed class PlayerActions
             if (!dungeonState.Walk(p))
                 break;
             path.Add(p);
+            if (inventoryState.Weapon?.Special == ItemId.FluidStaff) environment.Wet(p);
             if (environment.Strike(p))
             {
                 visualEffects.Actions.PlayProjectile(origin, path, playerState.ClassIndex == 1);
@@ -265,7 +268,7 @@ internal sealed class PlayerActions
         expeditionJournal.LastPotionRoll = healing.Total;
         expeditionJournal.LastPotionHealing = Math.Min(playerState.MaxHealth - playerState.Health, healing.Total);
         inventoryState.Potions--;
-        playerState.Health += expeditionJournal.LastPotionHealing;
+        vitals.Heal(expeditionJournal.LastPotionHealing);
         visualEffects.Sounds.Play("potion");
         expeditionJournal.Say($"Pocao: 2d10 [{healing.First}+{healing.Second}] = {healing.Total}. Curou {expeditionJournal.LastPotionHealing} PV.", $"Potion: 2d10 [{healing.First}+{healing.Second}] = {healing.Total}. Healed {expeditionJournal.LastPotionHealing} HP.");
         turns.EndTurn();

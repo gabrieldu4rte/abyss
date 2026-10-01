@@ -1,7 +1,7 @@
 using static Abyss.Rules.TabletopRules;
 
 namespace Abyss.Domain;
-internal sealed record Gear(GearKind Kind, Rarity Quality, int Grade = 0)
+internal sealed record Gear(GearKind Kind, Rarity Quality, int Grade = 0, ItemId Special = ItemId.None)
 {
     public GearSlot Slot => Kind <= GearKind.Bow ? GearSlot.Weapon : Kind == GearKind.Amulet ? GearSlot.Accessory : GearSlot.Armor;
     public int RequiredLevel => new[]
@@ -29,7 +29,7 @@ internal sealed record Gear(GearKind Kind, Rarity Quality, int Grade = 0)
         _ => new(0, 0, 0, 0)};
     public int Value => (Slot == GearSlot.Weapon ? 18 : Slot == GearSlot.Armor ? 24 : 20) * (1 + (int)Quality * 3) + Grade * 12;
 
-    public bool Allows(int hero) => Kind switch
+    public bool Allows(int hero) => Special is ItemId.DeepBreathMantle or ItemId.ShadowLegendsHood || Kind switch
     {
         GearKind.Sword or GearKind.Dagger => hero is 0 or 3,
         GearKind.Staff or GearKind.Robe => hero == 1,

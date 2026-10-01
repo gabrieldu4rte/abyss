@@ -24,7 +24,7 @@ internal sealed class InventoryRenderer
         for (int i = 0; i < 3; i++)
         {
             var g = inventoryState.Equipped[i];
-            asciiCanvas.Text(32, 234 + i * 31, (menuState.InventoryIndex == i ? "> " : "  ") + localization.SlotName(i) + ": " + (g == null ? localization.Translate("Vazio", "Empty") : localization.GearLabel(g)), g == null ? UiTheme.Dim : UiTheme.RarityColor(g.Quality), 15);
+            asciiCanvas.Text(32, 234 + i * 31, (menuState.InventoryIndex == i ? "> " : "  ") + localization.SlotName(i) + ": " + (g == null ? localization.Translate("Vazio", "Empty") : localization.GearLabel(g)), g == null ? UiTheme.Dim : UiTheme.RarityColor(g.Quality), g != null && g.Special != ItemId.None ? 12 : 15);
         }
 
         asciiCanvas.Text(32, 334, localization.Translate("CONSUMIVEIS", "CONSUMABLES"), UiTheme.Gold, 16);
@@ -44,23 +44,23 @@ internal sealed class InventoryRenderer
         Gear? detail = menuState.InventoryIndex < 3 ? inventoryState.Equipped[menuState.InventoryIndex] : menuState.InventoryIndex >= 6 ? inventoryState.Backpack[menuState.InventoryIndex - 6] : null;
         if (detail is Gear item)
         {
-            asciiCanvas.Text(590, 232, localization.GearLabel(item), UiTheme.RarityColor(item.Quality), 21);
-            asciiCanvas.Text(590, 270, $"{localization.SlotName((int)item.Slot)} / {localization.Translate("VALOR", "VALUE")} {item.Value} {localization.Translate("OURO", "GOLD")}", UiTheme.Ink, 16);
+            asciiCanvas.Text(590, 232, localization.GearLabel(item), UiTheme.RarityColor(item.Quality), item.Special != ItemId.None ? 17 : 21);
+            asciiCanvas.Text(590, 270, $"{localization.SlotName((int)item.Slot)} / {localization.RarityName(item.Quality)} / {localization.Translate("VALOR", "VALUE")} {item.Value} {localization.Translate("OURO", "GOLD")}", UiTheme.Ink, 16);
             asciiCanvas.Text(590, 308, localization.Translate($"Requer nivel {item.RequiredLevel}", $"Requires level {item.RequiredLevel}"), playerState.Level >= item.RequiredLevel ? UiTheme.Teal : UiTheme.Red, 17);
             string classes = string.Join(" / ", Enumerable.Range(0, 4).Where(item.Allows).Select(localization.ClassName));
             asciiCanvas.Text(590, 340, classes, item.Allows(playerState.ClassIndex) ? UiTheme.Teal : UiTheme.Red, 14);
             string stats = localization.GearStats(item);
             asciiCanvas.Text(590, 388, stats, UiTheme.Ink, 16);
             asciiCanvas.Text(590, 438, localization.Translate("EFEITO ESPECIAL", "SPECIAL EFFECT"), UiTheme.Gold, 16);
-            asciiCanvas.Text(590, 471, localization.GearEffect(item), UiTheme.Ink, 15);
-            asciiCanvas.Text(590, 526, localization.Translate("[ENTER] equipar / remover", "[ENTER] equip / remove"), UiTheme.Teal, 17);
+            asciiCanvas.WrappedText(590, 465, localization.GearEffect(item), UiTheme.Ink, 15, 64, 20);
+            asciiCanvas.Text(590, 544, localization.Translate("[ENTER] equipar / remover", "[ENTER] equip / remove"), UiTheme.Teal, 17);
         }
         else if (menuState.InventoryIndex == 5)
         {
             asciiCanvas.Text(590, 240, localization.Translate("TOCHA", "TORCH"), UiTheme.Gold, 22);
             asciiCanvas.Lines(590, 290, localization.Translate(
-                "Ilumina por 100 turnos. Valor: 8 ouro.\nSem luz, sua visao fica reduzida.\nA proxima reserva acende automaticamente.\n\n[ENTER] acender / guardar\n[T] arremessar e escolher direcao\n\nO fogo inflama oleo e fere qualquer um.\nAgua apaga uma tocha arremessada.",
-                "Lights 100 turns. Value: 8 gold.\nWithout light, your sight is reduced.\nThe next spare lights automatically.\n\n[ENTER] light / stow\n[T] throw and choose direction\n\nFire ignites oil and hurts anyone.\nWater puts out a thrown torch."), UiTheme.Ink, 17, 29);
+                $"Ilumina por {inventoryState.TorchLifetime} turnos. Valor: 8 ouro.\nSem luz, sua visao fica reduzida.\nA proxima reserva acende automaticamente.\n\n[ENTER] acender / guardar\n[T] arremessar e escolher direcao\n\nO fogo inflama oleo e fere qualquer um.\nAgua apaga uma tocha arremessada.",
+                $"Lights {inventoryState.TorchLifetime} turns. Value: 8 gold.\nWithout light, your sight is reduced.\nThe next spare lights automatically.\n\n[ENTER] light / stow\n[T] throw and choose direction\n\nFire ignites oil and hurts anyone.\nWater puts out a thrown torch."), UiTheme.Ink, 17, 29);
         }
         else if (menuState.InventoryIndex is 3 or 4)
         {

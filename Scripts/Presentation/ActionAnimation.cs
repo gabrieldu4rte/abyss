@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Abyss.Presentation;
 
-internal enum ActionAnimationKind { Whirlwind, ArcaneNova, PiercingArrow, ShadowStep, ArcaneBolt, Arrow, Torch, SeismicImpact, FloodWave, SporeBurst, FurnaceCross }
+internal enum ActionAnimationKind { Whirlwind, ArcaneNova, PiercingArrow, ShadowStep, ArcaneBolt, Arrow, Torch, SeismicImpact, FloodWave, SporeBurst, FurnaceCross, ShadowBirds }
 internal readonly record struct ActionGlyph(Vector2I Position, char Character, Color Color);
 
 internal sealed class ActionAnimation
@@ -41,6 +41,7 @@ internal sealed class ActionAnimation
         var color = Kind switch
         {
             ActionAnimationKind.ArcaneNova or ActionAnimationKind.ArcaneBolt => new Color("b994ff"),
+            ActionAnimationKind.ShadowBirds => new Color("b994ff"),
             ActionAnimationKind.FloodWave => new Color("70cfff"),
             ActionAnimationKind.SporeBurst => new Color("b5e87a"),
             ActionAnimationKind.FurnaceCross => new Color("ff8844"),
@@ -82,6 +83,17 @@ internal sealed class ActionAnimation
         if (Kind >= ActionAnimationKind.SeismicImpact)
         {
             int phase = (int)(Elapsed * 15);
+            if (Kind == ActionAnimationKind.ShadowBirds)
+            {
+                foreach (var center in Targets)
+                    for (int i = 0; i < 8; i++)
+                    {
+                        double angle = i * Math.PI / 4 + Elapsed * 3;
+                        int radius = 1 + (int)(Elapsed * 3);
+                        yield return new(center + new Vector2I((int)Math.Round(Math.Cos(angle)*radius), (int)Math.Round(Math.Sin(angle)*radius)), phase % 2 == 0 ? 'v' : '^', color);
+                    }
+                yield break;
+            }
             foreach (var target in Targets)
             {
                 int distance = GameRules.Dist(Origin, target);

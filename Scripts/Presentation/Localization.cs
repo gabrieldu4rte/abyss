@@ -49,9 +49,9 @@ internal sealed class Localization
         return string.Join(" | ", parts);
     }
 
-    internal string GearName(Gear g) => Translate(new[] { "Espada", "Adaga", "Cajado", "Arco", "Placas", "Couro", "Manto", "Amuleto" }[(int)g.Kind], new[] { "Sword", "Dagger", "Staff", "Bow", "Plate", "Leather", "Robe", "Amulet" }[(int)g.Kind]);
+    internal string GearName(Gear g) => g.Special != ItemId.None ? NamedItemText.Name(g.Special, English) : Translate(new[] { "Espada", "Adaga", "Cajado", "Arco", "Placas", "Couro", "Manto", "Amuleto" }[(int)g.Kind], new[] { "Sword", "Dagger", "Staff", "Bow", "Plate", "Leather", "Robe", "Amulet" }[(int)g.Kind]);
     internal string RarityName(Rarity r) => Translate(new[] { "Comum", "Raro", "Epico", "Lendario" }[(int)r], new[] { "Common", "Rare", "Epic", "Legendary" }[(int)r]);
-    internal string GearLabel(Gear g) => $"{GearName(g)} / {RarityName(g.Quality)}" + (g.Grade > 0 ? $" +{g.Grade}" : "");
+    internal string GearLabel(Gear g) => (g.Special != ItemId.None ? GearName(g) : $"{GearName(g)} / {RarityName(g.Quality)}") + (g.Grade > 0 ? $" +{g.Grade}" : "");
     internal string SlotName(int slot) => Translate(new[] { "ARMA", "ARMADURA", "ACESSORIO" }[slot], new[] { "WEAPON", "ARMOR", "ACCESSORY" }[slot]);
     internal string GearNameFor(Gear gear, bool en)
     {
@@ -62,7 +62,7 @@ internal sealed class Localization
         return name;
     }
 
-    internal string GearEffect(Gear g) => g.Quality < Rarity.Epic ? Translate("Sem efeito especial.", "No special effect.") : g.Slot switch
+    internal string GearEffect(Gear g) => g.Special != ItemId.None ? NamedItemText.Effect(g.Special, English) : g.Quality < Rarity.Epic ? Translate("Sem efeito especial.", "No special effect.") : g.Slot switch
     {
         GearSlot.Weapon => g.Quality == Rarity.Epic ? Translate("Impacto: +1d4 de dano ao acertar.", "Impact: +1d4 damage on hit.") : Translate("Impacto: +1d6; drena ate 2 PV ao acertar.", "Impact: +1d6; drains up to 2 HP on hit."),
         GearSlot.Armor => Translate($"Protecao: reduz dano recebido em {(g.Quality == Rarity.Epic ? 1 : 2)}.", $"Protection: reduces incoming damage by {(g.Quality == Rarity.Epic ? 1 : 2)}."),

@@ -32,9 +32,12 @@ internal sealed class ActionEffects(DungeonState dungeonState, SoundEffects soun
     internal void PlayWarden(Biome biome, Vector2I origin, IEnumerable<Vector2I> cells)
         => Add((ActionAnimationKind)((int)ActionAnimationKind.SeismicImpact + (int)biome), origin, new[] { origin }, cells, 5);
 
+    internal void PlayShadowEscape(Vector2I origin, Vector2I destination)
+        => Add(ActionAnimationKind.ShadowBirds, origin, new[] { origin }, new[] { origin, destination }, 3);
+
     private void Add(ActionAnimationKind kind, Vector2I origin, IEnumerable<Vector2I> path, IEnumerable<Vector2I> targets, int radius)
     {
-        sounds.Play(kind.ToString().ToLowerInvariant());
+        sounds.Play(kind == ActionAnimationKind.ShadowBirds ? "shadowstep" : kind.ToString().ToLowerInvariant());
         var visible = new HashSet<Vector2I>();
         for (int y = 1; y < GameRules.Height - 1; y++)
             for (int x = 1; x < GameRules.Width - 1; x++)

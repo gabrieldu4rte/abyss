@@ -11,11 +11,12 @@ internal sealed class EnvironmentState
     internal Dictionary<Vector2I, Fixture> Fixtures { get; } = new();
     internal HashSet<Vector2I> Oil { get; } = new();
     internal Dictionary<Vector2I, int> Fire { get; } = new();
+    internal Dictionary<Vector2I, (int Turns, char? Original)> TemporaryWater { get; } = new();
     internal int HeroPoisonTurns { get; set; }
     internal Dictionary<Enemy, int> PoisonedEnemies { get; } = new();
     internal void Clear()
     {
-        Details.Clear(); Fixtures.Clear(); Oil.Clear(); Fire.Clear();
+        TemporaryWater.Clear(); Details.Clear(); Fixtures.Clear(); Oil.Clear(); Fire.Clear();
         HeroPoisonTurns = 0; PoisonedEnemies.Clear();
     }
 }

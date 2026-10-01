@@ -11,6 +11,20 @@ internal sealed class LaunchScenarios(GameSession game)
             game.MenuState.English = true;
         if (args.Contains("--portuguese"))
             game.MenuState.English = false;
+        var namedItem = args.FirstOrDefault(a => a.StartsWith("--item-demo="));
+        if (namedItem != null)
+        {
+            game.Start(818);
+            game.PlayerState.Level = 30;
+            game.InventoryState.Backpack.Clear();
+            Array.Clear(game.InventoryState.Equipped);
+            var item = NamedItemCatalog.Create(Enum.Parse<ItemId>(namedItem.Split('=')[1]));
+            game.InventoryState.Backpack.Add(item);
+            game.InventoryState.Equipped[(int)item.Slot] = item;
+            game.MenuState.InventoryIndex = 6;
+            game.MenuState.PauseTab = 1;
+            game.RunState.Screen = "pause";
+        }
         if (args.Contains("--bestiary-demo"))
         {
             game.Start(712);

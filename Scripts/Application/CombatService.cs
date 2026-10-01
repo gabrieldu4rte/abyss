@@ -4,6 +4,8 @@ using static Abyss.Rules.TabletopRules;
 namespace Abyss.Application;
 internal sealed class CombatService
 {
+    internal event Action<Enemy, int, bool, bool>? HeroHit;
+    private readonly HeroVitals vitals;
     private readonly BestiaryProgress bestiary;
     private readonly DungeonState dungeonState;
     private readonly ExpeditionJournal expeditionJournal;
@@ -16,9 +18,10 @@ internal sealed class CombatService
     private readonly RunState runState;
     private readonly VisualEffects visualEffects;
     private readonly RandomStream random;
-    internal CombatService(DungeonState dungeonState, ExpeditionJournal expeditionJournal, HeroCombatStats heroCombatStats, InventoryState inventoryState, Localization localization, LootService lootService, PlayerState playerState, ProgressionService progressionService, RunState runState, VisualEffects visualEffects, RandomStream random, BestiaryProgress bestiary)
+    internal CombatService(DungeonState dungeonState, ExpeditionJournal expeditionJournal, HeroCombatStats heroCombatStats, InventoryState inventoryState, Localization localization, LootService lootService, PlayerState playerState, ProgressionService progressionService, RunState runState, VisualEffects visualEffects, RandomStream random, BestiaryProgress bestiary, HeroVitals vitals)
     {
         this.bestiary = bestiary;
+        this.vitals = vitals;
         this.dungeonState = dungeonState;
         this.expeditionJournal = expeditionJournal;
         this.heroCombatStats = heroCombatStats;
@@ -35,7 +38,7 @@ internal sealed class CombatService
     internal int AttackBonus(Enemy enemy, bool ranged, bool ability)
     {
         int bonus = (ranged || ability ? heroCombatStats.SpellBonus : heroCombatStats.MeleeBonus) + (ability ? 2 : 0);
-        if (ranged && !ability && GameRules.Dist(playerState.Position, enemy.Position) > 5)
+        if (inventoryState.Weapon?.Special != ItemId.RevengeBow && ranged && !ability && GameRules.Dist(playerState.Position, enemy.Position) > 5)
             bonus -= 2;
         return bonus;
     }
@@ -44,6 +47,7 @@ internal sealed class CombatService
     internal int ChanceAgainst(Enemy enemy, bool ranged, bool ability) => HitChance(AttackBonus(enemy, ranged, ability), TargetDefense(enemy, ranged, ability), ability && playerState.ClassIndex == 3 ? 19 : 20);
     internal void ResolveHeroAttack(Enemy enemy, bool ranged = false, bool ability = false)
     {
+        if (enemy.Health <= 0 || playerState.Health <= 0) return;
         if (!ranged && !ability && !heroCombatStats.CanMelee)
             return;
         if (!ranged && !ability && (GameRules.Dist(playerState.Position, enemy.Position) != 1 || !dungeonState.Los(playerState.Position, enemy.Position)))
@@ -51,8 +55,25 @@ internal sealed class CombatService
         if (!ranged && !ability) visualEffects.Sounds.Play("swing");
         visualEffects.Focus = enemy;
         visualEffects.FocusHold = UiTheme.HurtDuration;
-        var roll = ResolveAttack(random.Generator.Next(1, 21), AttackBonus(enemy, ranged, ability), TargetDefense(enemy, ranged, ability), ability && playerState.ClassIndex == 3 ? 19 : 20);
-        string total = $"d20({roll.Natural}){UiTheme.Signed(roll.Bonus)}={roll.Total} vs {roll.Defense}";
+        bool sacrifice = playerState.ClassIndex == 3 && inventoryState.Weapon?.Special == ItemId.ExecutionerBlade;
+        if (sacrifice)
+        {
+            int rescue = vitals.RescueSerial;
+            vitals.Damage(1);
+            visualEffects.HeroHurt(enemy, 1);
+            expeditionJournal.Say("A Lamina do Algoz cobra 1 PV.", "The Executioner's Blade claims 1 HP.");
+            if (playerState.Health == 0 || vitals.RescueSerial != rescue) return;
+        }
+        int natural = random.Generator.Next(1, 21);
+        string advantageRoll = "";
+        if (inventoryState.Weapon?.Special == ItemId.RevengeBow && (enemy.IsElite || enemy.IsWarden))
+        {
+            int second = random.Generator.Next(1, 21);
+            advantageRoll = $"[{natural},{second}] ";
+            natural = Math.Max(natural, second);
+        }
+        var roll = ResolveAttack(natural, AttackBonus(enemy, ranged, ability), TargetDefense(enemy, ranged, ability), ability && playerState.ClassIndex == 3 ? 19 : 20);
+        string total = $"{advantageRoll}d20({roll.Natural}){UiTheme.Signed(roll.Bonus)}={roll.Total} vs {roll.Defense}";
         expeditionJournal.LastRollPt = $"Voce: {total}";
         expeditionJournal.LastRollEn = $"You: {total}";
         if (!roll.Hit)
@@ -64,17 +85,19 @@ internal sealed class CombatService
 
         var dice = ability ? heroCombatStats.AbilityDice : ranged ? heroCombatStats.ShotDice : heroCombatStats.MeleeDice;
         int damage = RollDamage(random.Generator, dice, roll.Critical);
-        if (inventoryState.Weapon is Gear weapon && weapon.Quality >= Rarity.Epic)
+        if (sacrifice) damage += random.Generator.Next(1,7);
+        if (inventoryState.Weapon is Gear weapon && weapon.Quality >= Rarity.Epic && weapon.Special == ItemId.None)
         {
             int extra = random.Generator.Next(1, weapon.Quality == Rarity.Legendary ? 7 : 5);
             damage += extra;
             expeditionJournal.Say($"Impacto do equipamento: +{extra} dano.", $"Equipment impact: +{extra} damage.");
             if (weapon.Quality == Rarity.Legendary)
-                playerState.Health = Math.Min(playerState.MaxHealth, playerState.Health + Math.Min(2, Math.Max(0, enemy.Health)));
+                vitals.Heal(Math.Min(2, Math.Max(0, enemy.Health)));
         }
 
         expeditionJournal.Say($"Voce -> {FloorEventText.EnemyName(enemy, false)}: {total}. {(roll.Critical ? "CRITICO! " : "")}{damage} dano ({dice}).", $"You -> {FloorEventText.EnemyName(enemy, true)}: {total}. {(roll.Critical ? "CRITICAL! " : "")}{damage} damage ({dice}).");
         Hit(enemy, damage, false);
+        HeroHit?.Invoke(enemy, roll.Natural, roll.Critical, playerState.ClassIndex != 1);
     }
 
     internal void ResolveEnemyAttack(Enemy enemy, bool evade)
@@ -95,7 +118,7 @@ internal sealed class CombatService
         }
 
         int damage = Math.Max(1, RollDamage(random.Generator, enemy.Dice, roll.Critical) - inventoryState.DamageReduction);
-        playerState.Health = Math.Max(0, playerState.Health - damage);
+        vitals.Damage(damage);
         visualEffects.HeroHurt(enemy, damage);
         expeditionJournal.Say($"{FloorEventText.EnemyName(enemy, false)} -> voce: {total}. {(roll.Critical ? "CRITICO! " : "")}-{damage} PV.", $"{FloorEventText.EnemyName(enemy, true)} -> you: {total}. {(roll.Critical ? "CRITICAL! " : "")}-{damage} HP.");
         if (playerState.Health == 0)
@@ -118,7 +141,7 @@ internal sealed class CombatService
         }
         var dice = new DamageDice(enemy.HomeBiome == Biome.Ruins ? 2 : 1, enemy.HomeBiome is Biome.Ruins or Biome.FungalCaves ? 4 : 6, modifier + enemy.Tier);
         int damage = Math.Max(1, RollDamage(random.Generator, dice, roll.Critical) - inventoryState.DamageReduction);
-        playerState.Health = Math.Max(0, playerState.Health - damage);
+        vitals.Damage(damage);
         visualEffects.HeroHurt(enemy, damage);
         expeditionJournal.Say($"{expeditionJournal.LastRollPt}. -{damage} PV ({dice}).", $"{expeditionJournal.LastRollEn}. -{damage} HP ({dice}).");
         if (playerState.Health == 0) runState.Screen = "dead";
@@ -138,7 +161,7 @@ internal sealed class CombatService
         playerState.Kills++;
         if (!bestiary.Record(e))
             expeditionJournal.Say("Nao foi possivel salvar o bestiario. O registro permanece nesta sessao.", "Could not save the bestiary. The record remains in this session.");
-        if (inventoryState.Equipped[2] is Gear charm && charm.Quality >= Rarity.Epic)
+        if (inventoryState.Equipped[2] is Gear charm && charm.Quality >= Rarity.Epic && charm.Special == ItemId.None)
             playerState.Energy = Math.Min(playerState.MaxEnergy, playerState.Energy + (charm.Quality == Rarity.Legendary ? 2 : 1));
         int goldReward = lootService.RollEnemyGold(e.Glyph, e.Depth);
         playerState.Gold += goldReward;

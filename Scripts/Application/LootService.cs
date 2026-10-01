@@ -28,9 +28,27 @@ internal sealed class LootService
 
     internal Gear DropEquipment(int depth, bool guardian = false)
     {
-        var gear = new Gear((GearKind)random.Generator.Next(8), RollRarity(depth, guardian), (depth - 1) / 20);
+        var gear = CreateEquipment(depth, guardian);
         inventoryState.Backpack.Add(gear);
         return gear;
+    }
+
+    internal Gear CreateEquipment(int depth, bool guardian = false)
+    {
+        var kind = (GearKind)random.Generator.Next(8);
+        var rarity = RollRarity(depth, guardian);
+        int grade = (depth - 1) / 20;
+        if (rarity != Rarity.Common && random.Generator.NextDouble() < .4)
+        {
+            var options = System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Where(NamedItemCatalog.OfRarity(rarity), id => rarity != Rarity.Legendary || !inventoryState.IssuedLegendaries.Contains(id)));
+            if (options.Length > 0)
+            {
+                var id = options[random.Generator.Next(options.Length)];
+                if (rarity == Rarity.Legendary) inventoryState.IssuedLegendaries.Add(id);
+                return NamedItemCatalog.Create(id, grade);
+            }
+        }
+        return new Gear(kind, rarity, grade);
     }
 
     internal void OpenChest()
