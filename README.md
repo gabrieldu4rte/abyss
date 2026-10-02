@@ -419,3 +419,23 @@ Twelve named items extend `Gear` with a stable `ItemId`. They retain the base ki
 - Exits and safe merchant/blacksmith areas remain protected. Environmental fire can hurt the caster. The fluid-control staff retains its water effect, applied after the projectile's terrain reaction.
 - Portrait status labels share the measured center of the ASCII frame and remain separate from damage numbers. Active poison, frozen, blind, burning and guard effects are shown where applicable.
 - The temporary F9/clickable level-up control and its input path have been removed.
+
+### Additional named equipment
+
+The catalog contains 23 named items. The additional eleven participate in the existing rarity-based chest, Warden, elite and merchant pools. Named items retain their fixed rarity and are excluded from blacksmith upgrades; legendary issuance remains limited to once per expedition. Armor pieces occupy the existing armor slot and allow every base class. Weapons keep sword/staff/bow proficiency restrictions.
+
+| Rarity | Item | Effect |
+| --- | --- | --- |
+| Rare | Explorer Blade | Advantage and +2 fixed melee damage against targets on unfrozen water. |
+| Rare | Vigor Bracers | Consumed health potions heal 2d10 +4, capped at maximum HP. |
+| Rare | Continuous Flame Buckle | Automatic replacement of a naturally exhausted torch restores 1d6 energy; manual lighting and throwing do not activate it. |
+| Rare | Investigator Mantle | Hero ignores ruin spike traps, leaving them armed for enemies. |
+| Epic | Ember Staff | Kills on burning terrain restore 2 energy, including environmental kills while equipped. |
+| Epic | Twilight Bow | +3 ranged damage on visible targets outside primary light: Euclidean radius 5 with a torch, 3 without, 2 in Blackout. Line of sight is required. |
+| Epic | Hunter's Greed Amulet | Elite equipment drop chance becomes 100%, with a rare-or-better rarity floor. |
+| Epic | Thick Rubber Boots | Immunity to direct and splash discharge damage. |
+| Legendary | Conductive Crossbow | A ranged hit on unfrozen water invokes the shared cistern discharge: 3 + min(4, cycleIndex) damage on the impact and adjacent cells with line of sight. It can hurt the shooter. |
+| Legendary | Fungal Sovereign Crown | Poison immunity; consumes spore traps and heals 2d10 through the standard healing/relic pipeline. |
+| Legendary | Eternal Forge Robe | Fire immunity, including forge jets and the Forge Warden's thermal attack; thrown torches ignite oil for six environmental ticks. |
+
+Combat passives use the normal hit, kill, loot and healing services. Electrical impacts share one `EnvironmentService.Discharge` implementation, including armor immunities and safe-room protection. Dice use the session random stream. `AdditionalNamedItemTests` covers effects and negative cases; the catalog acquisition audit covers all 23 entries.

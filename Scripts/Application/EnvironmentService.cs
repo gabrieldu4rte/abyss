@@ -4,7 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 namespace Abyss.Application;
-internal sealed class EnvironmentService(DungeonState dungeon, InventoryState inventory, PlayerState player, RunState run, ExpeditionJournal journal, CombatService combat, VisualEffects effects, HeroVitals vitals)
+internal sealed class EnvironmentService(DungeonState dungeon, InventoryState inventory, PlayerState player, RunState run, ExpeditionJournal journal, CombatService combat, VisualEffects effects, HeroVitals vitals, RandomStream random)
 {
     private EnvironmentState World => dungeon.Environment;
     internal bool Water(Vector2I p) => !World.Ice.ContainsKey(p) && World.Details.TryGetValue(p, out var c) && c == '~';
@@ -41,7 +41,7 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
             if (dungeon.Walk(q) && !dungeon.IsSanctuary(q) && q != dungeon.Stairs && !Water(q)) World.Oil.Add(q);
         journal.Say("O barril tombou e espalhou oleo pelo chao.", "The barrel tipped over, spilling oil across the floor.");
     }
-    internal void Ignite(Vector2I origin, bool report = true)
+    internal void Ignite(Vector2I origin, bool report = true, int minimumDuration = 0)
     {
         if (World.Ice.ContainsKey(origin)) { Wet(origin); return; }
         if (dungeon.IsSanctuary(origin) || dungeon.IsMerchantFloor || !dungeon.Walk(origin) || Water(origin)) return;
@@ -54,7 +54,7 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
             if (dungeon.IsSanctuary(p) || !burning.Add(p) || !dungeon.Walk(p) || Water(p) || p == dungeon.Stairs) continue;
             if (World.Fixtures.TryGetValue(p, out var fixture) && fixture == Fixture.OilBarrel) SpillOil(p);
             bool oil = World.Oil.Remove(p);
-            World.Fire[p] = dungeon.Modifier == FloorModifier.HotDraft ? 6 : 4;
+            World.Fire[p] = Math.Max(minimumDuration, dungeon.Modifier == FloorModifier.HotDraft ? 6 : 4);
             foreach (var q in GameRules.Directions.Select(d => p + d))
             {
                 if (World.Oil.Contains(q) || (oil && GameRules.Dist(q, origin) <= 2)) pending.Enqueue(q);
@@ -68,6 +68,7 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
         var path = new List<Vector2I> { player.Position };
         var p = player.Position;
         bool piercing = inventory.Has(ItemId.ThrowingGauntlets);
+        bool oilIgnited = false;
         for (int i = 0; i < (piercing ? GameRules.Width + GameRules.Height : 5); i++)
         {
             var next = p + direction;
@@ -94,10 +95,11 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
                     combat.Hit(target, 1);
                     if (target.Health > 0) EnemyDisplacement.Push(dungeon, player, target, player.Position);
                 }
-                if (World.Oil.Contains(cell) || World.Fixtures.TryGetValue(cell, out var fixture) && fixture == Fixture.OilBarrel) Ignite(cell);
+                if (World.Oil.Contains(cell) || World.Fixtures.TryGetValue(cell, out var fixture) && fixture == Fixture.OilBarrel) { oilIgnited = true; Ignite(cell, minimumDuration: inventory.Has(ItemId.EternalForgeRobe) ? 6 : 0); }
             }
         }
-        if (!Water(p)) Ignite(p);
+        bool oilAtEnd = World.Oil.Contains(p) || World.Fixtures.TryGetValue(p, out var endFixture) && endFixture == Fixture.OilBarrel;
+        if (!Water(p)) Ignite(p, minimumDuration: inventory.Has(ItemId.EternalForgeRobe) && (oilAtEnd || oilIgnited) ? 6 : 0);
         journal.Say(Water(p) ? "A agua apaga a tocha." : "Voce arremessa a tocha.", Water(p) ? "The water extinguishes the torch." : "You throw the torch.");
         return true;
     }
@@ -110,10 +112,20 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
         {
             inventory.TorchEquipped = false;
             if (inventory.LightReserve())
+            {
+                if (inventory.Has(ItemId.ContinuousFlameBuckle))
+                {
+                    int roll = random.Generator.Next(1,7);
+                    int restored = Math.Min(roll, player.MaxEnergy - player.Energy);
+                    player.Energy += restored;
+                    journal.Say($"Fivela: 1d6 ({roll}), +{restored} energia.", $"Buckle: 1d6 ({roll}), +{restored} energy.");
+                }
                 journal.Say("Sua tocha acabou. Voce acende a proxima reserva.", "Your torch burned out. You light the next spare.");
+            }
             else
                 journal.Say("Sua ultima tocha se apagou.", "Your last torch burned out.");
         }
+        if (inventory.Has(ItemId.FungalSovereignCrown)) World.HeroPoisonTurns = 0;
         TriggerTrap(player.Position, null);
         if (player.Health <= 0 || vitals.RescueSerial != rescue) return;
         foreach (var enemy in dungeon.Enemies.ToArray())
@@ -125,7 +137,7 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
                 TriggerTrap(enemy.Position, enemy);
             }
         }
-        if (World.Fire.ContainsKey(player.Position)) HurtHero(Math.Max(0, FireDamage - (inventory.Has(ItemId.InsulatingLeather) ? 1 : 0)), "Fogo", "Fire");
+        if (!inventory.Has(ItemId.EternalForgeRobe) && World.Fire.ContainsKey(player.Position)) HurtHero(Math.Max(0, FireDamage - (inventory.Has(ItemId.InsulatingLeather) ? 1 : 0)), "Fogo", "Fire");
         if (vitals.RescueSerial != rescue) return;
         if (World.HeroPoisonTurns > 0 && player.Health > 0)
         {
@@ -223,6 +235,7 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
     private void TriggerTrap(Vector2I p, Enemy? enemy)
     {
         if (World.Ice.ContainsKey(p) || !World.Fixtures.TryGetValue(p, out var fixture) || !TrapRules.IsTrap(fixture)) return;
+        if (enemy == null && fixture == Fixture.SpikeTrap && inventory.Has(ItemId.InvestigatorMantle)) return;
         int rescue = vitals.RescueSerial;
         effects.Sounds.Play("trap");
         World.Fixtures[p] = Fixture.SpentTrap;
@@ -230,6 +243,14 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
         switch (fixture)
         {
             case Fixture.PoisonTrap:
+                if (enemy == null && inventory.Has(ItemId.FungalSovereignCrown))
+                {
+                    var healing = TabletopRules.RollPotion(random.Generator);
+                    int restored = vitals.Heal(healing.Total);
+                    effects.Sounds.Play("potion");
+                    journal.Say($"Coroa fungica: 2d10 [{healing.First}+{healing.Second}], +{restored} PV.", $"Fungal crown: 2d10 [{healing.First}+{healing.Second}], +{restored} HP.");
+                    break;
+                }
                 if (enemy == null) World.HeroPoisonTurns = 3; else World.PoisonedEnemies[enemy] = 3;
                 journal.Say("Esporos venenosos escapam da armadilha!", "Poisonous spores escape the trap!");
                 break;
@@ -240,9 +261,7 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
                 break;
             case Fixture.ShockTrap:
                 journal.Say("Uma descarga atinge as casas adjacentes!", "A discharge strikes adjacent cells!");
-                if ((player.Position == p || !inventory.Has(ItemId.InsulatingLeather)) && GameRules.Dist(player.Position, p) <= 1 && dungeon.Los(p, player.Position)) HurtHero(3 + bonus, "Descarga", "Discharge");
-                if (player.Health <= 0 || vitals.RescueSerial != rescue) return;
-                foreach (var target in dungeon.Enemies.Where(e => GameRules.Dist(e.Position, p) <= 1 && dungeon.Los(p, e.Position)).ToArray()) combat.Hit(target, 3 + bonus, false);
+                Discharge(p);
                 break;
             case Fixture.FlameTrap:
                 journal.Say("Um jato de fogo irrompe do piso!", "A jet of flame erupts from the floor!");
@@ -250,6 +269,17 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
                     if (dungeon.Walk(q) && !dungeon.IsSanctuary(q) && q != dungeon.Stairs && !Water(q)) Ignite(q, false);
                 break;
         }
+    }
+    internal void Discharge(Vector2I p)
+    {
+        if (dungeon.IsMerchantFloor || dungeon.IsSanctuary(p)) return;
+        int rescue = vitals.RescueSerial;
+        int damage = 3 + Math.Min(4, GameRules.CycleIndex(dungeon.Floor));
+        var cells = new[] { p }.Concat(GameRules.Directions.Select(d => p + d)).Where(q => dungeon.Walk(q) && dungeon.Los(p,q) && !dungeon.IsSanctuary(q)).ToArray();
+        effects.Actions.PlayWarden(Biome.Cistern, p, cells);
+        if (!inventory.Has(ItemId.ThickRubberBoots) && (player.Position == p || !inventory.Has(ItemId.InsulatingLeather)) && cells.Contains(player.Position)) HurtHero(damage, "Descarga", "Discharge");
+        if (player.Health <= 0 || vitals.RescueSerial != rescue) return;
+        foreach (var target in dungeon.Enemies.Where(e => cells.Contains(e.Position)).ToArray()) combat.Hit(target, damage, false);
     }
     private void HurtHero(int damage, string pt, string en)
     {

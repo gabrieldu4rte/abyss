@@ -4,6 +4,10 @@ using System.Linq;
 namespace Abyss.Application;
 internal sealed class NamedEquipmentEffects(InventoryState inventory, DungeonState dungeon, PlayerState player, CombatService combat, EnvironmentService environment, HeroCombatStats stats, RandomStream random, VisualEffects effects, ExpeditionJournal journal)
 {
+    internal void OnRangedHit(Enemy enemy)
+    {
+        if (inventory.Weapon?.Special == ItemId.ConductiveCrossbow && environment.Water(enemy.Position)) environment.Discharge(enemy.Position);
+    }
     internal void OnHit(Enemy enemy, int natural, bool critical, bool physical)
     {
         var id = inventory.Weapon?.Special ?? ItemId.None;

@@ -318,12 +318,14 @@ internal sealed class PlayerActions
         }
 
         var healing = RollPotion(random.Generator);
-        expeditionJournal.LastPotionRoll = healing.Total;
-        expeditionJournal.LastPotionHealing = Math.Min(playerState.MaxHealth - playerState.Health, healing.Total);
+        int bonus = inventoryState.Has(ItemId.VigorBracers) ? 4 : 0;
+        int total = healing.Total + bonus;
+        expeditionJournal.LastPotionRoll = total;
+        expeditionJournal.LastPotionHealing = Math.Min(playerState.MaxHealth - playerState.Health, total);
         inventoryState.Potions--;
         vitals.Heal(expeditionJournal.LastPotionHealing);
         visualEffects.Sounds.Play("potion");
-        expeditionJournal.Say($"Pocao: 2d10 [{healing.First}+{healing.Second}] = {healing.Total}. Curou {expeditionJournal.LastPotionHealing} PV.", $"Potion: 2d10 [{healing.First}+{healing.Second}] = {healing.Total}. Healed {expeditionJournal.LastPotionHealing} HP.");
+        expeditionJournal.Say($"Pocao: 2d10 [{healing.First}+{healing.Second}]{(bonus > 0 ? " +4" : "")} = {total}. Curou {expeditionJournal.LastPotionHealing} PV.", $"Potion: 2d10 [{healing.First}+{healing.Second}]{(bonus > 0 ? " +4" : "")} = {total}. Healed {expeditionJournal.LastPotionHealing} HP.");
         turns.EndTurn();
     }
 }

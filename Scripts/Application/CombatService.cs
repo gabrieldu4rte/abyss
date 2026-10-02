@@ -5,6 +5,7 @@ namespace Abyss.Application;
 internal sealed class CombatService
 {
     internal event Action<Enemy, int, bool, bool>? HeroHit;
+    internal event Action<Enemy>? HeroRangedHit;
     private readonly HeroVitals vitals;
     private readonly BestiaryProgress bestiary;
     private readonly DungeonState dungeonState;
@@ -66,7 +67,8 @@ internal sealed class CombatService
         }
         int natural = random.Generator.Next(1, 21);
         string advantageRoll = "";
-        if (inventoryState.Weapon?.Special == ItemId.RevengeBow && (enemy.IsElite || enemy.IsWarden))
+        bool floodedMelee = inventoryState.Weapon?.Special == ItemId.ExplorerBlade && !ranged && GameRules.Dist(playerState.Position, enemy.Position) == 1 && dungeonState.Environment.Details.TryGetValue(enemy.Position, out var terrain) && terrain == '~' && !dungeonState.Environment.Ice.ContainsKey(enemy.Position);
+        if (floodedMelee || inventoryState.Weapon?.Special == ItemId.RevengeBow && (enemy.IsElite || enemy.IsWarden))
         {
             int second = random.Generator.Next(1, 21);
             advantageRoll = $"[{natural},{second}] ";
@@ -85,6 +87,8 @@ internal sealed class CombatService
 
         var dice = overrideDice ?? (ability ? heroCombatStats.AbilityDice : ranged ? heroCombatStats.ShotDice : heroCombatStats.MeleeDice);
         int damage = RollDamage(random.Generator, dice, roll.Critical);
+        if (floodedMelee) damage += 2;
+        if ((ranged || ability && playerState.ClassIndex == 2) && inventoryState.Weapon?.Special == ItemId.TwilightBow && dungeonState.Visible[enemy.Position.X,enemy.Position.Y] && dungeonState.Los(playerState.Position,enemy.Position) && (enemy.Position-playerState.Position).LengthSquared() > Math.Pow(dungeonState.Modifier == FloorModifier.Blackout ? 2 : inventoryState.HasLight ? 5 : 3, 2)) damage += 3;
         if (sacrifice) damage += random.Generator.Next(1,7);
         if (inventoryState.Weapon is Gear weapon && weapon.Quality >= Rarity.Epic && weapon.Special == ItemId.None)
         {
@@ -98,6 +102,7 @@ internal sealed class CombatService
         expeditionJournal.Say($"Voce -> {FloorEventText.EnemyName(enemy, false)}: {total}. {(roll.Critical ? "CRITICO! " : "")}{damage} dano ({dice}).", $"You -> {FloorEventText.EnemyName(enemy, true)}: {total}. {(roll.Critical ? "CRITICAL! " : "")}{damage} damage ({dice}).");
         Hit(enemy, damage, false);
         HeroHit?.Invoke(enemy, roll.Natural, roll.Critical, playerState.ClassIndex != 1);
+        if (ranged || ability && playerState.ClassIndex == 2) HeroRangedHit?.Invoke(enemy);
         return true;
     }
 
@@ -128,6 +133,7 @@ internal sealed class CombatService
 
     internal bool ResolveWardenAbility(Enemy enemy, bool evade)
     {
+        if (enemy.HomeBiome == Biome.EmberForge && inventoryState.Has(ItemId.EternalForgeRobe)) return false;
         if (enemy.Health <= 0 || !enemy.IsWarden || !enemy.Alerted || !dungeonState.StairsRoom.HasPoint(playerState.Position) || !enemy.AbilityCells.Contains(playerState.Position) || !dungeonState.Los(enemy.Position, playerState.Position)) return false;
         int modifier = enemy.HomeBiome == Biome.Ruins ? enemy.Stats.Str : enemy.Stats.Int;
         var roll = ResolveAttack(random.Generator.Next(1, 21), enemy.Training + modifier + 1, heroCombatStats.Defense + (evade ? 4 : 0));
@@ -160,6 +166,7 @@ internal sealed class CombatService
             return;
         dungeonState.Enemies.Remove(e);
         playerState.Kills++;
+        if (inventoryState.Weapon?.Special == ItemId.EmberStaff && dungeonState.Environment.Fire.ContainsKey(e.Position)) playerState.Energy = Math.Min(playerState.MaxEnergy, playerState.Energy + 2);
         if (!bestiary.Record(e))
             expeditionJournal.Say("Nao foi possivel salvar o bestiario. O registro permanece nesta sessao.", "Could not save the bestiary. The record remains in this session.");
         if (inventoryState.Equipped[2] is Gear charm && charm.Quality >= Rarity.Epic && charm.Special == ItemId.None)
@@ -170,7 +177,7 @@ internal sealed class CombatService
         if (goldReward > 0)
             expeditionJournal.Say($"{FloorEventText.EnemyName(e, false)} deixou {goldReward} ouro.", $"{FloorEventText.EnemyName(e, true)} dropped {goldReward} gold.");
         expeditionJournal.Say($"{FloorEventText.EnemyName(e, false)} derrotado. +{reward} XP.", $"{FloorEventText.EnemyName(e, true)} defeated. +{reward} XP.");
-        if (e.IsElite && random.Generator.NextDouble() < .35)
+        if (e.IsElite && (inventoryState.Has(ItemId.HunterGreedAmulet) || random.Generator.NextDouble() < .35))
         {
             var eliteLoot = lootService.DropEquipment(e.Depth, true);
             expeditionJournal.Say($"Elite: {localization.GearNameFor(eliteLoot, false)}.", $"Elite: {localization.GearNameFor(eliteLoot, true)}.");

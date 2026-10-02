@@ -103,8 +103,8 @@ internal sealed partial class RegressionSuite
             if(gear.Quality==Rarity.Legendary)Check(legends.Add(gear.Special),"Legendary unique repeated in one expedition.");
             Check(NamedItemText.Name(gear.Special,false).Length>0 && NamedItemText.Effect(gear.Special,true).Length>0,"Missing localization.");
         }
-        Check(seen.Count==12,"Not all named items are obtainable.");
-        GD.Print("NAMED ITEM AUDIT: all twelve effects, acquisition, uniqueness, torch lifetime, immunity, temporary water, piercing, advantage, sacrifice, blindness and lethal rescue passed.");
+        Check(seen.Count==Enum.GetValues<ItemId>().Length-1,"Not all named items are obtainable.");
+        GD.Print("NAMED ITEM AUDIT: original twelve effects, all 23 items obtainable, acquisition, uniqueness, torch lifetime, immunity, temporary water, piercing, advantage, sacrifice, blindness and lethal rescue passed.");
     }
     private sealed class ItemRandom(int value, double chance=.5) : Random(811)
     {

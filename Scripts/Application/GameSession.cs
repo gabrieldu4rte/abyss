@@ -89,10 +89,11 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         CombatService = new CombatService(DungeonState, ExpeditionJournal, HeroCombatStats, InventoryState, Localization, LootService, PlayerState, ProgressionService, RunState, VisualEffects, RandomStream, BestiaryProgress, HeroVitals);
         FloorEventGenerator = new FloorEventGenerator(DungeonState, PlayerState, RunState, ExpeditionJournal);
         EnvironmentGenerator = new EnvironmentGenerator(DungeonState, PlayerState, RunState);
-        EnvironmentService = new EnvironmentService(DungeonState, InventoryState, PlayerState, RunState, ExpeditionJournal, CombatService, VisualEffects, HeroVitals);
+        EnvironmentService = new EnvironmentService(DungeonState, InventoryState, PlayerState, RunState, ExpeditionJournal, CombatService, VisualEffects, HeroVitals, RandomStream);
         AdvancedAbilityService = new AdvancedAbilityService(PlayerState, DungeonState, HeroCombatStats, CombatService, EnvironmentService, ExpeditionJournal, VisualEffects, this);
         NamedEquipmentEffects = new NamedEquipmentEffects(InventoryState, DungeonState, PlayerState, CombatService, EnvironmentService, HeroCombatStats, RandomStream, VisualEffects, ExpeditionJournal);
         CombatService.HeroHit += NamedEquipmentEffects.OnHit;
+        CombatService.HeroRangedHit += NamedEquipmentEffects.OnRangedHit;
         DungeonGenerator = new DungeonGenerator(DungeonState, ExpeditionJournal, LootService, MenuState, MerchantState, PlayerState, VisualEffects, RandomStream, InventoryState, EnvironmentGenerator, FloorEventGenerator, RunState);
         UiComponents = new UiComponents(AsciiCanvas, Localization, MenuState);
         SettingsRenderer = new SettingsRenderer(AsciiCanvas, Localization, MenuState, UiComponents);

@@ -170,6 +170,7 @@ internal sealed partial class RegressionSuite
             TestBestiary();
             TestBestiaryProgress();
             TestNamedItems();
+            TestAdditionalNamedItems();
             TestBehaviorRegression();
             TestArchitecture();
             TestActionAnimations();
