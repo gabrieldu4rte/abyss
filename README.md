@@ -383,3 +383,29 @@ Twelve named items extend `Gear` with a stable `ItemId`. They retain the base ki
 - `DisplayPreferences` holds display values, `IDisplaySettings` isolates persistence, and `GodotDisplaySettings` stores them in `user://display.cfg`. Unsupported saved resolutions fall back to 1280 x 800. Diagnostic previews do not overwrite preferences.
 - `--view=main-settings` previews the main settings screen; `--demo --view=settings` previews the pause tab. Add `--display-demo=1920x1080` to exercise real viewport scaling and `--fullscreen-preview` for fullscreen.
 - Settings tests cover both entry points, immediate audio values, language persistence, volume bounds and key repeats, all resolution presets, F11 synchronization, disk reload, invalid-resolution fallback, save failures, and turn-free navigation.
+
+
+## Level-ten class advancement
+
+- At level 10 or higher, surviving characters without an advanced class receive a two-option choice after the current action animation. The menu pauses the expedition and requires confirmation, defaulting to No. Escape defers the choice; `C` in the pause character sheet reopens it.
+- Advancement is chosen once per expedition. `ClassIndex` remains the original class for equipment eligibility, attribute growth and basic attacks; `AdvancedClass` selects upgraded skills, localized names and portraits. A new expedition resets advancement and temporary defense.
+- Every specialization replaces the normal and critical portraits with a distinct 100 x 60 ASCII image and tone map. Critical health retains the existing 25% threshold. Sixteen imagegen sources and exact prompts are retained in `ArtSources/advancement-prompts.json`.
+- `Q` retains the base skill's energy progression and targeting style while using the specialization's damage dice and range. Damage still includes the primary attribute, level scaling and weapon power.
+- `R` invokes the new ability. Its initial cost decreases by one per four levels after level 10, to a minimum of four energy. Damaging new abilities add the primary attribute, weapon power and one damage per two levels after level 10. They use the existing d20 and equipment effect pipeline. No-target and insufficient-energy attempts do not consume a turn.
+
+| Base | Advancement | Improved Q | New R / initial energy |
+|---|---|---|---|
+| Warrior | Sentinel | 2d8 whirlwind, radius 3 | Bastion: +6 defense for three enemy responses / 6 |
+| Warrior | Berserker | 3d6 whirlwind, radius 2 | Crushing blow: adjacent 4d8 strike, pushes a surviving target on hit / 7 |
+| Mage | Pyromancer | 3d6 nova, radius 5 | Fireburst: 3d6 burst around a selected target within 6 cells, ignites its cross-shaped area using environmental fire rules / 9 |
+| Mage | Cryomancer | 2d8 nova, radius 6 | Frozen prison: 1d6 against visible foes within 3 cells, freezes surviving hit targets for two enemy responses / 9 |
+| Archer | Ranger | 2d10 arrow, range 10 | Arrow rain: 2d6 against visible foes within 6 cells / 8 |
+| Archer | Deadeye | 3d8 arrow, range 12 | Death mark: 4d8 selected-target shot, range 12, +4 accuracy / 9 |
+| Rogue | Assassin | 3d8 adjacent strike and blink | Venom blade: adjacent 3d6 strike, adds three ticks of two poison damage on surviving hits; fungi are immune / 7 |
+| Rogue | Shadowblade | 3d6 adjacent strike and blink; successful blink grants +4 defense for two responses | Shadow veil: blinds visible foes within 3 cells for two responses / 8 |
+
+- Buff/status durations include the immediate response to the action that created them. Blindness and freezing expire concurrently, without stacking skipped responses. Each new ability has its own ASCII animation, reusing appropriate sound cues. Animations do not consume turns or randomness.
+- The rogue's Q now requires an adjacent, visible target in line of sight. A hit attempts to blink to the cell directly beyond the target along the attack direction. A wall, creature, NPC, oil barrel or fixed torch blocks relocation without cancelling the attack. A miss or lethal self-cost never blinks. Successful relocation collects floor items and processes environmental effects through the normal turn scheduler.
+- `AdvancementCatalog` holds specialization rules; `ClassAdvancementService` owns unlock/choice; `AdvancedAbilityService` executes new abilities; `AdvancementRenderer` and `AdvancementText` present the choices. The original class-selection screen remains unchanged.
+- Preview the four choice screens with `--advancement-demo=0` through `3`. Use `--advanced-hero-demo=Shadowblade`, optionally `--critical-preview` and `--view=pause`, to inspect an advanced character.
+- Tests cover level gating, confirmation, deferral, one-time choice, resets, all sixteen portraits, all eight new abilities, energy/turn accounting, poison immunity, temporary defense, animation timing, and rogue hit/miss/blocked-destination behavior.

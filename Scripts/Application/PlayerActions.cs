@@ -248,24 +248,48 @@ internal sealed class PlayerActions
             return;
         }
 
-        var targets = dungeonState.Enemies.Where(e => dungeonState.Visible[e.Position.X, e.Position.Y] && GameRules.Dist(playerState.Position, e.Position) <= heroCombatStats.AbilityRange).OrderBy(e => GameRules.Dist(playerState.Position, e.Position)).ToList();
+        var origin = playerState.Position;
+        var targets = dungeonState.Enemies.Where(e => e.Health > 0 && dungeonState.Visible[e.Position.X, e.Position.Y] && dungeonState.Los(origin,e.Position) && GameRules.Dist(origin, e.Position) <= heroCombatStats.AbilityRange).OrderBy(e => GameRules.Dist(origin, e.Position)).ToList();
         if (targets.Count == 0)
         {
             expeditionJournal.Say("Nenhum alvo ao alcance da habilidade.", "No target within ability range.");
             return;
         }
-
         var chosenTarget = visualEffects.Focus != null && targets.Contains(visualEffects.Focus) ? visualEffects.Focus : targets[0];
-        visualEffects.Actions.PlaySkill(playerState.ClassIndex, playerState.Position,
-            playerState.ClassIndex < 2 ? targets.Select(enemy => enemy.Position) : new[] { chosenTarget.Position }, heroCombatStats.AbilityRange);
+        var targetPosition = chosenTarget.Position;
+        if (playerState.ClassIndex != 3)
+            visualEffects.Actions.PlaySkill(playerState.ClassIndex, origin, playerState.ClassIndex < 2 ? targets.Select(enemy => enemy.Position) : new[] { chosenTarget.Position }, heroCombatStats.AbilityRange);
         playerState.Energy -= cost;
-        expeditionJournal.Say(UiTheme.Skills[playerState.ClassIndex] + "!", UiTheme.EnglishSkills[playerState.ClassIndex] + "!");
+        expeditionJournal.Say(playerState.AdvancedClass == AdvancedClass.None ? UiTheme.Skills[playerState.ClassIndex] + "!" : AdvancementText.Primary(playerState.AdvancedClass,false) + "!", playerState.AdvancedClass == AdvancedClass.None ? UiTheme.EnglishSkills[playerState.ClassIndex] + "!" : AdvancementText.Primary(playerState.AdvancedClass,true) + "!");
         if (playerState.ClassIndex < 2)
+        {
             foreach (Enemy e in targets)
+            {
+                if (playerState.Health <= 0 || playerState.Position != origin) break;
                 combatService.ResolveHeroAttack(e, false, true);
+            }
+        }
         else
-            combatService.ResolveHeroAttack(visualEffects.Focus != null && targets.Contains(visualEffects.Focus) ? visualEffects.Focus : targets[0], false, true);
-        turns.EndTurn(playerState.ClassIndex == 3);
+        {
+            bool hit = combatService.ResolveHeroAttack(chosenTarget, false, true);
+            if (playerState.ClassIndex == 3)
+            {
+                var destination = targetPosition + (targetPosition - origin);
+                bool free = dungeonState.Walk(destination) && dungeonState.At(destination) == null
+                    && !(dungeonState.IsMerchantFloor && destination == dungeonState.MerchantPosition)
+                    && !(dungeonState.BlacksmithRoom.HasValue && destination == dungeonState.BlacksmithPosition)
+                    && !(dungeonState.Environment.Fixtures.TryGetValue(destination, out var fixture) && fixture is Fixture.OilBarrel or Fixture.WallTorch);
+                if (hit && playerState.Health > 0 && playerState.Position == origin && free)
+                {
+                    playerState.Position = destination;
+                    Pickup();
+                    if (playerState.AdvancedClass == AdvancedClass.Shadowblade) { playerState.GuardTurns = 2; playerState.GuardBonus = 4; }
+                    expeditionJournal.Say("Voce surge atras do inimigo.", "You emerge behind the enemy.");
+                }
+                visualEffects.Actions.PlayRogueStep(origin,targetPosition,playerState.Position == destination ? destination : targetPosition);
+            }
+        }
+        turns.EndTurn(playerState.ClassIndex == 3, previousPlayer: origin);
     }
 
     internal void Drink()

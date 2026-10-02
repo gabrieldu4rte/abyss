@@ -76,7 +76,7 @@ internal sealed class PauseRenderer
 
     internal void DrawCharacterSheet()
     {
-        asciiCanvas.Portrait(32, 202, HeroPortrait.Select(playerState), localization.ClassName(playerState.ClassIndex), UiTheme.Teal);
+        asciiCanvas.Portrait(32, 202, HeroPortrait.Select(playerState), localization.HeroName(playerState), UiTheme.Teal);
         asciiCanvas.Text(32, 530, localization.Translate($"NIVEL {playerState.Level} / ANDAR {dungeonState.Floor}", $"LEVEL {playerState.Level} / FLOOR {dungeonState.Floor}"), UiTheme.Gold, 18);
         asciiCanvas.Text(32, 563, $"XP {playerState.Experience} / {heroCombatStats.XpToNext}", UiTheme.Ink, 17);
         asciiCanvas.Text(32, 596, localization.Translate($"DERROTADOS {playerState.Kills}", $"DEFEATED {playerState.Kills}"), UiTheme.Dim, 16);
@@ -84,9 +84,13 @@ internal sealed class PauseRenderer
         asciiCanvas.Lines(310, 245, localization.Translate($"FORCA         {heroCombatStats.EffectiveAttributes.Strength, 2}  ({UiTheme.Signed(heroCombatStats.EffectiveAttributes.Str)})\nDESTREZA      {heroCombatStats.EffectiveAttributes.Dexterity, 2}  ({UiTheme.Signed(heroCombatStats.EffectiveAttributes.Dex)})\nCONSTITUICAO  {heroCombatStats.EffectiveAttributes.Constitution, 2}  ({UiTheme.Signed(heroCombatStats.EffectiveAttributes.Con)})\nINTELIGENCIA  {heroCombatStats.EffectiveAttributes.Intelligence, 2}  ({UiTheme.Signed(heroCombatStats.EffectiveAttributes.Int)})", $"STRENGTH      {heroCombatStats.EffectiveAttributes.Strength, 2}  ({UiTheme.Signed(heroCombatStats.EffectiveAttributes.Str)})\nDEXTERITY     {heroCombatStats.EffectiveAttributes.Dexterity, 2}  ({UiTheme.Signed(heroCombatStats.EffectiveAttributes.Dex)})\nCONSTITUTION  {heroCombatStats.EffectiveAttributes.Constitution, 2}  ({UiTheme.Signed(heroCombatStats.EffectiveAttributes.Con)})\nINTELLIGENCE  {heroCombatStats.EffectiveAttributes.Intelligence, 2}  ({UiTheme.Signed(heroCombatStats.EffectiveAttributes.Int)})"), UiTheme.Ink, 17, 29);
         asciiCanvas.Text(755, 208, localization.Translate("RECURSOS E DEFESAS", "RESOURCES AND DEFENSES"), UiTheme.Gold, 18);
         asciiCanvas.Lines(755, 245, localization.Translate($"Vida {playerState.Health}/{playerState.MaxHealth}   Energia {playerState.Energy}/{playerState.MaxEnergy}\nPocoes {inventoryState.Potions}   Ouro {playerState.Gold}\nDefesa {heroCombatStats.Defense}\nProficiencia {UiTheme.Signed(heroCombatStats.Proficiency)}", $"Health {playerState.Health}/{playerState.MaxHealth}   Energy {playerState.Energy}/{playerState.MaxEnergy}\nPotions {inventoryState.Potions}   Gold {playerState.Gold}\nDefense {heroCombatStats.Defense}\nProficiency {UiTheme.Signed(heroCombatStats.Proficiency)}"), UiTheme.Ink, 16, 29);
+        if (playerState.Level >= 10 && playerState.AdvancedClass == AdvancedClass.None)
+            asciiCanvas.Text(32,635,localization.Translate("[C] AVANCAR CLASSE", "[C] ADVANCE CLASS"),UiTheme.Teal,16);
+        if (playerState.GuardTurns > 0) asciiCanvas.Text(32,668,localization.Translate($"Defesa +{playerState.GuardBonus}: {playerState.GuardTurns} turnos", $"Defense +{playerState.GuardBonus}: {playerState.GuardTurns} turns"),UiTheme.Gold,14);
+        if (playerState.AdvancedClass != AdvancedClass.None) { DrawAdvancedAbilities(); return; }
         asciiCanvas.Text(310, 393, localization.Translate("ATAQUES E HABILIDADES", "ATTACKS AND ABILITIES"), UiTheme.Gold, 18);
         asciiCanvas.Text(310, 426, !heroCombatStats.CanMelee ? localization.Translate("Sem ataque corpo a corpo. Use [F] ou [Q].", "No melee attack. Use [F] or [Q].") : localization.Translate($"Basico adjacente: d20{UiTheme.Signed(heroCombatStats.MeleeBonus)} | Dano {heroCombatStats.MeleeDice}", $"Adjacent basic: d20{UiTheme.Signed(heroCombatStats.MeleeBonus)} | Damage {heroCombatStats.MeleeDice}"), UiTheme.Ink, 17);
-        asciiCanvas.Text(310, 458, $"[Q] {localization.SkillName(playerState.ClassIndex)} | {heroCombatStats.AbilityCost} EN | d20{UiTheme.Signed(heroCombatStats.SpellBonus + 2)} | {heroCombatStats.AbilityDice}", UiTheme.Teal, 17);
+        asciiCanvas.Text(310, 458, $"[Q] {localization.HeroSkill(playerState)} | {heroCombatStats.AbilityCost} EN | d20{UiTheme.Signed(heroCombatStats.SpellBonus + 2)} | {heroCombatStats.AbilityDice}", UiTheme.Teal, 17);
         asciiCanvas.Text(310, 487, localization.Translate($"Alcance: {heroCombatStats.AbilityRange} casas", $"Range: {heroCombatStats.AbilityRange} tiles") + (playerState.ClassIndex == 3 ? localization.Translate(" | Critico 19-20; +4 defesa na resposta", " | Critical 19-20; +4 defense on response") : ""), UiTheme.Dim, 15);
         if (playerState.ClassIndex is 1 or 2)
         {
@@ -98,6 +102,19 @@ internal sealed class PauseRenderer
         asciiCanvas.Text(310, 603, localization.Translate("EQUIPAMENTOS", "EQUIPMENT"), UiTheme.Gold, 16);
         for (int i = 0; i < 3; i++)
             asciiCanvas.Text(310, 630 + i * 22, localization.SlotName(i) + ": " + (inventoryState.Equipped[i] is Gear g ? localization.GearLabel(g) : localization.Translate("Vazio", "Empty")), inventoryState.Equipped[i] is Gear gear ? UiTheme.RarityColor(gear.Quality) : UiTheme.Dim, 15);
+    }
+
+    private void DrawAdvancedAbilities()
+    {
+        var choice = playerState.AdvancedClass;
+        asciiCanvas.Text(310,393,localization.Translate("ATAQUES E HABILIDADES", "ATTACKS AND ABILITIES"),UiTheme.Gold,18);
+        asciiCanvas.Text(310,426,$"[Q] {localization.HeroSkill(playerState)} | {heroCombatStats.AbilityCost} EN | d20{UiTheme.Signed(heroCombatStats.SpellBonus+2)} | {heroCombatStats.AbilityDice}",UiTheme.Teal,17);
+        asciiCanvas.Text(310,451,localization.Translate($"Alcance: {heroCombatStats.AbilityRange} casas", $"Range: {heroCombatStats.AbilityRange} tiles"),UiTheme.Dim,15);
+        asciiCanvas.Text(310,487,$"[R] {AdvancementText.Secondary(choice,localization.English)} | {heroCombatStats.SecondaryCost} EN" + (heroCombatStats.Advancement!.NewDiceCount > 0 ? $" | d20{UiTheme.Signed(heroCombatStats.SpellBonus + 2 + (choice == AdvancedClass.Deadeye ? 4 : 0))} | {heroCombatStats.SecondaryDice}" : ""),UiTheme.Teal,17);
+        asciiCanvas.Text(310,512,localization.Translate($"Alcance: {heroCombatStats.SecondaryRange} casas", $"Range: {heroCombatStats.SecondaryRange} tiles"),UiTheme.Dim,15);
+        asciiCanvas.WrappedText(310,542,AdvancementText.Description(choice,localization.English),UiTheme.Ink,15,96,23);
+        asciiCanvas.Text(310,620,heroCombatStats.CanShoot ? $"[F] {localization.Translate("Basico", "Basic")}: {heroCombatStats.ShotDice} | {localization.Translate("Alcance", "Range")} {(playerState.ClassIndex == 2 ? 10 : 6)}" : $"{localization.Translate("Basico adjacente", "Adjacent basic")}: {heroCombatStats.MeleeDice}",UiTheme.Ink,15);
+        for (int i=0;i<3;i++) asciiCanvas.Text(310,647+i*22,localization.SlotName(i)+": "+(inventoryState.Equipped[i] is Gear gear ? localization.GearLabel(gear) : localization.Translate("Vazio","Empty")),UiTheme.Dim,14);
     }
 
     internal void DrawJournal()

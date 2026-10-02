@@ -45,13 +45,13 @@ internal sealed class CombatService
 
     internal int TargetDefense(Enemy enemy, bool ranged, bool ability) => enemy.Armor;
     internal int ChanceAgainst(Enemy enemy, bool ranged, bool ability) => HitChance(AttackBonus(enemy, ranged, ability), TargetDefense(enemy, ranged, ability), ability && playerState.ClassIndex == 3 ? 19 : 20);
-    internal void ResolveHeroAttack(Enemy enemy, bool ranged = false, bool ability = false)
+    internal bool ResolveHeroAttack(Enemy enemy, bool ranged = false, bool ability = false, DamageDice? overrideDice = null, int accuracyBonus = 0)
     {
-        if (enemy.Health <= 0 || playerState.Health <= 0) return;
+        if (enemy.Health <= 0 || playerState.Health <= 0) return false;
         if (!ranged && !ability && !heroCombatStats.CanMelee)
-            return;
+            return false;
         if (!ranged && !ability && (GameRules.Dist(playerState.Position, enemy.Position) != 1 || !dungeonState.Los(playerState.Position, enemy.Position)))
-            return;
+            return false;
         if (!ranged && !ability) visualEffects.Sounds.Play("swing");
         visualEffects.Focus = enemy;
         visualEffects.FocusHold = UiTheme.HurtDuration;
@@ -62,7 +62,7 @@ internal sealed class CombatService
             vitals.Damage(1);
             visualEffects.HeroHurt(enemy, 1);
             expeditionJournal.Say("A Lamina do Algoz cobra 1 PV.", "The Executioner's Blade claims 1 HP.");
-            if (playerState.Health == 0 || vitals.RescueSerial != rescue) return;
+            if (playerState.Health == 0 || vitals.RescueSerial != rescue) return false;
         }
         int natural = random.Generator.Next(1, 21);
         string advantageRoll = "";
@@ -72,7 +72,7 @@ internal sealed class CombatService
             advantageRoll = $"[{natural},{second}] ";
             natural = Math.Max(natural, second);
         }
-        var roll = ResolveAttack(natural, AttackBonus(enemy, ranged, ability), TargetDefense(enemy, ranged, ability), ability && playerState.ClassIndex == 3 ? 19 : 20);
+        var roll = ResolveAttack(natural, AttackBonus(enemy, ranged, ability) + accuracyBonus, TargetDefense(enemy, ranged, ability), ability && playerState.ClassIndex == 3 ? 19 : 20);
         string total = $"{advantageRoll}d20({roll.Natural}){UiTheme.Signed(roll.Bonus)}={roll.Total} vs {roll.Defense}";
         expeditionJournal.LastRollPt = $"Voce: {total}";
         expeditionJournal.LastRollEn = $"You: {total}";
@@ -80,10 +80,10 @@ internal sealed class CombatService
         {
             visualEffects.Sounds.Play("miss");
             expeditionJournal.Say($"Voce -> {FloorEventText.EnemyName(enemy, false)}: {total}. Errou.", $"You -> {FloorEventText.EnemyName(enemy, true)}: {total}. You miss.");
-            return;
+            return false;
         }
 
-        var dice = ability ? heroCombatStats.AbilityDice : ranged ? heroCombatStats.ShotDice : heroCombatStats.MeleeDice;
+        var dice = overrideDice ?? (ability ? heroCombatStats.AbilityDice : ranged ? heroCombatStats.ShotDice : heroCombatStats.MeleeDice);
         int damage = RollDamage(random.Generator, dice, roll.Critical);
         if (sacrifice) damage += random.Generator.Next(1,7);
         if (inventoryState.Weapon is Gear weapon && weapon.Quality >= Rarity.Epic && weapon.Special == ItemId.None)
@@ -98,6 +98,7 @@ internal sealed class CombatService
         expeditionJournal.Say($"Voce -> {FloorEventText.EnemyName(enemy, false)}: {total}. {(roll.Critical ? "CRITICO! " : "")}{damage} dano ({dice}).", $"You -> {FloorEventText.EnemyName(enemy, true)}: {total}. {(roll.Critical ? "CRITICAL! " : "")}{damage} damage ({dice}).");
         Hit(enemy, damage, false);
         HeroHit?.Invoke(enemy, roll.Natural, roll.Critical, playerState.ClassIndex != 1);
+        return true;
     }
 
     internal void ResolveEnemyAttack(Enemy enemy, bool evade)

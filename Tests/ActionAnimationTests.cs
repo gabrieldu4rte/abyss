@@ -62,7 +62,7 @@ internal sealed partial class RegressionSuite
             Prepare(hero);
             game.PlayerActions.Skill();
             if (game.VisualEffects.Actions.Active) throw new Exception("Targetless skill created an effect.");
-            var target = game.PlayerState.Position + Vector2I.Right * 2;
+            var target = game.PlayerState.Position + Vector2I.Right * (hero == 3 ? 1 : 2);
             game.DungeonState.Enemies.Add(new Enemy(target, 's', 1) { Health = 100, MaxHealth = 100 });
             game.PlayerState.Energy = 0;
             game.PlayerActions.Skill();

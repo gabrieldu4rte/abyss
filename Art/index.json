@@ -202,5 +202,101 @@
     "rows": 60,
     "source": "lost_blacksmith.png",
     "file": "lost_blacksmith.txt"
+  },
+  "sentinel": {
+    "columns": 100,
+    "rows": 60,
+    "source": "sentinel.png",
+    "file": "sentinel.txt"
+  },
+  "sentinel_critical": {
+    "columns": 100,
+    "rows": 60,
+    "source": "sentinel_critical.png",
+    "file": "sentinel_critical.txt"
+  },
+  "berserker": {
+    "columns": 100,
+    "rows": 60,
+    "source": "berserker.png",
+    "file": "berserker.txt"
+  },
+  "berserker_critical": {
+    "columns": 100,
+    "rows": 60,
+    "source": "berserker_critical.png",
+    "file": "berserker_critical.txt"
+  },
+  "pyromancer": {
+    "columns": 100,
+    "rows": 60,
+    "source": "pyromancer.png",
+    "file": "pyromancer.txt"
+  },
+  "pyromancer_critical": {
+    "columns": 100,
+    "rows": 60,
+    "source": "pyromancer_critical.png",
+    "file": "pyromancer_critical.txt"
+  },
+  "cryomancer": {
+    "columns": 100,
+    "rows": 60,
+    "source": "cryomancer.png",
+    "file": "cryomancer.txt"
+  },
+  "cryomancer_critical": {
+    "columns": 100,
+    "rows": 60,
+    "source": "cryomancer_critical.png",
+    "file": "cryomancer_critical.txt"
+  },
+  "ranger": {
+    "columns": 100,
+    "rows": 60,
+    "source": "ranger.png",
+    "file": "ranger.txt"
+  },
+  "ranger_critical": {
+    "columns": 100,
+    "rows": 60,
+    "source": "ranger_critical.png",
+    "file": "ranger_critical.txt"
+  },
+  "deadeye": {
+    "columns": 100,
+    "rows": 60,
+    "source": "deadeye.png",
+    "file": "deadeye.txt"
+  },
+  "deadeye_critical": {
+    "columns": 100,
+    "rows": 60,
+    "source": "deadeye_critical.png",
+    "file": "deadeye_critical.txt"
+  },
+  "assassin": {
+    "columns": 100,
+    "rows": 60,
+    "source": "assassin.png",
+    "file": "assassin.txt"
+  },
+  "assassin_critical": {
+    "columns": 100,
+    "rows": 60,
+    "source": "assassin_critical.png",
+    "file": "assassin_critical.txt"
+  },
+  "shadowblade": {
+    "columns": 100,
+    "rows": 60,
+    "source": "shadowblade.png",
+    "file": "shadowblade.txt"
+  },
+  "shadowblade_critical": {
+    "columns": 100,
+    "rows": 60,
+    "source": "shadowblade_critical.png",
+    "file": "shadowblade_critical.txt"
   }
 }

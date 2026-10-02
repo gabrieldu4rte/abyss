@@ -4,6 +4,7 @@ using System;
 namespace Abyss.Application;
 internal sealed class MenuController
 {
+    private readonly ClassAdvancementService advancement;
     private readonly SettingsController settingsController;
     private readonly BlacksmithService blacksmith;
     private readonly IGameHost host;
@@ -17,8 +18,9 @@ internal sealed class MenuController
     private readonly PlayerState playerState;
     private readonly RunState runState;
     private readonly IRunLifecycle lifecycle;
-    internal MenuController(IGameHost host, InventoryService inventoryService, InventoryState inventoryState, JournalFormatter journalFormatter, LanguagePreferences languagePreferences, MenuState menuState, MerchantService merchantService, PlayerActions playerActions, PlayerState playerState, RunState runState, IRunLifecycle lifecycle, BlacksmithService blacksmith, SettingsController settingsController)
+    internal MenuController(IGameHost host, InventoryService inventoryService, InventoryState inventoryState, JournalFormatter journalFormatter, LanguagePreferences languagePreferences, MenuState menuState, MerchantService merchantService, PlayerActions playerActions, PlayerState playerState, RunState runState, IRunLifecycle lifecycle, BlacksmithService blacksmith, SettingsController settingsController, ClassAdvancementService advancement)
     {
+        this.advancement = advancement;
         this.settingsController = settingsController;
         this.blacksmith = blacksmith;
         this.host = host;
@@ -36,6 +38,7 @@ internal sealed class MenuController
 
     internal void HandlePause(Key key)
     {
+        if (menuState.PauseTab == 0 && key == Key.C) { advancement.Open("pause"); return; }
         if (menuState.PauseTab == 3 && menuState.BestiaryOpen)
         {
             if (key == Key.Escape) { menuState.BestiaryOpen = false; return; }
@@ -137,6 +140,8 @@ internal sealed class MenuController
                 }
             }
         }
+        else if (runState.Screen == "advancement")
+            advancement.Handle(key);
         else if (runState.Screen == "settings")
             settingsController.Handle(key, false);
         else if (runState.Screen == "language")

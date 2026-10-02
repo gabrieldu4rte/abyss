@@ -4,6 +4,9 @@ using static Abyss.Rules.TabletopRules;
 namespace Abyss.Domain;
 internal sealed class PlayerState
 {
+    internal AdvancedClass AdvancedClass { get; set; }
+    internal int GuardTurns { get; set; }
+    internal int GuardBonus { get; set; }
     internal Attributes Attributes { get; set; }
     internal Vector2I Position { get; set; }
     internal int ClassIndex { get; set; }

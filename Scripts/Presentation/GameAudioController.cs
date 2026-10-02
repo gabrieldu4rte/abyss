@@ -18,7 +18,7 @@ internal sealed class GameAudioController(IGameAudio? audio, RunState run, MenuS
     {
         stepTail = System.Math.Max(0, stepTail - delta);
         string next = run.Screen;
-        bool expedition = next is "game" or "pause" or "shop" or "blacksmith" or "torch_aim" or "confirm_exit" || next == "language" && menu.LanguageReturn == "pause";
+        bool expedition = next is "advancement" or "game" or "pause" or "shop" or "blacksmith" or "torch_aim" or "confirm_exit" || next == "language" && menu.LanguageReturn == "pause";
         string track = !expedition ? "menu" : (dungeon.IsMerchantFloor || dungeon.IsSanctuary(player.Position)) ? "refuge"
             : dungeon.StairsRoom.HasPoint(player.Position) && dungeon.Enemies.Any(e => e.IsWarden && e.Alerted) ? "warden"
             : new[] { "ruins", "cistern", "fungal", "forge" }[(int)dungeon.Environment.Biome];

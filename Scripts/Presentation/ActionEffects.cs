@@ -29,6 +29,14 @@ internal sealed class ActionEffects(DungeonState dungeonState, SoundEffects soun
         Add((ActionAnimationKind)classIndex, origin, path, positions, radius);
     }
 
+    internal void PlayRogueStep(Vector2I origin, Vector2I target, Vector2I destination)
+        => Add(ActionAnimationKind.ShadowStep,origin,TraceLine(origin,destination),new[] { target },1);
+    internal void PlayAdvanced(AdvancedClass choice, Vector2I origin, IEnumerable<Vector2I> targets, int radius)
+    {
+        var cells = targets.ToArray();
+        Add((ActionAnimationKind)((int)ActionAnimationKind.Bastion + (int)choice - 1), origin,
+            cells.Length == 0 ? new[] { origin } : TraceLine(origin,cells[0]),cells,radius);
+    }
     internal void PlayWarden(Biome biome, Vector2I origin, IEnumerable<Vector2I> cells)
         => Add((ActionAnimationKind)((int)ActionAnimationKind.SeismicImpact + (int)biome), origin, new[] { origin }, cells, 5);
 
@@ -37,7 +45,13 @@ internal sealed class ActionEffects(DungeonState dungeonState, SoundEffects soun
 
     private void Add(ActionAnimationKind kind, Vector2I origin, IEnumerable<Vector2I> path, IEnumerable<Vector2I> targets, int radius)
     {
-        sounds.Play(kind == ActionAnimationKind.ShadowBirds ? "shadowstep" : kind.ToString().ToLowerInvariant());
+        sounds.Play(kind switch {
+            ActionAnimationKind.Bastion => "equip", ActionAnimationKind.CrushingBlow => "seismicimpact",
+            ActionAnimationKind.Fireburst => "furnacecross", ActionAnimationKind.FrozenPrison => "floodwave",
+            ActionAnimationKind.ArrowRain or ActionAnimationKind.DeathMark => "piercingarrow",
+            ActionAnimationKind.VenomBlade or ActionAnimationKind.ShadowVeil or ActionAnimationKind.ShadowBirds => "shadowstep",
+            _ => kind.ToString().ToLowerInvariant()
+        });
         var visible = new HashSet<Vector2I>();
         for (int y = 1; y < GameRules.Height - 1; y++)
             for (int x = 1; x < GameRules.Width - 1; x++)

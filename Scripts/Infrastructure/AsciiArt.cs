@@ -16,6 +16,17 @@ public static class AsciiArt
         return text;
     }
 
+    private static readonly Dictionary<AdvancedClass, string[]> AdvancedPortraits = new();
+    internal static string AdvancedHero(AdvancedClass choice, bool critical)
+    {
+        if (!AdvancedPortraits.TryGetValue(choice,out var portraits))
+        {
+            string key = AdvancementCatalog.Get(choice).ArtKey;
+            portraits = new[] { Read(key), Read(key + "_critical") };
+            AdvancedPortraits[choice] = portraits;
+        }
+        return portraits[critical ? 1 : 0];
+    }
     public static readonly string[] Heroes =
     {
         Read("warrior"),

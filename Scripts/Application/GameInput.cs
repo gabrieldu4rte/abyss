@@ -4,6 +4,7 @@ using System;
 namespace Abyss.Application;
 internal sealed class GameInput
 {
+    private readonly AdvancedAbilityService advancedAbility;
     private readonly SettingsController settingsController;
     private readonly ScreenTransitions transitions;
     private readonly OpeningStory openingStory;
@@ -16,8 +17,9 @@ internal sealed class GameInput
     private readonly PlayerState playerState;
     private readonly RunState runState;
     private readonly VisualEffects visualEffects;
-    internal GameInput(ITurnScheduler turns, ExpeditionJournal expeditionJournal, IGameHost host, MenuController menuController, MenuState menuState, PlayerActions playerActions, PlayerState playerState, RunState runState, VisualEffects visualEffects, ScreenTransitions transitions, OpeningStory openingStory, SettingsController settingsController)
+    internal GameInput(ITurnScheduler turns, ExpeditionJournal expeditionJournal, IGameHost host, MenuController menuController, MenuState menuState, PlayerActions playerActions, PlayerState playerState, RunState runState, VisualEffects visualEffects, ScreenTransitions transitions, OpeningStory openingStory, SettingsController settingsController, AdvancedAbilityService advancedAbility)
     {
+        this.advancedAbility = advancedAbility;
         this.settingsController = settingsController;
         this.turns = turns;
         this.transitions = transitions;
@@ -126,6 +128,8 @@ internal sealed class GameInput
             playerActions.BeginAim();
         else if (key == Key.Q)
             playerActions.Skill();
+        else if (key == Key.R)
+            advancedAbility.Use();
         else if (key == Key.P)
             playerActions.Drink();
         else if (key == Key.Space)

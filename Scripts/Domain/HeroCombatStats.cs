@@ -23,7 +23,7 @@ internal sealed class HeroCombatStats
         GearKind.Staff => EffectiveAttributes.Int,
         _ => PrimaryModifier
     };
-    internal int Defense => inventory.EquippedArmorClass + EffectiveAttributes.Con;
+    internal int Defense => inventory.EquippedArmorClass + EffectiveAttributes.Con + (player.GuardTurns > 0 ? player.GuardBonus : 0);
     internal int MeleeBonus => Proficiency + MeleeModifier;
     internal int SpellBonus => Proficiency + PrimaryModifier;
     internal int ShotCost => 0;
@@ -31,13 +31,17 @@ internal sealed class HeroCombatStats
     internal int XpToNext => 30 + 20 * (player.Level - 1);
     internal DamageDice MeleeDice => inventory.Weapon is Gear w ? new(1, w.Sides, MeleeModifier + w.Power) : new(1, 2, 0);
     internal DamageDice ShotDice => inventory.Weapon is Gear w ? new(1, w.Sides, PrimaryModifier + w.Power) : new(1, 2, 0);
-    internal DamageDice AbilityDice => new(2, player.ClassIndex == 2 ? 8 : 6, PrimaryModifier + (player.Level - 1) / 2 + inventory.WeaponBonus);
-    internal int AbilityRange => new[]
+    internal AdvancementProfile? Advancement => player.AdvancedClass == AdvancedClass.None ? null : AdvancementCatalog.Get(player.AdvancedClass);
+    internal DamageDice AbilityDice => new(Advancement?.DiceCount ?? 2, Advancement?.DiceSides ?? (player.ClassIndex == 2 ? 8 : 6), PrimaryModifier + (player.Level - 1) / 2 + inventory.WeaponBonus);
+    internal DamageDice SecondaryDice => new(Advancement?.NewDiceCount ?? 0, Advancement?.NewDiceSides ?? 6, PrimaryModifier + Math.Max(0, player.Level - 10) / 2 + inventory.WeaponBonus);
+    internal int SecondaryCost => Math.Max(4, (Advancement?.NewCost ?? 0) - Math.Max(0, player.Level - 10) / 4);
+    internal int SecondaryRange => Advancement?.NewRange ?? 0;
+    internal int AbilityRange => Advancement?.Range ?? new[]
     {
         2,
         5,
         10,
-        3
+        1
     }[player.ClassIndex];
 
     internal Attributes EffectiveAttributes

@@ -44,7 +44,7 @@ internal sealed class HudRenderer
             asciiCanvas.Text(1012, 91, showBlacksmith ? localization.Translate("FERREIRO PERDIDO", "LOST BLACKSMITH") : dungeonState.IsMerchantFloor ? localization.Translate("MERCADOR", "MERCHANT") : localization.Translate("ALVO SELECIONADO", "SELECTED TARGET"), showBlacksmith || dungeonState.IsMerchantFloor ? UiTheme.Gold : UiTheme.Red, 16);
         if (dungeonState.Modifier != FloorModifier.None)
             asciiCanvas.Text(650, 91, FloorEventText.Name(dungeonState.Modifier, localization.English), UiTheme.Gold, 13);
-        asciiCanvas.Portrait(24, 121, HeroPortrait.Select(playerState), "@ " + localization.ClassName(playerState.ClassIndex), UiTheme.Teal, visualEffects.HeroHurtRemaining, visualEffects.HeroDamage);
+        asciiCanvas.Portrait(24, 121, HeroPortrait.Select(playerState), "@ " + localization.HeroName(playerState), UiTheme.Teal, visualEffects.HeroHurtRemaining, visualEffects.HeroDamage);
         asciiCanvas.Portrait(1012, 121, showBlacksmith ? AsciiArt.Blacksmith : dungeonState.IsMerchantFloor ? AsciiArt.Merchant : AsciiArt.Enemy(target), showBlacksmith ? localization.Translate("FERREIRO PERDIDO", "LOST BLACKSMITH") : dungeonState.IsMerchantFloor ? localization.Translate("MERCADOR", "MERCHANT") : localization.EnemyName(target), showBlacksmith || dungeonState.IsMerchantFloor ? UiTheme.Gold : target == null ? UiTheme.Dim : target.IsElite ? FloorEventText.TitleColor(target.Titles[0]) : UiTheme.Red, target?.Hurt ?? 0, target?.LastDamage ?? 0);
         asciiCanvas.Text(32, 432, localization.Translate($"VIDA {playerState.Health}/{playerState.MaxHealth}", $"HEALTH {playerState.Health}/{playerState.MaxHealth}"), UiTheme.Red, 15);
         asciiCanvas.Text(32, 453, asciiCanvas.Bar(playerState.Health, playerState.MaxHealth), UiTheme.Red, 16);
@@ -125,11 +125,14 @@ internal sealed class HudRenderer
         }
 
         asciiCanvas.Text(272, 597, localization.Translate("SUAS ACOES / CUSTO / DADOS DE DANO", "YOUR ACTIONS / COST / DAMAGE DICE"), UiTheme.Gold, 13);
-        asciiCanvas.Frame(270, 612, 78, 4, UiTheme.Dim, 15, 18);
-        asciiCanvas.Text(283, 634, $"[Q] {localization.SkillName(playerState.ClassIndex)}  |  {heroCombatStats.AbilityCost} EN  |  {heroCombatStats.AbilityDice}", playerState.Energy >= heroCombatStats.AbilityCost ? UiTheme.Teal : UiTheme.Dim, 15);
-        asciiCanvas.Text(283, 655, heroCombatStats.CanShoot ? $"[F] {localization.Translate("Basico", "Basic")}  |  {heroCombatStats.ShotCost} EN  |  {heroCombatStats.ShotDice}" : !heroCombatStats.CanMelee ? localization.Translate("[F] Equipe um arco/cajado compativel.", "[F] Equip a compatible bow/staff.") : localization.Translate($"[Mover contra inimigo] Ataque basico: {heroCombatStats.MeleeDice}", $"[Bump into enemy] Basic attack: {heroCombatStats.MeleeDice}"), UiTheme.Ink, 15);
-        asciiCanvas.Rule(685);
-        asciiCanvas.Text(32, 707, localization.Translate("WASD mover | Q habilidade | P pocao | E interagir | ESPACO esperar | TAB trocar alvo | ESC pausa", "WASD move | Q ability | P potion | E interact | SPACE wait | TAB switch target | ESC pause"), UiTheme.Ink, 15);
+        bool advanced = playerState.AdvancedClass != AdvancedClass.None;
+        asciiCanvas.Frame(270, 612, 78, advanced ? 5 : 4, UiTheme.Dim, 15, 18);
+        asciiCanvas.Text(283, 634, $"[Q] {localization.HeroSkill(playerState)}  |  {heroCombatStats.AbilityCost} EN  |  {heroCombatStats.AbilityDice}", playerState.Energy >= heroCombatStats.AbilityCost ? UiTheme.Teal : UiTheme.Dim, 15);
+        if (advanced)
+            asciiCanvas.Text(283, 655, $"[R] {AdvancementText.Secondary(playerState.AdvancedClass,localization.English)}  |  {heroCombatStats.SecondaryCost} EN" + (heroCombatStats.Advancement!.NewDiceCount > 0 ? $"  |  {heroCombatStats.SecondaryDice}" : ""), playerState.Energy >= heroCombatStats.SecondaryCost ? UiTheme.Teal : UiTheme.Dim, 15);
+        asciiCanvas.Text(283, advanced ? 676 : 655, heroCombatStats.CanShoot ? $"[F] {localization.Translate("Basico", "Basic")}  |  {heroCombatStats.ShotCost} EN  |  {heroCombatStats.ShotDice}" : !heroCombatStats.CanMelee ? localization.Translate("[F] Equipe um arco/cajado compativel.", "[F] Equip a compatible bow/staff.") : localization.Translate($"[Mover contra inimigo] Ataque basico: {heroCombatStats.MeleeDice}", $"[Bump into enemy] Basic attack: {heroCombatStats.MeleeDice}"), UiTheme.Ink, 15);
+        asciiCanvas.Rule(advanced ? 698 : 685);
+        asciiCanvas.Text(32, advanced ? 720 : 707, localization.Translate((advanced ? "WASD mover | Q/R habilidades | P pocao" : "WASD mover | Q habilidade | P pocao") + " | E interagir | ESPACO esperar | TAB trocar alvo | ESC pausa", (advanced ? "WASD move | Q/R abilities | P potion" : "WASD move | Q ability | P potion") + " | E interact | SPACE wait | TAB switch target | ESC pause"), UiTheme.Ink, 15);
         asciiCanvas.Text(32, 749, localization.Translate("Y tocha fixa   t tocha caida   O barril   o oleo   ^ espinhos Z choque % esporos V fogo   ~ agua", "Y fixed torch   t fallen torch   O barrel   o oil   ^ spikes Z shock % spores V flame   ~ water"), UiTheme.Dim, 13);
         asciiCanvas.Text(32, 779, localization.Translate("@ voce   |-+ parede   > escada   ! pocao   $ ouro   * cristal   C bau   M mercador", "@ you   |-+ wall   > stairs   ! potion   $ gold   * crystal   C chest   M merchant"), UiTheme.Dim, 13);
     }

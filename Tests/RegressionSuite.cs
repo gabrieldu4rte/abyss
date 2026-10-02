@@ -155,6 +155,7 @@ internal sealed partial class RegressionSuite
 
             TestPresentation();
             TestSettingsMenu();
+            TestAdvancement();
             TestBalance();
             TestEnemyAi();
             TestInventory();

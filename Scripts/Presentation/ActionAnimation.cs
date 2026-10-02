@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Abyss.Presentation;
 
-internal enum ActionAnimationKind { Whirlwind, ArcaneNova, PiercingArrow, ShadowStep, ArcaneBolt, Arrow, Torch, SeismicImpact, FloodWave, SporeBurst, FurnaceCross, ShadowBirds }
+internal enum ActionAnimationKind { Whirlwind, ArcaneNova, PiercingArrow, ShadowStep, ArcaneBolt, Arrow, Torch, SeismicImpact, FloodWave, SporeBurst, FurnaceCross, ShadowBirds, Bastion, CrushingBlow, Fireburst, FrozenPrison, ArrowRain, DeathMark, VenomBlade, ShadowVeil }
 internal readonly record struct ActionGlyph(Vector2I Position, char Character, Color Color);
 
 internal sealed class ActionAnimation
@@ -37,6 +37,23 @@ internal sealed class ActionAnimation
     internal IEnumerable<ActionGlyph> Sample()
     {
         if (Finished) yield break;
+        if (Kind >= ActionAnimationKind.Bastion)
+        {
+            int phase = (int)(Elapsed * 12);
+            var tint = new Color(Kind switch { ActionAnimationKind.Fireburst => "ff9955", ActionAnimationKind.FrozenPrison => "9deaff", ActionAnimationKind.VenomBlade => "a3d879", ActionAnimationKind.ShadowVeil => "ae8edb", _ => "f1d38b" });
+            tint.A *= (float)Math.Clamp((Duration - Elapsed) / .25,0,1);
+            string glyphs = Kind switch { ActionAnimationKind.Bastion => "[+#]", ActionAnimationKind.CrushingBlow => "#X+.", ActionAnimationKind.Fireburst => "^*x+", ActionAnimationKind.FrozenPrison => "+*#*", ActionAnimationKind.ArrowRain => "v|v!", ActionAnimationKind.DeathMark => ">-+*", ActionAnimationKind.VenomBlade => "/x%:", _ => "%:;~" };
+            foreach (var target in Targets)
+            {
+                yield return new(target,glyphs[phase % glyphs.Length],tint);
+                foreach (var offset in GameRules.Directions)
+                    yield return new(target + offset,glyphs[(phase + 1) % glyphs.Length],tint);
+            }
+            if (Kind is ActionAnimationKind.ArrowRain or ActionAnimationKind.DeathMark or ActionAnimationKind.CrushingBlow)
+                for (int i = 0; i < Path.Count; i++)
+                    if (Math.Abs(i - (int)(Elapsed / Duration * Path.Count)) < 2) yield return new(Path[i],glyphs[phase % glyphs.Length],tint);
+            yield break;
+        }
         float fade = (float)Math.Clamp((Duration - Elapsed) / .22, 0, 1);
         var color = Kind switch
         {

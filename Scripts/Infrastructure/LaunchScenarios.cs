@@ -23,6 +23,24 @@ internal sealed class LaunchScenarios(GameSession game)
             game.PlayerActions.Interact();
             if (args.Contains("--upgrade-confirm")) game.BlacksmithService.Handle(Key.Enter);
         }
+        var advancement = args.FirstOrDefault(a => a.StartsWith("--advancement-demo="));
+        if (advancement != null)
+        {
+            game.PlayerState.ClassIndex = int.Parse(advancement.Split('=')[1]);
+            game.Start(734);
+            game.PlayerState.Level = 10;
+            game.ClassAdvancementService.Open("game");
+        }
+        var advancedHero = args.FirstOrDefault(a => a.StartsWith("--advanced-hero-demo="));
+        if (advancedHero != null)
+        {
+            var choice = Enum.Parse<AdvancedClass>(advancedHero.Split('=')[1]);
+            game.PlayerState.ClassIndex = AdvancementCatalog.Get(choice).BaseClass;
+            game.Start(734);
+            game.PlayerState.Level = 10;
+            game.ClassAdvancementService.Choose(choice);
+            if (args.Contains("--critical-preview")) game.PlayerState.Health = 1;
+        }
         var display = args.FirstOrDefault(a => a.StartsWith("--display-demo="));
         if (display != null)
         {

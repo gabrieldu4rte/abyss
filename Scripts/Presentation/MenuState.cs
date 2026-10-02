@@ -3,6 +3,10 @@ internal sealed class MenuState
 {
     internal Gear? PendingUpgrade { get; set; }
     internal int BlacksmithIndex { get; set; }
+    internal bool AdvancementDeferred { get; set; }
+    internal int AdvancementIndex { get; set; }
+    internal bool AdvancementConfirm { get; set; }
+    internal string AdvancementReturn { get; set; } = "game";
     internal int SettingsIndex { get; set; }
     internal bool Fullscreen { get; set; }
     internal int ResolutionIndex { get; set; } = 2;

@@ -6,6 +6,8 @@ using static Abyss.Rules.TabletopRules;
 namespace Abyss.Application;
 internal sealed class GameSession : ITurnScheduler, IRunLifecycle
 {
+    internal ClassAdvancementService ClassAdvancementService { get; }
+    internal AdvancedAbilityService AdvancedAbilityService { get; }
     internal SettingsController SettingsController { get; }
     internal SettingsRenderer SettingsRenderer { get; }
     internal GameAudioController AudioController { get; }
@@ -66,6 +68,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         Canvas = Transitions;
         Settings = settings;
         VisualEffects = new VisualEffects(DungeonState, PlayerState);
+        ClassAdvancementService = new ClassAdvancementService(PlayerState, MenuState, RunState, ExpeditionJournal, VisualEffects);
         AudioController = new GameAudioController(audio, RunState, MenuState, PlayerState, DungeonState, VisualEffects);
         BlacksmithService = new BlacksmithService(InventoryState, PlayerState, MenuState, RunState, ExpeditionJournal);
         MerchantService = new MerchantService(ExpeditionJournal, InventoryState, MenuState, MerchantState, PlayerState, RunState);
@@ -87,6 +90,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         FloorEventGenerator = new FloorEventGenerator(DungeonState, PlayerState, RunState, ExpeditionJournal);
         EnvironmentGenerator = new EnvironmentGenerator(DungeonState, PlayerState, RunState);
         EnvironmentService = new EnvironmentService(DungeonState, InventoryState, PlayerState, RunState, ExpeditionJournal, CombatService, VisualEffects, HeroVitals);
+        AdvancedAbilityService = new AdvancedAbilityService(PlayerState, DungeonState, HeroCombatStats, CombatService, EnvironmentService, ExpeditionJournal, VisualEffects, this);
         NamedEquipmentEffects = new NamedEquipmentEffects(InventoryState, DungeonState, PlayerState, CombatService, EnvironmentService, HeroCombatStats, RandomStream, VisualEffects, ExpeditionJournal);
         CombatService.HeroHit += NamedEquipmentEffects.OnHit;
         DungeonGenerator = new DungeonGenerator(DungeonState, ExpeditionJournal, LootService, MenuState, MerchantState, PlayerState, VisualEffects, RandomStream, InventoryState, EnvironmentGenerator, FloorEventGenerator, RunState);
@@ -100,9 +104,9 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         EnemyAi = new EnemyAi(new IEnemyBehavior[] { new WardenBehavior(CombatService, DungeonState, ExpeditionJournal, PlayerState, EnemyNavigator, WardenAbilities), new RoamingBehavior(CombatService, DungeonState, PlayerState, RandomStream, EnemyNavigator) });
         PlayerActions = new PlayerActions(CombatService, this, DungeonState, this, ExpeditionJournal, HeroCombatStats, InventoryState, LootService, MenuState, PlayerState, RunState, VisualEffects, RandomStream, EnvironmentService, HeroVitals);
         MenuRenderer = new MenuRenderer(AsciiCanvas, DungeonState, Localization, MenuState, PlayerState, RunState, UiComponents);
-        MenuController = new MenuController(Host, InventoryService, InventoryState, JournalFormatter, LanguagePreferences, MenuState, MerchantService, PlayerActions, PlayerState, RunState, this, BlacksmithService, SettingsController);
-        GameRenderer = new GameRenderer(AsciiCanvas, HudRenderer, Localization, MenuRenderer, MerchantRenderer, PauseRenderer, RunState, MenuState, Transitions, OpeningStory, new BlacksmithRenderer(AsciiCanvas, Localization, InventoryState, PlayerState, MenuState, UiComponents), SettingsRenderer);
-        GameInput = new GameInput(this, ExpeditionJournal, Host, MenuController, MenuState, PlayerActions, PlayerState, RunState, VisualEffects, Transitions, OpeningStory, SettingsController);
+        MenuController = new MenuController(Host, InventoryService, InventoryState, JournalFormatter, LanguagePreferences, MenuState, MerchantService, PlayerActions, PlayerState, RunState, this, BlacksmithService, SettingsController, ClassAdvancementService);
+        GameRenderer = new GameRenderer(AsciiCanvas, HudRenderer, Localization, MenuRenderer, MerchantRenderer, PauseRenderer, RunState, MenuState, Transitions, OpeningStory, new BlacksmithRenderer(AsciiCanvas, Localization, InventoryState, PlayerState, MenuState, UiComponents), SettingsRenderer, new AdvancementRenderer(AsciiCanvas, Localization, PlayerState, MenuState, UiComponents));
+        GameInput = new GameInput(this, ExpeditionJournal, Host, MenuController, MenuState, PlayerActions, PlayerState, RunState, VisualEffects, Transitions, OpeningStory, SettingsController, AdvancedAbilityService);
     }
 
     internal Random RandomGenerator { get => RandomStream.Generator; set => RandomStream.Generator = value; }
@@ -110,6 +114,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
     internal double Clock;
     public void Tick(double delta)
     {
+        if (!Transitions.Active) ClassAdvancementService.Offer();
         AudioController.Update(delta);
         Clock += delta;
         Transitions.Advance(delta);
@@ -127,6 +132,10 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
 
     internal void Start(int? fixedSeed = null)
     {
+        PlayerState.AdvancedClass = AdvancedClass.None;
+        PlayerState.GuardTurns = PlayerState.GuardBonus = 0;
+        MenuState.AdvancementDeferred = MenuState.AdvancementConfirm = false;
+        MenuState.AdvancementReturn = "game";
         HeroVitals.RescuePending = false;
         MenuState.BestiaryOpen = false;
         MenuState.BestiaryBiome = MenuState.BestiaryEntry = 0;
@@ -206,6 +215,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         if (HeroVitals.RescueSerial != rescue) { HeroVitals.RescuePending = false; DungeonGenerator.Reveal(); return; }
         if (PlayerState.Health > 0) EnvironmentService.Tick();
         if (HeroVitals.RescueSerial != rescue) { HeroVitals.RescuePending = false; DungeonGenerator.Reveal(); return; }
+        if (PlayerState.GuardTurns > 0) PlayerState.GuardTurns--;
         if (RunState.Turn % (DungeonState.Modifier == FloorModifier.ThinAir && !InventoryState.Has(ItemId.DeepBreathMantle) ? 12 : 6) == 0)
             PlayerState.Energy = Math.Min(PlayerState.MaxEnergy, PlayerState.Energy + 1);
         DungeonGenerator.Reveal();

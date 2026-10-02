@@ -84,8 +84,8 @@ internal sealed class MenuRenderer
         asciiCanvas.Art(32, 205, AsciiArt.Grave, UiTheme.Dim);
         asciiCanvas.Text(548, 195, localization.Translate("SUA EXPEDICAO TERMINOU", "YOUR EXPEDITION HAS ENDED"), UiTheme.Red, 25);
         asciiCanvas.Text(548, 235, localization.Translate($"ANDAR ALCANCADO: {dungeonState.Floor}", $"FLOOR REACHED: {dungeonState.Floor}"), UiTheme.Gold, 22);
-        asciiCanvas.Text(548, 266, $"{localization.ClassName(playerState.ClassIndex)} / {localization.Translate("NIVEL", "LEVEL")} {playerState.Level}", UiTheme.Teal, 17);
-        asciiCanvas.Portrait(548, 285, HeroPortrait.Select(playerState), localization.ClassName(playerState.ClassIndex), UiTheme.Teal);
+        asciiCanvas.Text(548, 266, $"{localization.HeroName(playerState)} / {localization.Translate("NIVEL", "LEVEL")} {playerState.Level}", UiTheme.Teal, 17);
+        asciiCanvas.Portrait(548, 285, HeroPortrait.Select(playerState), localization.HeroName(playerState), UiTheme.Teal);
         asciiCanvas.Lines(827, 352, localization.Translate($"{playerState.Kills} inimigos derrotados\n{playerState.Gold} moedas coletadas\n{runState.Turn} turnos", $"{playerState.Kills} enemies defeated\n{playerState.Gold} gold collected\n{runState.Turn} turns"), UiTheme.Ink, 17, 31);
         uiComponents.Footer("[ENTER] voltar ao menu inicial", "[ENTER] return to the main menu");
     }
