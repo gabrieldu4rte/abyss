@@ -40,6 +40,18 @@ internal sealed class LaunchScenarios(GameSession game)
             game.PlayerState.Level = 10;
             game.ClassAdvancementService.Choose(choice);
             if (args.Contains("--critical-preview")) game.PlayerState.Health = 1;
+            if (args.Contains("--status-preview") && args.Any(a => a.StartsWith("--capture=")))
+            {
+                game.DungeonState.Environment.HeroPoisonTurns = 3;
+                game.PlayerState.GuardTurns = 2;
+                var target = new Enemy(game.PlayerState.Position + Vector2I.Right, 's', 1) { FrozenTurns = 2, BlindTurns = 2 };
+                game.DungeonState.Enemies.Add(target);
+                game.DungeonState.Environment.PoisonedEnemies[target] = 3;
+                game.DungeonState.Visible[target.Position.X,target.Position.Y] = true;
+                game.VisualEffects.Focus = target;
+                game.VisualEffects.HeroHurtRemaining = UiTheme.HurtDuration;
+                game.VisualEffects.HeroDamage = 3;
+            }
         }
         var display = args.FirstOrDefault(a => a.StartsWith("--display-demo="));
         if (display != null)

@@ -90,7 +90,7 @@ internal sealed class AsciiCanvas
         canvas.DrawSetTransform(Vector2.Zero, 0, Vector2.One);
     }
 
-    internal void Portrait(float x, float y, string art, string title, Color color, double hurt = 0, int damage = 0)
+    internal void Portrait(float x, float y, string art, string title, Color color, double hurt = 0, int damage = 0, string status = "")
     {
         int stage = (int)((UiTheme.HurtDuration - hurt) * 14);
         bool impact = hurt > 0;
@@ -106,10 +106,16 @@ internal sealed class AsciiCanvas
             float width = Font.GetStringSize(text, HorizontalAlignment.Left, -1, size).X;
             Text(x + (frameWidth - width) / 2, baseline, text, textColor, size);
         }
+        if (status.Length > 0)
+        {
+            int statusSize = 12;
+            while (statusSize > 7 && Font.GetStringSize(status, HorizontalAlignment.Left, -1, statusSize).X > frameWidth - 12) statusSize--;
+            CenteredText(y + 258, status, UiTheme.Gold, statusSize);
+        }
         if (impact)
         {
             string burst = stage % 3 == 0 ? "*  /  !  \\  *" : stage % 3 == 1 ? "+  *  #  *  +" : ".  +  *  +  .";
-            CenteredText(y + 258, burst, UiTheme.Red, 17);
+            if (status.Length == 0) CenteredText(y + 258, burst, UiTheme.Red, 17);
             CenteredText(y + 279, $"-{damage} HP", UiTheme.Red, 18);
         }
         else

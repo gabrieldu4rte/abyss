@@ -7,10 +7,11 @@ namespace Abyss.Application;
 internal sealed class EnvironmentService(DungeonState dungeon, InventoryState inventory, PlayerState player, RunState run, ExpeditionJournal journal, CombatService combat, VisualEffects effects, HeroVitals vitals)
 {
     private EnvironmentState World => dungeon.Environment;
-    internal bool Water(Vector2I p) => World.Details.TryGetValue(p, out var c) && c == '~';
+    internal bool Water(Vector2I p) => !World.Ice.ContainsKey(p) && World.Details.TryGetValue(p, out var c) && c == '~';
     internal void Wet(Vector2I p)
     {
         if (!dungeon.Walk(p) || dungeon.IsSanctuary(p) || p == dungeon.Stairs) return;
+        World.Ice.Remove(p);
         World.Fire.Remove(p);
         if (World.TemporaryWater.TryGetValue(p, out var existing)) World.TemporaryWater[p] = (2, existing.Original);
         else if (!Water(p)) World.TemporaryWater[p] = (2, World.Details.TryGetValue(p, out var old) ? old : null);
@@ -42,6 +43,7 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
     }
     internal void Ignite(Vector2I origin, bool report = true)
     {
+        if (World.Ice.ContainsKey(origin)) { Wet(origin); return; }
         if (dungeon.IsSanctuary(origin) || dungeon.IsMerchantFloor || !dungeon.Walk(origin) || Water(origin)) return;
         var pending = new Queue<Vector2I>();
         var burning = new HashSet<Vector2I>();
@@ -117,7 +119,11 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
         foreach (var enemy in dungeon.Enemies.ToArray())
         {
             if (player.Health <= 0 || vitals.RescueSerial != rescue) return;
-            if (enemy.Health > 0 && dungeon.Enemies.Contains(enemy)) TriggerTrap(enemy.Position, enemy);
+            if (enemy.Health > 0 && dungeon.Enemies.Contains(enemy))
+            {
+                if (World.Steam.ContainsKey(enemy.Position)) enemy.BlindTurns = Math.Max(enemy.BlindTurns, 1);
+                TriggerTrap(enemy.Position, enemy);
+            }
         }
         if (World.Fire.ContainsKey(player.Position)) HurtHero(Math.Max(0, FireDamage - (inventory.Has(ItemId.InsulatingLeather) ? 1 : 0)), "Fogo", "Fire");
         if (vitals.RescueSerial != rescue) return;
@@ -139,6 +145,8 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
             combat.Hit(enemy, damage, false);
         }
         foreach (var enemy in World.PoisonedEnemies.Keys.Where(e => !dungeon.Enemies.Contains(e)).ToArray()) World.PoisonedEnemies.Remove(enemy);
+        foreach (var p in World.Ice.Keys.ToArray()) if (--World.Ice[p] <= 0) World.Ice.Remove(p);
+        foreach (var p in World.Steam.Keys.ToArray()) if (--World.Steam[p] <= 0) World.Steam.Remove(p);
         foreach (var p in World.TemporaryWater.Keys.ToArray())
         {
             var water = World.TemporaryWater[p];
@@ -152,10 +160,69 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
         foreach (var p in World.Fire.Keys.ToArray())
             if (--World.Fire[p] <= 0 || Water(p)) World.Fire.Remove(p);
     }
+    internal bool ElementalMage => player.AdvancedClass is AdvancedClass.Pyromancer or AdvancedClass.Cryomancer;
+    internal void ReactElement(Vector2I p)
+    {
+        if (!ElementalMage || !dungeon.Walk(p) || dungeon.IsMerchantFloor || dungeon.IsSanctuary(p) || p == dungeon.Stairs) return;
+        if (player.AdvancedClass == AdvancedClass.Pyromancer)
+        {
+            if (World.Ice.Remove(p))
+            {
+                Wet(p);
+                journal.Say("O fogo derrete o gelo.", "Fire melts the ice.");
+                return;
+            }
+            if (Water(p))
+            {
+                World.Steam[p] = 3;
+                var enemy = dungeon.At(p);
+                if (enemy != null) enemy.BlindTurns = Math.Max(enemy.BlindTurns, 2);
+            }
+            else if (World.Oil.Contains(p) || World.Fixtures.TryGetValue(p, out var fixture) && fixture == Fixture.OilBarrel) Ignite(p, false);
+        }
+        else
+        {
+            if (World.Fire.Remove(p)) Wet(p);
+            World.Steam.Remove(p);
+            if (Water(p) || World.Ice.ContainsKey(p)) World.Ice[p] = 4;
+        }
+    }
+    internal void ElementalHit(Enemy enemy)
+    {
+        if (!ElementalMage) return;
+        var p = enemy.Position;
+        if (player.AdvancedClass == AdvancedClass.Pyromancer)
+        {
+            if (enemy.FrozenTurns > 0)
+            {
+                enemy.FrozenTurns = 0;
+                if (enemy.Health > 0) combat.Hit(enemy, 2);
+                journal.Say("Choque termico: o gelo se rompe!", "Thermal shock: the ice breaks!");
+            }
+            ReactElement(p);
+            if (!Water(p) && !World.Ice.ContainsKey(p)) Ignite(p, false);
+        }
+        else
+        {
+            bool wet = Water(p) || World.Ice.ContainsKey(p);
+            ReactElement(p);
+            if (enemy.Health > 0) enemy.FrozenTurns = Math.Max(enemy.FrozenTurns, wet ? 2 : 1);
+        }
+    }
+    internal void ElementalArea(Vector2I origin, int radius)
+    {
+        if (!ElementalMage) return;
+        for (int y = 1; y < GameRules.Height - 1; y++)
+            for (int x = 1; x < GameRules.Width - 1; x++)
+            {
+                var p = new Vector2I(x,y);
+                if (dungeon.Visible[x,y] && GameRules.Dist(origin,p) <= radius && dungeon.Los(origin,p)) ReactElement(p);
+            }
+    }
     private int FireDamage => 3 + Math.Min(5, GameRules.CycleIndex(dungeon.Floor));
     private void TriggerTrap(Vector2I p, Enemy? enemy)
     {
-        if (!World.Fixtures.TryGetValue(p, out var fixture) || !TrapRules.IsTrap(fixture)) return;
+        if (World.Ice.ContainsKey(p) || !World.Fixtures.TryGetValue(p, out var fixture) || !TrapRules.IsTrap(fixture)) return;
         int rescue = vitals.RescueSerial;
         effects.Sounds.Play("trap");
         World.Fixtures[p] = Fixture.SpentTrap;

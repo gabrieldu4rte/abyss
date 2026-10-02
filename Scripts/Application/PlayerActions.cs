@@ -212,6 +212,7 @@ internal sealed class PlayerActions
             if (!dungeonState.Walk(p))
                 break;
             path.Add(p);
+            environment.ReactElement(p);
             if (inventoryState.Weapon?.Special == ItemId.FluidStaff) environment.Wet(p);
             if (dungeonState.BlacksmithRoom.HasValue && p == dungeonState.BlacksmithPosition)
         {
@@ -220,21 +221,21 @@ internal sealed class PlayerActions
         }
         if (environment.Strike(p))
             {
-                visualEffects.Actions.PlayProjectile(origin, path, playerState.ClassIndex == 1);
+                visualEffects.Actions.PlayProjectile(origin, path, playerState.ClassIndex == 1, playerState.AdvancedClass);
                 turns.EndTurn();
                 return;
             }
             var e = dungeonState.At(p);
             if (e != null)
             {
-                visualEffects.Actions.PlayProjectile(origin, path, playerState.ClassIndex == 1);
-                combatService.ResolveHeroAttack(e, true);
+                visualEffects.Actions.PlayProjectile(origin, path, playerState.ClassIndex == 1, playerState.AdvancedClass);
+                if (combatService.ResolveHeroAttack(e, true)) environment.ElementalHit(e);
                 turns.EndTurn();
                 return;
             }
         }
 
-        visualEffects.Actions.PlayProjectile(origin, path, playerState.ClassIndex == 1);
+        visualEffects.Actions.PlayProjectile(origin, path, playerState.ClassIndex == 1, playerState.AdvancedClass);
         expeditionJournal.Say("O disparo se perde na escuridao.", "The shot fades into the darkness.");
         turns.EndTurn();
     }
@@ -250,6 +251,15 @@ internal sealed class PlayerActions
 
         var origin = playerState.Position;
         var targets = dungeonState.Enemies.Where(e => e.Health > 0 && dungeonState.Visible[e.Position.X, e.Position.Y] && dungeonState.Los(origin,e.Position) && GameRules.Dist(origin, e.Position) <= heroCombatStats.AbilityRange).OrderBy(e => GameRules.Dist(origin, e.Position)).ToList();
+        if (targets.Count == 0 && environment.ElementalMage)
+        {
+            playerState.Energy -= cost;
+            environment.ElementalArea(origin, heroCombatStats.AbilityRange);
+            visualEffects.Actions.PlaySkill(1, origin, Array.Empty<Vector2I>(), heroCombatStats.AbilityRange, playerState.AdvancedClass);
+            expeditionJournal.Say(AdvancementText.Primary(playerState.AdvancedClass, false) + "!", AdvancementText.Primary(playerState.AdvancedClass, true) + "!");
+            turns.EndTurn();
+            return;
+        }
         if (targets.Count == 0)
         {
             expeditionJournal.Say("Nenhum alvo ao alcance da habilidade.", "No target within ability range.");
@@ -258,7 +268,8 @@ internal sealed class PlayerActions
         var chosenTarget = visualEffects.Focus != null && targets.Contains(visualEffects.Focus) ? visualEffects.Focus : targets[0];
         var targetPosition = chosenTarget.Position;
         if (playerState.ClassIndex != 3)
-            visualEffects.Actions.PlaySkill(playerState.ClassIndex, origin, playerState.ClassIndex < 2 ? targets.Select(enemy => enemy.Position) : new[] { chosenTarget.Position }, heroCombatStats.AbilityRange);
+            visualEffects.Actions.PlaySkill(playerState.ClassIndex, origin, playerState.ClassIndex < 2 ? targets.Select(enemy => enemy.Position) : new[] { chosenTarget.Position }, heroCombatStats.AbilityRange, playerState.AdvancedClass);
+        environment.ElementalArea(origin, heroCombatStats.AbilityRange);
         playerState.Energy -= cost;
         expeditionJournal.Say(playerState.AdvancedClass == AdvancedClass.None ? UiTheme.Skills[playerState.ClassIndex] + "!" : AdvancementText.Primary(playerState.AdvancedClass,false) + "!", playerState.AdvancedClass == AdvancedClass.None ? UiTheme.EnglishSkills[playerState.ClassIndex] + "!" : AdvancementText.Primary(playerState.AdvancedClass,true) + "!");
         if (playerState.ClassIndex < 2)
@@ -266,7 +277,7 @@ internal sealed class PlayerActions
             foreach (Enemy e in targets)
             {
                 if (playerState.Health <= 0 || playerState.Position != origin) break;
-                combatService.ResolveHeroAttack(e, false, true);
+                if (combatService.ResolveHeroAttack(e, false, true)) environment.ElementalHit(e);
             }
         }
         else

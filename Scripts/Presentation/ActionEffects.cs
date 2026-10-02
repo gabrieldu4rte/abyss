@@ -16,17 +16,17 @@ internal sealed class ActionEffects(DungeonState dungeonState, SoundEffects soun
         animations.RemoveAll(animation => animation.Finished);
     }
 
-    internal void PlayProjectile(Vector2I origin, IReadOnlyList<Vector2I> path, bool arcane)
-        => Add(arcane ? ActionAnimationKind.ArcaneBolt : ActionAnimationKind.Arrow, origin, path, new Vector2I[0], 0);
+    internal void PlayProjectile(Vector2I origin, IReadOnlyList<Vector2I> path, bool arcane, AdvancedClass element = AdvancedClass.None)
+        => Add(arcane ? ActionAnimationKind.ArcaneBolt : ActionAnimationKind.Arrow, origin, path, new Vector2I[0], 0, element);
 
     internal void PlayTorch(Vector2I origin, IReadOnlyList<Vector2I> path)
         => Add(ActionAnimationKind.Torch, origin, path, new Vector2I[0], 0);
 
-    internal void PlaySkill(int classIndex, Vector2I origin, IEnumerable<Vector2I> targets, int radius)
+    internal void PlaySkill(int classIndex, Vector2I origin, IEnumerable<Vector2I> targets, int radius, AdvancedClass element = AdvancedClass.None)
     {
         var positions = targets.ToArray();
         var path = classIndex < 2 || positions.Length == 0 ? new[] { origin } : TraceLine(origin, positions[0]);
-        Add((ActionAnimationKind)classIndex, origin, path, positions, radius);
+        Add((ActionAnimationKind)classIndex, origin, path, positions, radius, element);
     }
 
     internal void PlayRogueStep(Vector2I origin, Vector2I target, Vector2I destination)
@@ -43,7 +43,7 @@ internal sealed class ActionEffects(DungeonState dungeonState, SoundEffects soun
     internal void PlayShadowEscape(Vector2I origin, Vector2I destination)
         => Add(ActionAnimationKind.ShadowBirds, origin, new[] { origin }, new[] { origin, destination }, 3);
 
-    private void Add(ActionAnimationKind kind, Vector2I origin, IEnumerable<Vector2I> path, IEnumerable<Vector2I> targets, int radius)
+    private void Add(ActionAnimationKind kind, Vector2I origin, IEnumerable<Vector2I> path, IEnumerable<Vector2I> targets, int radius, AdvancedClass element = AdvancedClass.None)
     {
         sounds.Play(kind switch {
             ActionAnimationKind.Bastion => "equip", ActionAnimationKind.CrushingBlow => "seismicimpact",
@@ -60,7 +60,7 @@ internal sealed class ActionEffects(DungeonState dungeonState, SoundEffects soun
                 if (dungeonState.Visible[x, y] && dungeonState.Walk(position)) visible.Add(position);
             }
         if (animations.Count >= 24) animations.RemoveAt(0);
-        animations.Add(new ActionAnimation(kind, origin, path, targets, radius, visible));
+        animations.Add(new ActionAnimation(kind, origin, path, targets, radius, visible, element));
     }
 
     private static Vector2I[] TraceLine(Vector2I origin, Vector2I target)

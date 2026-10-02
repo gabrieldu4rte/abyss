@@ -76,7 +76,7 @@ internal sealed class PauseRenderer
 
     internal void DrawCharacterSheet()
     {
-        asciiCanvas.Portrait(32, 202, HeroPortrait.Select(playerState), localization.HeroName(playerState), UiTheme.Teal);
+        asciiCanvas.Portrait(32, 202, HeroPortrait.Select(playerState), localization.HeroName(playerState), UiTheme.Teal, status: StatusText.For(playerState, null, dungeonState, localization));
         asciiCanvas.Text(32, 530, localization.Translate($"NIVEL {playerState.Level} / ANDAR {dungeonState.Floor}", $"LEVEL {playerState.Level} / FLOOR {dungeonState.Floor}"), UiTheme.Gold, 18);
         asciiCanvas.Text(32, 563, $"XP {playerState.Experience} / {heroCombatStats.XpToNext}", UiTheme.Ink, 17);
         asciiCanvas.Text(32, 596, localization.Translate($"DERROTADOS {playerState.Kills}", $"DEFEATED {playerState.Kills}"), UiTheme.Dim, 16);
@@ -113,7 +113,7 @@ internal sealed class PauseRenderer
         asciiCanvas.Text(310,487,$"[R] {AdvancementText.Secondary(choice,localization.English)} | {heroCombatStats.SecondaryCost} EN" + (heroCombatStats.Advancement!.NewDiceCount > 0 ? $" | d20{UiTheme.Signed(heroCombatStats.SpellBonus + 2 + (choice == AdvancedClass.Deadeye ? 4 : 0))} | {heroCombatStats.SecondaryDice}" : ""),UiTheme.Teal,17);
         asciiCanvas.Text(310,512,localization.Translate($"Alcance: {heroCombatStats.SecondaryRange} casas", $"Range: {heroCombatStats.SecondaryRange} tiles"),UiTheme.Dim,15);
         asciiCanvas.WrappedText(310,542,AdvancementText.Description(choice,localization.English),UiTheme.Ink,15,96,23);
-        asciiCanvas.Text(310,620,heroCombatStats.CanShoot ? $"[F] {localization.Translate("Basico", "Basic")}: {heroCombatStats.ShotDice} | {localization.Translate("Alcance", "Range")} {(playerState.ClassIndex == 2 ? 10 : 6)}" : $"{localization.Translate("Basico adjacente", "Adjacent basic")}: {heroCombatStats.MeleeDice}",UiTheme.Ink,15);
+        asciiCanvas.Text(310,620,heroCombatStats.CanShoot ? $"[F] {StatusText.Basic(playerState, localization)}: {heroCombatStats.ShotDice} | {localization.Translate("Alcance", "Range")} {(playerState.ClassIndex == 2 ? 10 : 6)}" : $"{localization.Translate("Basico adjacente", "Adjacent basic")}: {heroCombatStats.MeleeDice}",UiTheme.Ink,15);
         for (int i=0;i<3;i++) asciiCanvas.Text(310,647+i*22,localization.SlotName(i)+": "+(inventoryState.Equipped[i] is Gear gear ? localization.GearLabel(gear) : localization.Translate("Vazio","Empty")),UiTheme.Dim,14);
     }
 

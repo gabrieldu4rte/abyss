@@ -10,6 +10,7 @@ internal readonly record struct ActionGlyph(Vector2I Position, char Character, C
 
 internal sealed class ActionAnimation
 {
+    internal AdvancedClass Element { get; }
     internal ActionAnimationKind Kind { get; }
     internal Vector2I Origin { get; }
     internal IReadOnlyList<Vector2I> Path { get; }
@@ -22,8 +23,9 @@ internal sealed class ActionAnimation
     internal bool Finished => Elapsed >= Duration;
 
     internal ActionAnimation(ActionAnimationKind kind, Vector2I origin, IEnumerable<Vector2I> path,
-        IEnumerable<Vector2I> targets, int radius, IReadOnlySet<Vector2I> visibleCells)
+        IEnumerable<Vector2I> targets, int radius, IReadOnlySet<Vector2I> visibleCells, AdvancedClass element = AdvancedClass.None)
     {
+        Element = element;
         Kind = kind;
         Origin = origin;
         Path = path.ToArray();
@@ -67,6 +69,8 @@ internal sealed class ActionAnimation
             ActionAnimationKind.PiercingArrow => new Color("8ff0c5"),
             _ => new Color("ffd58a")
         };
+        if (Element == AdvancedClass.Pyromancer) color = new Color("ff8844");
+        if (Element == AdvancedClass.Cryomancer) color = new Color("9deaff");
         color.A = fade;
         if (Kind is ActionAnimationKind.Whirlwind or ActionAnimationKind.ArcaneNova)
         {
@@ -86,7 +90,7 @@ internal sealed class ActionAnimation
                     else
                     {
                         if (Math.Abs(distance - wave) > .8) continue;
-                        glyph = "+*ox"[(Math.Abs(x) + Math.Abs(y) + (int)(Elapsed * 12)) % 4];
+                        glyph = (Element == AdvancedClass.Pyromancer ? "^*x^" : Element == AdvancedClass.Cryomancer ? "+*#*" : "+*ox")[(Math.Abs(x) + Math.Abs(y) + (int)(Elapsed * 12)) % 4];
                     }
                     yield return new(Origin + new Vector2I(x, y), glyph, color);
                 }

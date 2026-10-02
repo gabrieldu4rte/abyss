@@ -12,11 +12,13 @@ internal sealed class EnvironmentState
     internal HashSet<Vector2I> Oil { get; } = new();
     internal Dictionary<Vector2I, int> Fire { get; } = new();
     internal Dictionary<Vector2I, (int Turns, char? Original)> TemporaryWater { get; } = new();
+    internal Dictionary<Vector2I, int> Ice { get; } = new();
+    internal Dictionary<Vector2I, int> Steam { get; } = new();
     internal int HeroPoisonTurns { get; set; }
     internal Dictionary<Enemy, int> PoisonedEnemies { get; } = new();
     internal void Clear()
     {
-        TemporaryWater.Clear(); Details.Clear(); Fixtures.Clear(); Oil.Clear(); Fire.Clear();
+        Ice.Clear(); Steam.Clear(); TemporaryWater.Clear(); Details.Clear(); Fixtures.Clear(); Oil.Clear(); Fire.Clear();
         HeroPoisonTurns = 0; PoisonedEnemies.Clear();
     }
 }

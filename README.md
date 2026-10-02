@@ -409,3 +409,13 @@ Twelve named items extend `Gear` with a stable `ItemId`. They retain the base ki
 - `AdvancementCatalog` holds specialization rules; `ClassAdvancementService` owns unlock/choice; `AdvancedAbilityService` executes new abilities; `AdvancementRenderer` and `AdvancementText` present the choices. The original class-selection screen remains unchanged.
 - Preview the four choice screens with `--advancement-demo=0` through `3`. Use `--advanced-hero-demo=Shadowblade`, optionally `--critical-preview` and `--view=pause`, to inspect an advanced character.
 - Tests cover level gating, confirmation, deferral, one-time choice, resets, all sixteen portraits, all eight new abilities, energy/turn accounting, poison immunity, temporary defense, animation timing, and rogue hit/miss/blocked-destination behavior.
+
+### Elemental specialization and terrain reactions
+
+- Pyromancer staff attacks and Q use fire; Cryomancer staff attacks and Q use ice, including projectile/nova colors and localized labels. Unarmed attacks retain ordinary melee behavior. Existing damage dice, energy costs and hit rolls remain in use.
+- Projectiles react along their path; Q reacts on visible terrain in range with line of sight. Successful hits ignite dry ground or freeze targets for one enemy response (two on water/ice). R shares the same reaction rules.
+- Fire ignites oil, melts ice into water, and produces temporary blinding steam on water. Hitting a frozen target with fire removes the freeze and deals two additional damage.
+- Cold extinguishes fire and freezes water temporarily. Frozen cells suppress traps until thawing. Ice lasts four environmental ticks; steam lasts three, including the casting turn. Reactions clear on floor generation.
+- Exits and safe merchant/blacksmith areas remain protected. Environmental fire can hurt the caster. The fluid-control staff retains its water effect, applied after the projectile's terrain reaction.
+- Portrait status labels share the measured center of the ASCII frame and remain separate from damage numbers. Active poison, frozen, blind, burning and guard effects are shown where applicable.
+- The temporary F9/clickable level-up control and its input path have been removed.

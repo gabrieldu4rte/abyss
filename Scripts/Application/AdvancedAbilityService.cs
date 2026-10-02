@@ -37,6 +37,7 @@ internal sealed class AdvancedAbilityService(PlayerState player, DungeonState du
             if (player.Health <= 0 || player.Position != origin) break;
             if (choice == AdvancedClass.Shadowblade) { enemy.BlindTurns = Math.Max(enemy.BlindTurns,2); continue; }
             bool hit = combat.ResolveHeroAttack(enemy,false,true,stats.SecondaryDice,choice == AdvancedClass.Deadeye ? 4 : 0);
+            if (hit) environment.ElementalHit(enemy);
             if (!hit || enemy.Health <= 0) continue;
             if (choice == AdvancedClass.Cryomancer) enemy.FrozenTurns = Math.Max(enemy.FrozenTurns,2);
             if (choice == AdvancedClass.Berserker) EnemyDisplacement.Push(dungeon,player,enemy,origin);
