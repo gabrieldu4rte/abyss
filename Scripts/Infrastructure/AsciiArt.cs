@@ -47,6 +47,10 @@ public static class AsciiArt
     public static readonly string Tower = Read("tower"), Camp = Read("camp"), Globe = Read("globe"), Book = Read("book"), Grave = Read("grave"), Crown = Read("crown"), Torch = Read("torch");
     private static readonly Dictionary<string, string> CreaturePortraits = new()
     {
+        ["ruin_gargoyle"] = Read("ruin_gargoyle"),
+        ["cistern_eel"] = Read("cistern_eel"),
+        ["spore_bloom"] = Read("spore_bloom"),
+        ["forge_salamander"] = Read("forge_salamander"),
         ["rat"] = Rat, ["skeleton"] = Skeleton, ["goblin"] = Goblin, ["warden"] = Warden,
         ["revenant"] = Read("revenant"),
         ["drowned"] = Read("drowned"),

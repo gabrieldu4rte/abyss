@@ -298,5 +298,29 @@
     "rows": 60,
     "source": "shadowblade_critical.png",
     "file": "shadowblade_critical.txt"
+  },
+  "ruin_gargoyle": {
+    "columns": 100,
+    "rows": 60,
+    "source": "ruin_gargoyle.png",
+    "file": "ruin_gargoyle.txt"
+  },
+  "cistern_eel": {
+    "columns": 100,
+    "rows": 60,
+    "source": "cistern_eel.png",
+    "file": "cistern_eel.txt"
+  },
+  "spore_bloom": {
+    "columns": 100,
+    "rows": 60,
+    "source": "spore_bloom.png",
+    "file": "spore_bloom.txt"
+  },
+  "forge_salamander": {
+    "columns": 100,
+    "rows": 60,
+    "source": "forge_salamander.png",
+    "file": "forge_salamander.txt"
   }
 }

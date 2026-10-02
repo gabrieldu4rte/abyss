@@ -19,6 +19,11 @@ internal sealed class ActionEffects(DungeonState dungeonState, SoundEffects soun
     internal void PlayProjectile(Vector2I origin, IReadOnlyList<Vector2I> path, bool arcane, AdvancedClass element = AdvancedClass.None)
         => Add(arcane ? ActionAnimationKind.ArcaneBolt : ActionAnimationKind.Arrow, origin, path, new Vector2I[0], 0, element);
 
+    internal void PlayEnemyProjectile(Enemy enemy, Vector2I target)
+        => Add(enemy.Glyph == 's' ? ActionAnimationKind.Arrow : ActionAnimationKind.ArcaneBolt,
+            enemy.Position, TraceLine(enemy.Position,target), new[] { target }, 0,
+            enemy.Glyph == 'i' ? AdvancedClass.Pyromancer : enemy.Glyph == 'b' ? AdvancedClass.Assassin : AdvancedClass.None);
+
     internal void PlayTorch(Vector2I origin, IReadOnlyList<Vector2I> path)
         => Add(ActionAnimationKind.Torch, origin, path, new Vector2I[0], 0);
 

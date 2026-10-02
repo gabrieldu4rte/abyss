@@ -71,6 +71,7 @@ internal sealed class ActionAnimation
         };
         if (Element == AdvancedClass.Pyromancer) color = new Color("ff8844");
         if (Element == AdvancedClass.Cryomancer) color = new Color("9deaff");
+        if (Element == AdvancedClass.Assassin) color = new Color("a3c879");
         color.A = fade;
         if (Kind is ActionAnimationKind.Whirlwind or ActionAnimationKind.ArcaneNova)
         {

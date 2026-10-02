@@ -6,6 +6,7 @@ internal sealed class CombatService
 {
     internal event Action<Enemy, int, bool, bool>? HeroHit;
     internal event Action<Enemy>? HeroRangedHit;
+    internal event Action<Enemy>? EnemyHit;
     private readonly HeroVitals vitals;
     private readonly BestiaryProgress bestiary;
     private readonly DungeonState dungeonState;
@@ -87,6 +88,7 @@ internal sealed class CombatService
 
         var dice = overrideDice ?? (ability ? heroCombatStats.AbilityDice : ranged ? heroCombatStats.ShotDice : heroCombatStats.MeleeDice);
         int damage = RollDamage(random.Generator, dice, roll.Critical);
+        if (playerState.ClassIndex != 1 && EnemyTraits.Armored(enemy.Glyph)) damage = Math.Max(1, damage - 1);
         if (floodedMelee) damage += 2;
         if ((ranged || ability && playerState.ClassIndex == 2) && inventoryState.Weapon?.Special == ItemId.TwilightBow && dungeonState.Visible[enemy.Position.X,enemy.Position.Y] && dungeonState.Los(playerState.Position,enemy.Position) && (enemy.Position-playerState.Position).LengthSquared() > Math.Pow(dungeonState.Modifier == FloorModifier.Blackout ? 2 : inventoryState.HasLight ? 5 : 3, 2)) damage += 3;
         if (sacrifice) damage += random.Generator.Next(1,7);
@@ -108,10 +110,12 @@ internal sealed class CombatService
 
     internal void ResolveEnemyAttack(Enemy enemy, bool evade)
     {
-        if (dungeonState.IsSanctuary(playerState.Position) || GameRules.Dist(playerState.Position, enemy.Position) != 1 || !dungeonState.Los(enemy.Position, playerState.Position))
+        if (dungeonState.IsSanctuary(playerState.Position) || GameRules.Dist(playerState.Position, enemy.Position) > EnemyTraits.AttackRange(enemy.Glyph) || !dungeonState.Los(enemy.Position, playerState.Position))
             return;
         if (enemy.Glyph == 'B' && (!enemy.Alerted || !dungeonState.StairsRoom.HasPoint(playerState.Position)))
             return;
+        if (GameRules.Dist(playerState.Position, enemy.Position) > 1)
+            visualEffects.Actions.PlayEnemyProjectile(enemy, playerState.Position);
         var roll = ResolveAttack(random.Generator.Next(1, 21), enemy.AttackBonus, heroCombatStats.Defense + (evade ? 4 : 0));
         string total = $"d20({roll.Natural}){UiTheme.Signed(roll.Bonus)}={roll.Total} vs {roll.Defense}";
         expeditionJournal.LastRollPt = $"{FloorEventText.EnemyName(enemy, false)}: {total}";
@@ -123,8 +127,15 @@ internal sealed class CombatService
             return;
         }
 
+        if (enemy.Glyph == 'i' && inventoryState.Has(ItemId.EternalForgeRobe))
+        {
+            expeditionJournal.Say("O robe repele as brasas.", "The robe repels the embers.");
+            return;
+        }
         int damage = Math.Max(1, RollDamage(random.Generator, enemy.Dice, roll.Critical) - inventoryState.DamageReduction);
+        int rescue = vitals.RescueSerial;
         vitals.Damage(damage);
+        if (playerState.Health > 0 && vitals.RescueSerial == rescue) EnemyHit?.Invoke(enemy);
         visualEffects.HeroHurt(enemy, damage);
         expeditionJournal.Say($"{FloorEventText.EnemyName(enemy, false)} -> voce: {total}. {(roll.Critical ? "CRITICO! " : "")}-{damage} PV.", $"{FloorEventText.EnemyName(enemy, true)} -> you: {total}. {(roll.Critical ? "CRITICAL! " : "")}-{damage} HP.");
         if (playerState.Health == 0)

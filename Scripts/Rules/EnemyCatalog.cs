@@ -4,9 +4,13 @@ namespace Abyss.Rules;
 internal static class EnemyCatalog
 {
     internal static Biome BiomeAt(int depth) => (Biome)(GameRules.CycleIndex(depth) % 4);
-    internal static string Roster(int depth) => BiomeAt(depth) switch { Biome.Ruins => "sgv", Biome.Cistern => "rdl", Biome.FungalCaves => "fjm", _ => "hik" };
+    internal static string Roster(int depth) => BiomeAt(depth) switch { Biome.Ruins => "sgvq", Biome.Cistern => "rdle", Biome.FungalCaves => "fjmb", _ => "hika" };
     internal static readonly IReadOnlyDictionary<char, EnemyProfile> Common = new Dictionary<char, EnemyProfile>
     {
+        ['q'] = new("ruin_gargoyle", 10, 12, 4, 5, new(12, 8, 10, 4)),
+        ['e'] = new("cistern_eel", 6, 10, 3, 3, new(8, 12, 8, 10), CombatAttribute.Dexterity),
+        ['b'] = new("spore_bloom", 7, 10, 3, 3, new(8, 8, 10, 12), CombatAttribute.Intelligence),
+        ['a'] = new("forge_salamander", 9, 11, 4, 4, new(12, 10, 10, 6)),
         ['s'] = new("skeleton", 6, 11, 4, 3, new(10, 10, 10, 4)),
         ['g'] = new("goblin", 8, 10, 4, 4, new(10, 12, 10, 8), CombatAttribute.Dexterity),
         ['v'] = new("revenant", 9, 11, 4, 4, new(12, 8, 10, 8)),

@@ -7,6 +7,7 @@ internal sealed class RoamingBehavior(CombatService combatService, DungeonState 
     public bool Supports(Enemy enemy) => enemy.Glyph != 'B';
     public void Act(Enemy enemy, bool evade, bool mayAttack)
     {
+        if (enemy.AttackCooldown > 0) enemy.AttackCooldown--;
         bool seesPlayer = !dungeonState.IsSanctuary(playerState.Position) && GameRules.Dist(enemy.Position, playerState.Position) < 13 && dungeonState.Los(enemy.Position, playerState.Position);
         if (seesPlayer)
         {
@@ -14,10 +15,13 @@ internal sealed class RoamingBehavior(CombatService combatService, DungeonState 
             enemy.LastSeen = playerState.Position;
             enemy.SearchTurns = 6;
             enemy.PatrolTarget = null;
-            if (GameRules.Dist(playerState.Position, enemy.Position) == 1)
+            if (GameRules.Dist(playerState.Position, enemy.Position) <= EnemyTraits.AttackRange(enemy.Glyph))
             {
-                if (mayAttack)
+                if (mayAttack && enemy.AttackCooldown == 0)
+                {
                     combatService.ResolveEnemyAttack(enemy, evade);
+                    if (EnemyTraits.AttackRange(enemy.Glyph) > 1) enemy.AttackCooldown = 2;
+                }
             }
             else
                 navigator.StepEnemy(enemy, playerState.Position);

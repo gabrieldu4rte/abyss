@@ -69,7 +69,7 @@ internal sealed partial class RegressionSuite
             if (game.VisualEffects.Actions.Active) throw new Exception("Failed skill created an effect.");
             game.PlayerState.Energy = game.PlayerState.MaxEnergy;
             game.PlayerActions.Skill();
-            var effect = game.VisualEffects.Actions.Animations.Single();
+            var effect = game.VisualEffects.Actions.Animations.Single(a => a.Kind == (ActionAnimationKind)hero);
             if (effect.Kind != (ActionAnimationKind)hero || effect.Targets[0] != target) throw new Exception("Wrong class or target animation.");
             for (int frame = 0; frame < 20; frame++)
             {

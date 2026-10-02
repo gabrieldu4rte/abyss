@@ -50,7 +50,7 @@ internal sealed class MenuController
             }
             if (UiTheme.Previous(key) || UiTheme.Next(key))
             {
-                menuState.BestiaryEntry = (menuState.BestiaryEntry + (UiTheme.Previous(key) ? 3 : 1)) % 4;
+                menuState.BestiaryEntry = (menuState.BestiaryEntry + (UiTheme.Previous(key) ? EnemyCatalog.Roster(menuState.BestiaryBiome * 5 + 1).Length : 1)) % (EnemyCatalog.Roster(menuState.BestiaryBiome * 5 + 1).Length + 1);
                 return;
             }
         }

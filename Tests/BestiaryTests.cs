@@ -12,21 +12,24 @@ internal sealed partial class RegressionSuite
         {
             int depth = biome * 5 + 5;
             var roster = EnemyCatalog.Roster(depth);
-            Check(roster.Length == 3 && roster.Distinct().Count() == 3, "Biome lacks three species.");
+            Check(roster.Length == 4 && roster.Distinct().Count() == 4, "Biome lacks four species.");
             foreach (char glyph in roster.Append('B'))
             {
                 var enemy = new Enemy(Vector2I.Zero, glyph, depth);
                 Check(portraits.Add(AsciiArt.Enemy(enemy)), "Bestiary portrait is reused across species.");
                 Check(EnemyText.Name(glyph, depth, true).Length > 2 && EnemyText.Name(glyph, depth, false).Length > 2, "Missing bestiary localization.");
             }
+            var spawned = new System.Collections.Generic.HashSet<char>();
             for (int seed = 1; seed <= 30; seed++)
             {
                 game.Start(seed);
                 game.DungeonState.Floor = depth;
                 game.DungeonGenerator.Generate(false);
+                foreach (var spawnedEnemy in game.DungeonState.Enemies) spawned.Add(spawnedEnemy.Glyph);
                 Check(game.DungeonState.Enemies.All(e => e.IsWarden || roster.Contains(e.Glyph)), "Foreign biome enemy spawned.");
                 Check(game.DungeonState.Enemies.Single(e => e.IsWarden).HomeBiome == (Biome)biome, "Wrong biome Warden.");
             }
+            Check(roster.All(spawned.Contains), "Biome roster includes a species that never spawns.");
             Enemy Prepare()
             {
                 game.Start(712);
@@ -68,6 +71,6 @@ internal sealed partial class RegressionSuite
             game.PlayerState.Position = new Vector2I(19, 8);
             Check(!abilities.Act(boss, false) && boss.AbilityCells.Count == 0 && boss.AbilityWindup == 0, "Leaving room did not cancel Warden ability.");
         }
-        GD.Print("BESTIARY AUDIT: 12 biome species, four unique Wardens, 120 floors, localized portraits, energy, windup, dodging, confinement, four animated skills and environmental effects passed.");
+        GD.Print("BESTIARY AUDIT: 16 biome species, four unique Wardens, 120 floors, localized portraits, energy, windup, dodging, confinement, four animated skills and environmental effects passed.");
     }
 }

@@ -35,6 +35,14 @@ internal static class BestiaryLore
         ("spore_warden", true) => "The underground forest found a voice in this sovereign. Its body bears seasons that never knew the sun. Around it, every mushroom bows as though remembering the moment stone first began to dream.",
         ("forge_warden", false) => "A ultima obra dos mestres da forja foi tambem sua carcereira. Dentro da armadura arde uma brasa que nenhuma noite apagou. O guardiao espera diante da escada, ouvindo o eco de martelos que ja nao existem.",
         ("forge_warden", true) => "The forge masters' final creation became their jailer. An ember burns within its armor that no night has extinguished. The Warden waits before the stair, listening to the echoes of hammers that no longer exist.",
+        ("ruin_gargoyle", false) => "Talhada para guardar os telhados de um templo, desceu quando a ultima torre caiu. As asas de pedra ainda recolhem a poeira dos sinos. Flechas lascam seu peito, mas o antigo juramento permanece inteiro.",
+        ("ruin_gargoyle", true) => "Carved to guard a temple roof, it descended when the final tower fell. Its stone wings still gather the dust of bells. Arrows chip its breast, but the ancient oath remains whole.",
+        ("cistern_eel", false) => "Os zeladores viam luzes nas aguas e as tomavam por estrelas refletidas. Eram estas enguias, enroladas nas correntes dos pocos. Quem pisa na agua sente os musculos esquecerem por um instante como obedecer.",
+        ("cistern_eel", true) => "The keepers saw lights in the water and mistook them for reflected stars. They were these eels, coiled around well chains. Those who enter the water feel their muscles briefly forget how to obey.",
+        ("spore_bloom", false) => "Uma flor sem sol abre suas petalas nas galerias mais antigas. Seu perfume carrega sonhos de florestas que nunca existiram. Ao ouvir passos, inclina a corola e sopra uma nuvem dourada sobre o visitante.",
+        ("spore_bloom", true) => "A sunless flower opens its petals in the oldest galleries. Its perfume carries dreams of forests that never existed. Hearing footsteps, it tilts its crown and breathes a golden cloud over the visitor.",
+        ("forge_salamander", false) => "Dorme entre carvoes onde nenhum outro animal repousaria. Os aprendizes acreditavam que seu sopro ensinara o fogo aos primeiros ferreiros. Atravessa as brasas como quem retorna a uma casa ha muito perdida.",
+        ("forge_salamander", true) => "It sleeps among coals where no other animal could rest. Apprentices believed its breath taught fire to the earliest smiths. It crosses embers like a traveler returning to a home long lost.",
         _ => "???"
     };
 }

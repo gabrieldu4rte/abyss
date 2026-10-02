@@ -157,7 +157,7 @@ internal sealed class DungeonGenerator
         int population = Math.Min(7 + (dungeonState.Floor - 1) / 2, 14) - (GameRules.IsBossFloor(dungeonState.Floor) ? 2 : 0);
         for (int i = 0; i < Math.Min(population, Math.Max(0, free.Count - 5)); i++)
         {
-            char g = EnemyCatalog.Roster(dungeonState.Floor)[i % 3];
+            char g = EnemyCatalog.Roster(dungeonState.Floor)[i % EnemyCatalog.Roster(dungeonState.Floor).Length];
             dungeonState.Enemies.Add(new Enemy(Take(), g, dungeonState.Floor));
         }
 

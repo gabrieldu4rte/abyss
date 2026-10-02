@@ -146,7 +146,7 @@ internal sealed class EnvironmentService(DungeonState dungeon, InventoryState in
         if (player.Health <= 0 || vitals.RescueSerial != rescue) return;
         foreach (var enemy in dungeon.Enemies.ToArray())
         {
-            int damage = World.Fire.ContainsKey(enemy.Position) ? FireDamage : 0;
+            int damage = World.Fire.ContainsKey(enemy.Position) && !EnemyTraits.Fireproof(enemy.Glyph) ? FireDamage : 0;
             if (World.PoisonedEnemies.TryGetValue(enemy, out int remaining))
             {
                 damage += 2;

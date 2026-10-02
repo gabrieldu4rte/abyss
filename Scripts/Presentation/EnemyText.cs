@@ -5,6 +5,8 @@ internal static class EnemyText
         ? (english ? new[] { "Ruin Warden", "Tide Warden", "Spore Sovereign", "Forge Warden" } : new[] { "Guardiao das Ruinas", "Guardiao das Mares", "Soberano dos Esporos", "Guardiao da Forja" })[(int)EnemyCatalog.BiomeAt(depth)]
         : glyph switch
         {
+            'q' => english ? "Ruin gargoyle" : "Gargula das ruinas", 'e' => english ? "Cistern eel" : "Enguia das cisternas",
+            'b' => english ? "Spore bloom" : "Flor de esporos", 'a' => english ? "Forge salamander" : "Salamandra da forja",
             's' => english ? "Skeleton" : "Esqueleto", 'g' => "Goblin", 'r' => english ? "Crypt rat" : "Rato das criptas",
             'v' => english ? "Revenant" : "Revenante", 'd' => english ? "Drowned" : "Afogado", 'l' => english ? "Giant leech" : "Sanguessuga gigante",
             'f' => english ? "Sporeling" : "Esporito", 'j' => english ? "Cave crawler" : "Rastejante", 'm' => english ? "Myconid" : "Miconide",

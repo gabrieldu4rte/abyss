@@ -94,6 +94,8 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         NamedEquipmentEffects = new NamedEquipmentEffects(InventoryState, DungeonState, PlayerState, CombatService, EnvironmentService, HeroCombatStats, RandomStream, VisualEffects, ExpeditionJournal);
         CombatService.HeroHit += NamedEquipmentEffects.OnHit;
         CombatService.HeroRangedHit += NamedEquipmentEffects.OnRangedHit;
+        var enemyEffects = new EnemySpecialEffects(PlayerState, InventoryState, DungeonState, EnvironmentService, RandomStream, ExpeditionJournal);
+        CombatService.EnemyHit += enemyEffects.OnHit;
         DungeonGenerator = new DungeonGenerator(DungeonState, ExpeditionJournal, LootService, MenuState, MerchantState, PlayerState, VisualEffects, RandomStream, InventoryState, EnvironmentGenerator, FloorEventGenerator, RunState);
         UiComponents = new UiComponents(AsciiCanvas, Localization, MenuState);
         SettingsRenderer = new SettingsRenderer(AsciiCanvas, Localization, MenuState, UiComponents);
@@ -209,7 +211,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         DungeonGenerator.Reveal();
         foreach (Enemy e in DungeonState.Enemies.ToArray())
         {
-            EnemyAi.ActEnemy(e, evade, !previousPlayer.HasValue || previousPlayer.Value == PlayerState.Position || GameRules.Dist(previousPlayer.Value, e.Position) == 1);
+            EnemyAi.ActEnemy(e, evade, !previousPlayer.HasValue || previousPlayer.Value == PlayerState.Position || GameRules.Dist(previousPlayer.Value, e.Position) <= EnemyTraits.AttackRange(e.Glyph) && DungeonState.Los(e.Position, previousPlayer.Value));
             if (PlayerState.Health <= 0 || HeroVitals.RescueSerial != rescue) break;
         }
 

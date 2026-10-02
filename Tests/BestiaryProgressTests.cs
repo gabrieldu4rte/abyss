@@ -38,16 +38,16 @@ internal sealed partial class RegressionSuite
                 Check(g.BestiaryState.Count(species) == 1, "Defeat not counted exactly once.");
                 canvas.Text.Clear(); g.Transitions.BeginFrame("bestiary"); g.BestiaryRenderer.Draw(); g.Transitions.EndFrame();
                 Check(canvas.Text.Contains(EnemyText.Name(glyph, depth, true).ToUpperInvariant()), "Unlocked entry hides its name.");
-                g.MenuState.BestiaryEntry = (g.MenuState.BestiaryEntry + 1) % 4;
+                g.MenuState.BestiaryEntry = (g.MenuState.BestiaryEntry + 1) % 5;
             }
         }
         var elite = new Enemy(g.PlayerState.Position, 's', 21); elite.PromoteElite(EliteTitle.Cruel);
         g.DungeonState.Enemies.Add(elite); g.CombatService.Hit(elite, elite.Health);
-        Check(g.BestiaryState.Count("skeleton") == 2 && g.BestiaryState.Defeated.Count == 16, "Elite/cycle count split the species.");
+        Check(g.BestiaryState.Count("skeleton") == 2 && g.BestiaryState.Defeated.Count == 20, "Elite/cycle count split the species.");
         g.Start(52);
         Check(g.BestiaryState.Count("skeleton") == 2, "Starting another expedition cleared bestiary.");
         var loaded = new GameSession(new TestHost(), new TestCanvas(), new TestSettings(), store);
-        Check(loaded.BestiaryState.Count("skeleton") == 2 && loaded.BestiaryState.Defeated.Count == 16, "Discoveries did not survive reopening.");
+        Check(loaded.BestiaryState.Count("skeleton") == 2 && loaded.BestiaryState.Defeated.Count == 20, "Discoveries did not survive reopening.");
         loaded.Start(54); loaded.DungeonState.Enemies.Clear(); loaded.DungeonState.Environment.Clear();
         var rat = new Enemy(loaded.PlayerState.Position + Vector2I.Right, 'r', 6) { Health = 1 };
         loaded.DungeonState.Enemies.Add(rat); loaded.DungeonState.Environment.Fire[rat.Position] = 2;
@@ -60,7 +60,7 @@ internal sealed partial class RegressionSuite
         g.MenuController.HandlePause(Key.Left);
         Check(g.MenuState.BestiaryBiome == 3 && g.MenuState.PauseTab == 3, "Biome navigation changed tabs.");
         g.MenuController.HandlePause(Key.Up);
-        Check(g.MenuState.BestiaryEntry == 3, "Creature navigation does not wrap.");
+        Check(g.MenuState.BestiaryEntry == 4, "Creature navigation does not wrap.");
         g.MenuController.HandlePause(Key.Escape);
         Check(!g.MenuState.BestiaryOpen && g.RunState.Screen == "pause", "Escape should return to compendium.");
         g.MenuController.HandlePause(Key.Escape);
@@ -76,7 +76,7 @@ internal sealed partial class RegressionSuite
             Check(reopened["skeleton"] == 4 && reopened["tide_warden"] == 1, "Disk bestiary lost counts.");
         }
         finally { System.IO.File.Delete(path); System.IO.File.Delete(path + ".tmp"); }
-        GD.Print("BESTIARY PROGRESS AUDIT: 16 locked/unlocked bilingual entries, exact kills, elites, environmental kills, expedition/restart persistence, disk replacement and turn-free navigation passed.");
+        GD.Print("BESTIARY PROGRESS AUDIT: 20 locked/unlocked bilingual entries, exact kills, elites, environmental kills, expedition/restart persistence, disk replacement and turn-free navigation passed.");
     }
     private sealed class MemoryBestiaryStore : IBestiaryStore
     {

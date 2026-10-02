@@ -293,10 +293,10 @@ Flags after `--` are handled by the game:
 
 | Biome | Regular species | Warden | Ability |
 | --- | --- | --- | --- |
-| Ruins | Skeleton, Goblin, Revenant | Ruin Warden | Seismic impact: radius-two shockwave |
-| Cistern | Rat, Drowned, Giant leech | Tide Warden | Flood wave: five-tile reach, three-tile width; creates water, removes oil/fire and drains 2 energy on hit |
-| Fungal caves | Sporeling, Cave crawler, Myconid | Spore Sovereign | Spore burst: radius-one cloud at the marked player position; three poison ticks on hit |
-| Ember forge | Cinder hound, Ember imp, Forged sentinel | Forge Warden | Furnace cross: four-tile arms; leaves fire for two ticks, four in hot drafts |
+| Ruins | Skeleton, Goblin, Revenant, Ruin gargoyle | Ruin Warden | Seismic impact: radius-two shockwave |
+| Cistern | Rat, Drowned, Giant leech, Cistern eel | Tide Warden | Flood wave: five-tile reach, three-tile width; creates water, removes oil/fire and drains 2 energy on hit |
+| Fungal caves | Sporeling, Cave crawler, Myconid, Spore bloom | Spore Sovereign | Spore burst: radius-one cloud at the marked player position; three poison ticks on hit |
+| Ember forge | Cinder hound, Ember imp, Forged sentinel, Forge salamander | Forge Warden | Furnace cross: four-tile arms; leaves fire for two ticks, four in hot drafts |
 
 - Each Warden is tied to its biome and still guards the stair room. Leaving the room cancels a prepared ability.
 - Abilities cost 4 energy from a pool of 6, restore 1 per active turn and have four recovery turns. Wardens begin with two recovery turns.
@@ -316,7 +316,7 @@ Flags after `--` are handled by the game:
 ## Persistent bestiary
 
 - Pause → Compendium → Bestiary opens the collection. Left/right selects a biome; up/down selects a creature. Escape returns to the compendium. A/D and Tab retain pause-tab navigation.
-- Each biome lists its three regular species and its Warden. Locked pages show `???` and a generic illustration. Defeating a species reveals its existing ASCII portrait, bilingual lore and cumulative kill count. Combat attributes and ability statistics are omitted.
+- Each biome lists its four regular species and its Warden. Locked pages show `???` and a generic illustration. Defeating a species reveals its existing ASCII portrait, bilingual lore and cumulative kill count. Combat attributes and ability statistics are omitted.
 - `BestiaryState` tracks stable portrait/species identifiers. `BestiaryProgress` loads known identifiers and records confirmed kills through `CombatService.Hit`; elite variants share their species count, while biome Wardens have distinct entries. Environmental kills use the same path.
 - `IBestiaryStore` separates progression from storage. `GodotBestiaryStore` writes `user://bestiary.cfg` through a temporary file followed by replacement. Discoveries survive new expeditions and application restarts; this does not save an expedition. Failed writes retain in-memory progress and report the issue in the journal.
 - Captures, diagnostic demos and automated tests use isolated in-memory progression, so previews cannot unlock the player's collection. Existing play history predating this feature cannot be reconstructed.
@@ -439,3 +439,15 @@ The catalog contains 23 named items. The additional eleven participate in the ex
 | Legendary | Eternal Forge Robe | Fire immunity, including forge jets and the Forge Warden's thermal attack; thrown torches ignite oil for six environmental ticks. |
 
 Combat passives use the normal hit, kill, loot and healing services. Electrical impacts share one `EnvironmentService.Discharge` implementation, including armor immunities and safe-room protection. Dice use the session random stream. `AdditionalNamedItemTests` covers effects and negative cases; the catalog acquisition audit covers all 23 entries.
+
+### Regular enemy traits
+
+`EnemyTraits` defines species behavior; `EnemySpecialEffects` applies successful-hit passives through the combat event. Existing per-cycle stat growth and population limits remain unchanged. Each biome now has four regular species plus its Warden. Bestiary saves retain existing species keys and add four new unlockable entries.
+
+- Skeletons shoot arrows within five tiles; Ember imps launch fire bolts within four; Spore blooms spit spores within three. They require line of sight and spend one response reloading between attacks. Closing distance consumes their action; entering their attack range does not immediately trigger a shot. Blindness, freezing and sanctuary protection also apply.
+- Sporelings and Myconids poison on 25% of successful attacks; Spore blooms use 35%. Poison refreshes to three ticks without stacking damage. The Fungal Sovereign Crown prevents application.
+- Leeches heal two HP on a successful hit, capped at maximum HP.
+- Cistern eels drain two energy when hitting a player standing on unfrozen water; Thick Rubber Boots prevent this secondary effect.
+- Ember imps and Forge salamanders have a 25% chance to ignite the player's tile after a hit. Water and safe terrain retain their protection. The Eternal Forge Robe prevents imp fire-bolt damage. Salamanders take no burning-ground damage.
+- Ruin gargoyles and Forged sentinels reduce physical hero attack damage by one, to a minimum of one; mage magic bypasses this reduction.
+- New portraits were generated with the built-in image tool and converted with the existing 100-column ASCII pipeline; source prompts are in `ArtSources/enemy-expansion-prompts.json`.

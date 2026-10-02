@@ -19,3 +19,5 @@ Biome bestiary: twelve new source portraits were generated with the integrated i
 Lost Blacksmith: `lost_blacksmith.png`, generated with the integrated imagegen tool using the merchant as a style reference. The exact prompt is in [lost-blacksmith-prompt.txt](lost-blacksmith-prompt.txt). Converted to a 100-column ASCII portrait with an eight-level tone map, displayed through the same portrait frame as the merchant.
 
 Class advancement: sixteen normal/critical portraits for Sentinel, Berserker, Pyromancer, Cryomancer, Ranger, Deadeye, Assassin and Shadowblade. Generated with the integrated imagegen tool from the original heroes, retaining their identities. Final prompts are in [advancement-prompts.json](advancement-prompts.json). Each is converted into a 100 x 60 ASCII grid and tone map.
+
+Enemy expansion: `ruin_gargoyle`, `cistern_eel`, `spore_bloom` and `forge_salamander` were generated with the built-in imagegen tool. See `enemy-expansion-prompts.json` for exact prompts. Originals are stored here and converted to 100-column ASCII portraits and tone maps in `Art/`.

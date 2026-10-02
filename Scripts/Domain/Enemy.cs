@@ -28,6 +28,7 @@ internal sealed class Enemy
     public Vector2I? LastSeen { get; set; }
     public char Glyph { get; set; }
     public Attributes Stats { get; set; }
+    internal int AttackCooldown { get; set; }
     internal int FrozenTurns { get; set; }
     internal int BlindTurns { get; set; }
     internal EnemyProfile Profile => EnemyCatalog.Get(Glyph, Depth);

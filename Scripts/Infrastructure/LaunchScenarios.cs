@@ -85,8 +85,8 @@ internal sealed class LaunchScenarios(GameSession game)
             if (!args.Contains("--bestiary-locked"))
             {
                 game.MenuState.BestiaryBiome = 2;
-                game.MenuState.BestiaryEntry = 3;
-                var enemy = new Enemy(game.PlayerState.Position, 'B', 15);
+                game.MenuState.BestiaryEntry = args.Contains("--new-species-preview") ? 3 : 4;
+                var enemy = new Enemy(game.PlayerState.Position, args.Contains("--new-species-preview") ? 'b' : 'B', 15);
                 game.BestiaryProgress.Record(enemy);
             }
             game.RunState.Screen = "pause";
