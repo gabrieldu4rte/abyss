@@ -38,7 +38,7 @@ internal sealed class GameInput
     {
         if (e is not InputEventKey k) return;
         bool volumeRepeat = (runState.Screen == "settings" || runState.Screen == "pause" && menuState.PauseTab == 4)
-            && menuState.SettingsIndex is 1 or 2 && k.Keycode is Key.Left or Key.Right or Key.A or Key.D;
+            && menuState.SettingsPage == "sound" && menuState.SettingsIndex is 0 or 1 && k.Keycode is Key.Left or Key.Right or Key.A or Key.D;
         if (k.Echo && !volumeRepeat) return;
         if (!k.Pressed)
         {

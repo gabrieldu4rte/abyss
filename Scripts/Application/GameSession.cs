@@ -73,7 +73,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
         BlacksmithService = new BlacksmithService(InventoryState, PlayerState, MenuState, RunState, ExpeditionJournal);
         MerchantService = new MerchantService(ExpeditionJournal, InventoryState, MenuState, MerchantState, PlayerState, RunState);
         LanguagePreferences = new LanguagePreferences(MenuState, Settings);
-        SettingsController = new SettingsController(MenuState, RunState, Host, LanguagePreferences, displaySettings, audio);
+        SettingsController = new SettingsController(MenuState, RunState, Host, displaySettings, audio);
         HeroCombatStats = new HeroCombatStats(PlayerState, InventoryState);
         Localization = new Localization(MenuState);
         OpeningStory = new OpeningStory(RunState, Localization);

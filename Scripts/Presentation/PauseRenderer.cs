@@ -68,10 +68,13 @@ internal sealed class PauseRenderer
         }
         if (menuState.PauseTab == 4)
         {
-            uiComponents.Footer("[TAB / 1-5] abas   [W S / CIMA/BAIXO] selecionar   [A D / ESQ/DIR] ajustar   [ESC] continuar", "[TAB / 1-5] tabs   [W S / UP/DOWN] select   [A D / LEFT/RIGHT] adjust   [ESC] resume");
+            if (menuState.SettingsPage == "root")
+                uiComponents.Footer("[A D / ESQ/DIR / TAB] abas   [W S / CIMA/BAIXO] selecionar   [ENTER] abrir   [ESC] continuar", "[A D / LEFT/RIGHT / TAB] tabs   [W S / UP/DOWN] select   [ENTER] open   [ESC] resume");
+            else
+                uiComponents.Footer("[TAB / 1-5] abas   [W S / CIMA/BAIXO] selecionar   [A D / ESQ/DIR] ajustar   [ESC] voltar", "[TAB / 1-5] tabs   [W S / UP/DOWN] select   [A D / LEFT/RIGHT] adjust   [ESC] back");
             return;
         }
-        uiComponents.Footer("[1-5 / A D / TAB] abas   [CIMA/BAIXO] navegar   [ENTER] confirmar   [ESC] continuar", "[1-5 / A D / TAB] tabs   [UP/DOWN] navigate   [ENTER] confirm   [ESC] resume");
+        uiComponents.Footer("[1-5 / A D / TAB] abas   [CIMA/BAIXO] navegar   [ENTER] confirmar   [ESC] continuar", "[1-5 / A D / TAB] tabs   [UP/DOWN] navigate   [ENTER] confirm   [ENTER] open   [ESC] back");
     }
 
     internal void DrawCharacterSheet()
@@ -143,7 +146,6 @@ internal sealed class PauseRenderer
             localization.Translate("EQUIPAMENTOS E RELIQUIAS", "EQUIPMENT AND RELICS"),
             localization.Translate("PROVISOES", "SUPPLIES"),
             localization.Translate("VIAJANTES E OFICIOS", "TRAVELERS AND TRADES"),
-            localization.Translate("LUZ E PERIGOS", "LIGHT AND HAZARDS"),
             localization.Translate("ENCONTROS RAROS", "RARE ENCOUNTERS")
         };
         asciiCanvas.Text(32, 206, localization.Translate("COMPENDIO DO VIAJANTE", "TRAVELER'S COMPENDIUM"), UiTheme.Gold, 17);

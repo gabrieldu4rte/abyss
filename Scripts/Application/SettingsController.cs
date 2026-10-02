@@ -1,7 +1,7 @@
 using Godot;
 using System;
 namespace Abyss.Application;
-internal sealed class SettingsController(MenuState menu, RunState run, IGameHost host, LanguagePreferences language, IDisplaySettings? displayStore, IGameAudio? audio)
+internal sealed class SettingsController(MenuState menu, RunState run, IGameHost host, IDisplaySettings? displayStore, IGameAudio? audio)
 {
     internal static readonly Vector2I[] Resolutions =
     [new(1024,640), new(1280,720), new(1280,800), new(1366,768), new(1600,900), new(1920,1080), new(1920,1200), new(2560,1440), new(3840,2160)];
@@ -29,6 +29,7 @@ internal sealed class SettingsController(MenuState menu, RunState run, IGameHost
     }
     internal void Open()
     {
+        menu.SettingsPage = "root";
         menu.SettingsIndex = 0;
         run.Screen = "settings";
     }
@@ -36,38 +37,54 @@ internal sealed class SettingsController(MenuState menu, RunState run, IGameHost
     {
         if (key == Key.Escape)
         {
+            if (menu.SettingsPage != "root") { BackToCategories(); return; }
             run.Screen = paused ? "game" : "home";
             if (!paused) menu.MenuIndex = 1;
             return;
         }
-        if (UiTheme.Previous(key)) menu.SettingsIndex = (menu.SettingsIndex + 5) % 6;
-        if (UiTheme.Next(key)) menu.SettingsIndex = (menu.SettingsIndex + 1) % 6;
-        int direction = key is Key.Left or Key.A ? -1 : key is Key.Right or Key.D ? 1 : 0;
-        if (direction != 0)
+        int count = menu.SettingsPage == "root" ? 4 : 3;
+        if (UiTheme.Previous(key)) menu.SettingsIndex = (menu.SettingsIndex + count - 1) % count;
+        if (UiTheme.Next(key)) menu.SettingsIndex = (menu.SettingsIndex + 1) % count;
+        if (menu.SettingsPage == "root")
         {
+            if (!UiTheme.Confirm(key)) return;
             switch (menu.SettingsIndex)
             {
-                case 0: menu.English = !menu.English; language.SaveLanguage(); break;
-                case 1: menu.MusicVolume = Math.Clamp(menu.MusicVolume + direction * 5, 0, 100); audio?.SetVolumes(menu.MusicVolume, menu.EffectsVolume); break;
-                case 2: menu.EffectsVolume = Math.Clamp(menu.EffectsVolume + direction * 5, 0, 100); audio?.SetVolumes(menu.MusicVolume, menu.EffectsVolume); break;
-                case 3: ToggleFullscreen(); break;
-                case 4:
-                    menu.ResolutionIndex = Math.Clamp(menu.ResolutionIndex + direction, 0, Resolutions.Length - 1);
-                    ApplyDisplay(); break;
+                case 0:
+                    menu.LanguageReturn = paused ? "pause" : "settings";
+                    menu.LanguageIndex = menu.English ? 1 : 0;
+                    run.Screen = "language";
+                    break;
+                case 1: menu.SettingsPage = "sound"; menu.SettingsIndex = 0; break;
+                case 2: menu.SettingsPage = "video"; menu.SettingsIndex = 0; break;
+                case 3:
+                    if (paused) { menu.ExitYes = false; run.Screen = "confirm_exit"; }
+                    else { run.Screen = "home"; menu.MenuIndex = 1; }
+                    break;
+            }
+            return;
+        }
+        if (UiTheme.Confirm(key) && menu.SettingsIndex == 2) { BackToCategories(); return; }
+        int direction = key is Key.Left or Key.A ? -1 : key is Key.Right or Key.D ? 1 : 0;
+        if (menu.SettingsPage == "sound" && direction != 0 && menu.SettingsIndex < 2)
+        {
+            if (menu.SettingsIndex == 0) menu.MusicVolume = Math.Clamp(menu.MusicVolume + direction * 5, 0, 100);
+            else menu.EffectsVolume = Math.Clamp(menu.EffectsVolume + direction * 5, 0, 100);
+            audio?.SetVolumes(menu.MusicVolume, menu.EffectsVolume);
+        }
+        if (menu.SettingsPage == "video")
+        {
+            if (menu.SettingsIndex == 0 && (direction != 0 || UiTheme.Confirm(key))) ToggleFullscreen();
+            if (menu.SettingsIndex == 1 && direction != 0)
+            {
+                menu.ResolutionIndex = Math.Clamp(menu.ResolutionIndex + direction, 0, Resolutions.Length - 1);
+                ApplyDisplay();
             }
         }
-        if (!UiTheme.Confirm(key)) return;
-        if (menu.SettingsIndex == 0)
-        {
-            menu.LanguageReturn = paused ? "pause" : "settings";
-            menu.LanguageIndex = menu.English ? 1 : 0;
-            run.Screen = "language";
-        }
-        else if (menu.SettingsIndex == 3) ToggleFullscreen();
-        else if (menu.SettingsIndex == 5)
-        {
-            if (paused) { menu.ExitYes = false; run.Screen = "confirm_exit"; }
-            else { run.Screen = "home"; menu.MenuIndex = 1; }
-        }
+    }
+    private void BackToCategories()
+    {
+        menu.SettingsIndex = menu.SettingsPage == "sound" ? 1 : 2;
+        menu.SettingsPage = "root";
     }
 }

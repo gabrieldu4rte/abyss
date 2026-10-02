@@ -38,6 +38,11 @@ internal sealed class MenuController
 
     internal void HandlePause(Key key)
     {
+        if (menuState.PauseTab == 4 && menuState.SettingsPage != "root" && key == Key.Escape)
+        {
+            settingsController.Handle(key, true);
+            return;
+        }
         if (menuState.PauseTab == 0 && key == Key.C) { advancement.Open("pause"); return; }
         if (menuState.PauseTab == 3 && menuState.BestiaryOpen)
         {
@@ -66,7 +71,8 @@ internal sealed class MenuController
             return;
         }
 
-        if (menuState.PauseTab == 4 && key != Key.Tab && !(key >= Key.Key1 && key <= Key.Key5))
+        if (menuState.PauseTab == 4 && key != Key.Tab && !(key >= Key.Key1 && key <= Key.Key5)
+            && !(menuState.SettingsPage == "root" && key is Key.Left or Key.Right or Key.A or Key.D))
         {
             settingsController.Handle(key, true);
             return;
@@ -80,6 +86,7 @@ internal sealed class MenuController
             menuState.PauseTab = (int)key - (int)Key.Key1;
         if (previous != menuState.PauseTab)
         {
+            menuState.SettingsPage = "root";
             menuState.SettingsIndex = 0;
             menuState.MenuIndex = 0;
             return;
@@ -218,9 +225,9 @@ internal sealed class MenuController
         if (menuState.BestiaryOpen) return;
         if (UiTheme.Confirm(key) && menuState.HelpTopic == 2) { menuState.BestiaryOpen = true; return; }
         if (UiTheme.Previous(key))
-            menuState.HelpTopic = (menuState.HelpTopic + 8) % 9;
+            menuState.HelpTopic = (menuState.HelpTopic + 7) % 8;
         if (UiTheme.Next(key))
-            menuState.HelpTopic = (menuState.HelpTopic + 1) % 9;
+            menuState.HelpTopic = (menuState.HelpTopic + 1) % 8;
     }
 
     internal void HandleShop(Key key)

@@ -7,6 +7,7 @@ internal sealed class MenuState
     internal int AdvancementIndex { get; set; }
     internal bool AdvancementConfirm { get; set; }
     internal string AdvancementReturn { get; set; } = "game";
+    internal string SettingsPage { get; set; } = "root";
     internal int SettingsIndex { get; set; }
     internal bool Fullscreen { get; set; }
     internal int ResolutionIndex { get; set; } = 2;
