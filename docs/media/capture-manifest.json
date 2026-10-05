@@ -1,0 +1,48 @@
+{
+  "screenshots": {
+    "title": [
+      "--view=home"
+    ],
+    "ruins": [
+      "--biome-demo=0"
+    ],
+    "cistern": [
+      "--biome-demo=1"
+    ],
+    "fungal": [
+      "--biome-demo=2"
+    ],
+    "forge": [
+      "--biome-demo=3"
+    ],
+    "advancement": [
+      "--advancement-demo=1"
+    ],
+    "relic": [
+      "--item-demo=ConductiveCrossbow"
+    ],
+    "merchant": [
+      "--merchant-demo"
+    ],
+    "bestiary": [
+      "--bestiary-demo",
+      "--new-species-preview"
+    ],
+    "classes": [
+      "--view=classes"
+    ]
+  },
+  "animations": {
+    "arcane-nova": [
+      "--action-demo=mage"
+    ],
+    "arrow-shot": [
+      "--action-demo=arrow"
+    ],
+    "warden-fire": [
+      "--warden-demo=3",
+      "--warden-cast"
+    ]
+  },
+  "capture": "Actual Godot viewport frames in isolated copy; English, 1280x800. Map overview previews reveal fog. GIF sources: 36 frames at 1/15-second simulation steps; encoded with 70 ms delays and a one-second final hold."
+}
