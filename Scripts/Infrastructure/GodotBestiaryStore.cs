@@ -1,8 +1,15 @@
 using Godot;
 using System.Collections.Generic;
 namespace Abyss.Infrastructure;
-internal sealed class GodotBestiaryStore(string path = "user://bestiary.cfg") : IBestiaryStore
+internal sealed class GodotBestiaryStore : IBestiaryStore
 {
+    private readonly string path;
+    internal static string DefaultPath(bool editor) => editor ? "user://bestiary-editor.cfg" : "user://bestiary.cfg";
+    internal GodotBestiaryStore(string? path = null)
+    {
+        this.path = path ?? DefaultPath(OS.HasFeature("editor"));
+    }
+
     public IReadOnlyDictionary<string, int> Load()
     {
         var result = new Dictionary<string, int>();

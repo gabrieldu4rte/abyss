@@ -8,6 +8,8 @@ internal sealed partial class RegressionSuite
     internal void TestBestiaryProgress()
     {
         void Check(bool condition, string message) { if (!condition) throw new Exception(message); }
+        Check(GodotBestiaryStore.DefaultPath(true) != GodotBestiaryStore.DefaultPath(false), "Editor and exported game share bestiary progress.");
+        Check(GodotBestiaryStore.DefaultPath(false) == "user://bestiary.cfg", "Exported game must preserve existing player progress across updates.");
         var store = new MemoryBestiaryStore();
         var canvas = new BestiaryRecordingCanvas();
         var g = new GameSession(new TestHost(), canvas, new TestSettings(), store);
@@ -72,6 +74,7 @@ internal sealed partial class RegressionSuite
             Check(disk.Load().Count == 0, "Missing bestiary file should be empty.");
             Check(disk.Save(new Dictionary<string, int> { ["skeleton"] = 3 }), "Bestiary save failed.");
             Check(disk.Save(new Dictionary<string, int> { ["skeleton"] = 4, ["tide_warden"] = 1 }), "Bestiary replacement failed.");
+            Check(new GodotBestiaryStore(path + ".clean").Load().Count == 0, "A new profile inherited another profile's discoveries.");
             var reopened = new GodotBestiaryStore(path).Load();
             Check(reopened["skeleton"] == 4 && reopened["tide_warden"] == 1, "Disk bestiary lost counts.");
         }
