@@ -1,0 +1,5 @@
+{
+  "tool": "Built-in image_gen",
+  "asset": "../abyss-icon.png",
+  "prompt": "Use case: logo-brand. Asset type: square 1024x1024 desktop game icon for ABYSS, a dark fantasy ASCII dungeon crawler. Create one striking centered emblem: a monumental dungeon arch enclosing stairs descending into a pitch-black abyss, with a small warm amber flame at the descent. All visible forms must be constructed entirely from crisp monospace ASCII glyphs (# + = / \\\\ | _ . : *), arranged as deliberate character mosaic art. Bold simple silhouette with broad readable stair steps, strong contrast, restrained ivory stone and amber light on near-black background. Large emblem occupies 85 percent of canvas, generous safe margin, balanced symmetrical arch with the flame a subtle focal accent. Icon must read at small sizes, not a detailed scene or screenshot. Flat front-facing square artwork, dark full-bleed background. No title, no words, no typography labels, no watermark, no mockup, no gradients or realistic painted surfaces; lighting represented by colored character density. Premium evocative restrained dungeon game branding."
+}

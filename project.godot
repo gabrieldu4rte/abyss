@@ -10,6 +10,8 @@ config_version=5
 
 [application]
 
+config/icon="res://abyss-icon.png"
+
 config/name="Abyss"
 run/main_scene="res://Main.tscn"
 config/features=PackedStringArray("4.7", "C#", "GL Compatibility")
