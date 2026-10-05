@@ -10,11 +10,13 @@ config_version=5
 
 [application]
 
-config/icon="res://abyss-icon.png"
+boot_splash/show_image=false
+boot_splash/bg_color=Color(0.025, 0.035, 0.05, 1)
 
 config/name="Abyss"
 run/main_scene="res://Main.tscn"
 config/features=PackedStringArray("4.7", "C#", "GL Compatibility")
+config/icon="res://abyss-icon.png"
 
 [display]
 

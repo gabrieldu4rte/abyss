@@ -39,18 +39,24 @@ internal sealed partial class RegressionSuite
         Check(output.Music == 75 && output.Effects == 100 && g.RunState.Turn == turn, "Volume shortcuts consume actions or failed.");
         g.RunState.Screen = "dead"; g.AudioController.Update(.01); g.AudioController.Update(.01);
         Check(output.Cues.Count(c => c == "death") == 1, "Death cue repeats or is absent.");
-        var dir = DirAccess.Open("res://Audio");
+        using var dir = DirAccess.Open("res://Audio");
         int files = 0;
-        foreach (string name in dir.GetFiles().Where(n => n.EndsWith(".wav")))
+        foreach (string name in dir.GetFiles().Select(n => n.EndsWith(".wav.import") ? n[..^7] : n).Where(n => n.EndsWith(".wav")).Distinct())
         {
-            var data = Godot.FileAccess.GetFileAsBytes("res://Audio/" + name);
+            string path = "res://Audio/" + name;
+            var stream = GD.Load<AudioStreamWav>(path);
+            Check(stream != null && stream.GetLength() > 0 && stream.MixRate == 22050 && !stream.Stereo, "Missing or invalid imported audio: " + name);
+            files++;
+            // Exported builds contain imported resources, not the original PCM files.
+            if (!Godot.FileAccess.FileExists(path)) continue;
+            var data = Godot.FileAccess.GetFileAsBytes(path);
             Check(data.Length > 44 && System.Text.Encoding.ASCII.GetString(data, 0, 4) == "RIFF" && BitConverter.ToInt32(data,24) == 22050 && BitConverter.ToInt16(data,22) == 1 && BitConverter.ToInt16(data,34) == 16, "Unexpected audio encoding.");
             int peak = 0;
             for (int i = 44; i < data.Length; i += 2) peak = Math.Max(peak, Math.Abs((int)BitConverter.ToInt16(data,i)));
-            Check(peak > 100 && peak < 30000, "Silent or clipped audio asset."); files++;
+            Check(peak > 100 && peak < 30000, "Silent or clipped audio asset.");
         }
         Check(files == 35, "Incomplete sound library.");
-        GD.Print("AUDIO AUDIT: 28 short effects, seven loops, PCM validation, movement, cue routing, biome music, pause, death, volume and cosmetic-only playback passed.");
+        GD.Print("AUDIO AUDIT: 28 short effects, seven loops, imported resources, source PCM validation when available, movement, cue routing, biome music, pause, death, volume and cosmetic-only playback passed.");
     }
     private sealed class RecordingAudio : IGameAudio
     {

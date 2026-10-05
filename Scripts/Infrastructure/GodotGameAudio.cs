@@ -31,14 +31,13 @@ internal sealed class GodotGameAudio
     private AudioStreamWav Load(string key, bool loop)
     {
         if (streams.TryGetValue(key, out var cached)) return cached;
-        // Generator writes canonical mono, PCM16, 22050 Hz WAVs with a 44-byte header.
-        byte[] wav = FileAccess.GetFileAsBytes("res://Audio/" + key + ".wav");
-        if (wav.Length < 44) throw new InvalidOperationException("Missing audio asset: " + key);
-        var stream = new AudioStreamWav {
-            Format = AudioStreamWav.FormatEnum.Format16Bits, MixRate = 22050, Stereo = false,
-            Data = wav[44..], LoopMode = loop ? AudioStreamWav.LoopModeEnum.Forward : AudioStreamWav.LoopModeEnum.Disabled,
-            LoopBegin = 0, LoopEnd = (wav.Length - 44) / 2
-        };
+        // ResourceLoader resolves the imported audio in both editor and exported builds.
+        var source = GD.Load<AudioStreamWav>("res://Audio/" + key + ".wav");
+        if (source == null) throw new InvalidOperationException("Missing audio asset: " + key);
+        var stream = (AudioStreamWav)source.Duplicate();
+        stream.LoopMode = loop ? AudioStreamWav.LoopModeEnum.Forward : AudioStreamWav.LoopModeEnum.Disabled;
+        stream.LoopBegin = 0;
+        stream.LoopEnd = (int)Math.Round(stream.GetLength() * stream.MixRate);
         streams[key] = stream;
         return stream;
     }
