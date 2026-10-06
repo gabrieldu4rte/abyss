@@ -20,6 +20,7 @@ internal sealed class InventoryRenderer
 
     internal void DrawInventory()
     {
+        menuState.InventoryIndex = Math.Clamp(menuState.InventoryIndex, 0, 5 + inventoryState.Backpack.Count);
         asciiCanvas.Text(32, 202, localization.Translate("EQUIPADO", "EQUIPPED"), UiTheme.Gold, 16);
         for (int i = 0; i < 3; i++)
         {

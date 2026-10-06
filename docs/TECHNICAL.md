@@ -135,7 +135,7 @@ The game remains turn-based. `_Process` advances animation time and the held-key
 - `RandomStream` shares one `System.Random` sequence across generation, AI, combat, and rewards. Starting with a fixed seed reproduces a run when supplied with the same actions.
 - Random draw order is part of the compatibility contract. Reordering apparently independent rolls can change later encounters and is covered by regression checkpoints.
 
-`RoamingBehavior` patrols, detects the player through line of sight, pursues, and searches the last observed position. `WardenBehavior` activates when the player enters the stair room and remains confined there. Pathfinding preserves occupied-tile restrictions and cardinal movement. Enemy attacks require adjacency; movement and attack are separate enemy actions.
+`RoamingBehavior` patrols, detects the player through line of sight, pursues, and searches the last observed position. `WardenBehavior` activates on the first stair-room cell or positive damage, then pursues outside the room with up to two cardinal steps per action. Pathfinding preserves occupied-tile restrictions and cardinal movement. Enemy attacks require adjacency; movement and attack are separate enemy actions.
 
 ## Combat, equipment, and progression
 
@@ -238,7 +238,7 @@ Coverage includes:
 
 - 550 generated floors, including depths up to 1,000: connectivity, occupancy, deterministic generation, boss placement, and endless descent.
 - Dice probabilities, critical hits, healing, attribute scaling, equipment requirements/effects, and melee/ranged restrictions.
-- Patrol, detection, search, pathfinding, and Warden confinement.
+- Patrol, detection, search, pathfinding, and Warden activation, two-step pursuit, and living-Warden exit locks.
 - Merchant generation, stock persistence, purchase/sale confirmation, currency, and equipped-item sales.
 - Menu navigation, localization persistence, journal pagination, ASCII asset validity, and damage animations.
 - Held movement timing, release, pause, focus loss, and aiming.
@@ -300,7 +300,7 @@ Flags after `--` are handled by the game:
 | Fungal caves | Sporeling, Cave crawler, Myconid, Spore bloom | Spore Sovereign | Spore burst: radius-one cloud at the marked player position; three poison ticks on hit |
 | Ember forge | Cinder hound, Ember imp, Forged sentinel, Forge salamander | Forge Warden | Furnace cross: four-tile arms; leaves fire for two ticks, four in hot drafts |
 
-- Each Warden is tied to its biome and still guards the stair room. Leaving the room cancels a prepared ability.
+- Each Warden is tied to its biome and initially guards the stair room. Once awakened it can pursue and use abilities outside the room; leaving the room does not cancel a prepared ability. Marks remain limited by walkable terrain, line of sight, and sanctuary protection.
 - Abilities cost 4 energy from a pool of 6, restore 1 per active turn and have four recovery turns. Wardens begin with two recovery turns.
 - Preparation marks fixed tiles with colored `!` glyphs. The player has two actions to escape before resolution; the ability replaces the Warden's normal action.
 - Ability attacks use d20 against the unified defense. Seismic impact uses Strength; the other abilities use Intelligence. Existing tier scaling, critical hits and armor reduction apply.
@@ -358,7 +358,7 @@ Twelve named items extend `Gear` with a stable `ItemId`. They retain the base ki
 | Legendary | Sandflower Relic | Actual healing blinds enemies within three cells for five enemy responses and permanently marks nearby walls. Floor-descent recovery is excluded. |
 | Legendary | Hood of Shadow Legends | Lethal damage without an active torch triggers shadow birds and escape to the nearest unoccupied stair-room cell with one HP and zero energy. The hood is removed from equipment/backpack and the remaining damage response is interrupted. |
 
-`HeroVitals` centralizes healing and lethal damage, while `NamedEquipmentEffects` handles hit-triggered properties. Pushes respect occupied cells, walls and Warden-room confinement. `TemporaryWater` preserves prior terrain. Blindness pauses enemy movement and ability preparation. Diagnostics remain turn-neutral and audio/animations use existing assets. `NamedItemTests` exercises all twelve properties and loot availability; `--item-demo=ItemId` previews an item in inventory.
+`HeroVitals` centralizes healing and lethal damage, while `NamedEquipmentEffects` handles hit-triggered properties. Pushes respect occupied cells, walls, sanctuaries, and the room boundary of dormant Wardens. `TemporaryWater` preserves prior terrain. Blindness pauses enemy movement and ability preparation. Diagnostics remain turn-neutral and audio/animations use existing assets. `NamedItemTests` exercises all twelve properties and loot availability; `--item-demo=ItemId` previews an item in inventory.
 
 ## Merchant capacity and Lost Blacksmith
 
@@ -453,3 +453,7 @@ Combat passives use the normal hit, kill, loot and healing services. Electrical 
 - Ember imps and Forge salamanders have a 25% chance to ignite the player's tile after a hit. Water and safe terrain retain their protection. The Eternal Forge Robe prevents imp fire-bolt damage. Salamanders take no burning-ground damage.
 - Ruin gargoyles and Forged sentinels reduce physical hero attack damage by one, to a minimum of one; mage magic bypasses this reduction.
 - New portraits were generated with the built-in image tool and converted with the existing 100-column ASCII pipeline; source prompts are in `ArtSources/enemy-expansion-prompts.json`.
+
+## Inventory selection safety
+
+Successful trades clamp the inventory cursor to the current backpack size. Rendering and input also validate the cursor, covering removed equipment and empty backpacks before accessing item details. `InventorySelectionTests` exercises selling the selected item, purchasing a consumable, and rendering and navigating stale selections with transitions enabled.

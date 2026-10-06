@@ -12,15 +12,15 @@ internal sealed class WardenBehavior(CombatService combatService, DungeonState d
             enemy.Alerted = true;
             expeditionJournal.Say("Voce entrou na sala da escada. O Guardiao desperta!", "You entered the stair room. The Warden awakens!");
         }
-        if (!inside) abilities.Cancel(enemy);
-        else if (abilities.Act(enemy, evade)) return;
-        if (inside && GameRules.Dist(playerState.Position, enemy.Position) == 1)
+        if (abilities.Act(enemy, evade)) return;
+        if (GameRules.Dist(playerState.Position, enemy.Position) == 1)
         {
             if (mayAttack)
                 combatService.ResolveEnemyAttack(enemy, evade);
         }
         else
-            navigator.StepEnemy(enemy, inside ? playerState.Position : dungeonState.Stairs, true);
+            for (int step = 0; step < 2 && GameRules.Dist(playerState.Position, enemy.Position) > 1; step++)
+                if (!navigator.StepEnemy(enemy, playerState.Position)) break;
         return;
     }
 }

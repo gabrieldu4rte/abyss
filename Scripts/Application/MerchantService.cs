@@ -117,6 +117,7 @@ internal sealed class MerchantService
         }
 
         expeditionJournal.Say(menuState.ShopNotice.Pt, menuState.ShopNotice.En);
+        menuState.InventoryIndex = Math.Clamp(menuState.InventoryIndex, 0, 5 + inventoryState.Backpack.Count);
         menuState.PendingTrade = null;
         menuState.ShopIndex = Math.Max(0, Math.Min(menuState.ShopIndex, ShopOffers().Count - 1));
         menuState.MerchantQuote = (menuState.MerchantQuote + 1) % 4;

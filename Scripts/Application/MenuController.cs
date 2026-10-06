@@ -307,6 +307,7 @@ internal sealed class MenuController
 
     internal void HandleInventory(Key key)
     {
+        menuState.InventoryIndex = Math.Clamp(menuState.InventoryIndex, 0, 5 + inventoryState.Backpack.Count);
         int count = 6 + inventoryState.Backpack.Count;
         if (UiTheme.Previous(key))
             menuState.InventoryIndex = (menuState.InventoryIndex + count - 1) % count;

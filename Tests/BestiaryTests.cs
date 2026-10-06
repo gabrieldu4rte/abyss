@@ -48,7 +48,7 @@ internal sealed partial class RegressionSuite
             var boss = Prepare();
             var abilities = new WardenAbilities(game.CombatService, game.DungeonState, game.PlayerState, game.ExpeditionJournal, game.VisualEffects);
             Check(abilities.Act(boss, false) && boss.AbilityWindup == 2 && boss.AbilityEnergy == 2, "Warden did not prepare or pay energy.");
-            Check(boss.AbilityCells.All(p => game.DungeonState.StairsRoom.HasPoint(p) && game.DungeonState.Walk(p)), "Warden mask escaped room.");
+            Check(boss.AbilityCells.All(p => game.DungeonState.Walk(p) && !game.DungeonState.IsSanctuary(p)), "Warden mask crossed impassable terrain.");
             int hp = game.PlayerState.Health;
             Check(abilities.Act(boss, false) && game.PlayerState.Health == hp && boss.AbilityWindup == 1, "Windup damaged too early.");
             abilities.Act(boss, false);
@@ -67,10 +67,19 @@ internal sealed partial class RegressionSuite
             game.PlayerState.Position = new Vector2I(22, 8); hp = game.PlayerState.Health;
             abilities.Act(boss, false); abilities.Act(boss, false);
             Check(hp == game.PlayerState.Health, "Escaping a marked area did not evade the ability.");
+            boss = Prepare();
+            boss.Position = new Vector2I(16, 8);
+            game.PlayerState.Position = new Vector2I(18, 8);
+            Check(abilities.Act(boss, false) && boss.AbilityWindup == 2, "Awakened Warden cannot cast outside stair room.");
+            hp = game.PlayerState.Health;
+            abilities.Act(boss, false); abilities.Act(boss, false);
+            Check(game.PlayerState.Health < hp, "Warden ability cannot damage outside stair room.");
             boss = Prepare(); abilities.Act(boss, false);
             game.PlayerState.Position = new Vector2I(19, 8);
-            Check(!abilities.Act(boss, false) && boss.AbilityCells.Count == 0 && boss.AbilityWindup == 0, "Leaving room did not cancel Warden ability.");
+            Check(abilities.Act(boss, false) && boss.AbilityWindup == 1, "Leaving room incorrectly cancelled Warden ability.");
+            hp = game.PlayerState.Health; abilities.Act(boss, false);
+            Check(game.PlayerState.Health == hp, "Unmarked player was hit outside room.");
         }
-        GD.Print("BESTIARY AUDIT: 16 biome species, four unique Wardens, 120 floors, localized portraits, energy, windup, dodging, confinement, four animated skills and environmental effects passed.");
+        GD.Print("BESTIARY AUDIT: 16 biome species, four unique Wardens, 120 floors, localized portraits, energy, windup, dodging, pursuit outside the room, four animated skills and environmental effects passed.");
     }
 }

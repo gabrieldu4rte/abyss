@@ -112,7 +112,7 @@ internal sealed class CombatService
     {
         if (dungeonState.IsSanctuary(playerState.Position) || GameRules.Dist(playerState.Position, enemy.Position) > EnemyTraits.AttackRange(enemy.Glyph) || !dungeonState.Los(enemy.Position, playerState.Position))
             return;
-        if (enemy.Glyph == 'B' && (!enemy.Alerted || !dungeonState.StairsRoom.HasPoint(playerState.Position)))
+        if (enemy.IsWarden && !enemy.Alerted)
             return;
         if (GameRules.Dist(playerState.Position, enemy.Position) > 1)
             visualEffects.Actions.PlayEnemyProjectile(enemy, playerState.Position);
@@ -145,7 +145,7 @@ internal sealed class CombatService
     internal bool ResolveWardenAbility(Enemy enemy, bool evade)
     {
         if (enemy.HomeBiome == Biome.EmberForge && inventoryState.Has(ItemId.EternalForgeRobe)) return false;
-        if (enemy.Health <= 0 || !enemy.IsWarden || !enemy.Alerted || !dungeonState.StairsRoom.HasPoint(playerState.Position) || !enemy.AbilityCells.Contains(playerState.Position) || !dungeonState.Los(enemy.Position, playerState.Position)) return false;
+        if (enemy.Health <= 0 || !enemy.IsWarden || !enemy.Alerted || dungeonState.IsSanctuary(playerState.Position) || !enemy.AbilityCells.Contains(playerState.Position) || !dungeonState.Los(enemy.Position, playerState.Position)) return false;
         int modifier = enemy.HomeBiome == Biome.Ruins ? enemy.Stats.Str : enemy.Stats.Int;
         var roll = ResolveAttack(random.Generator.Next(1, 21), enemy.Training + modifier + 1, heroCombatStats.Defense + (evade ? 4 : 0));
         string total = $"d20({roll.Natural}){UiTheme.Signed(roll.Bonus)}={roll.Total} vs {roll.Defense}";
@@ -169,6 +169,11 @@ internal sealed class CombatService
     internal void Hit(Enemy e, int damage, bool report = true)
     {
         if (e.Health <= 0) return;
+        if (e.IsWarden && damage > 0 && !e.Alerted)
+        {
+            e.Alerted = true;
+            expeditionJournal.Say("O dano desperta o Guardiao!", "The damage awakens the Warden!");
+        }
         e.Health -= damage;
         visualEffects.EnemyHurt(e, damage);
         if (report)

@@ -187,7 +187,7 @@ internal sealed class GameSession : ITurnScheduler, IRunLifecycle
             return;
         }
 
-        if (GameRules.IsBossFloor(DungeonState.Floor) && DungeonState.Enemies.Any(e => e.Glyph == 'B'))
+        if (DungeonState.Enemies.Any(e => e.IsWarden && e.Health > 0))
         {
             ExpeditionJournal.Say("O Guardiao ainda bloqueia a descida.", "The Warden still blocks the descent.");
             return;

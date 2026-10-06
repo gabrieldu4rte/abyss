@@ -101,7 +101,7 @@ These interactions can help you escape or finish a fight, but the fire you creat
 
 ### Face the Wardens
 
-Every fifth floor has a guardian tied to its biome. Wardens stay with the stair chamber and awaken when you enter their domain. Their abilities mark the ground before they strike: notice the warning and use your turns to move.
+Every fifth floor has a guardian tied to its biome. Wardens awaken when you step into their stair chamber or damage them. Once awakened, they can pursue you beyond the room, moving up to two tiles per turn. The stairs remain sealed until the Warden is defeated. Their abilities mark the ground before they strike: notice the warning and use your turns to move.
 
 ![The Forge Warden's animated furnace attack](docs/media/warden-fire.gif)
 

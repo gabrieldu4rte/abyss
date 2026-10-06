@@ -64,21 +64,29 @@ internal sealed partial class RegressionSuite
         game.EnemyAi.ActEnemy(boss);
         if (!boss.Alerted || !game.ExpeditionJournal.Entries.Any(e => e.En.Contains("Warden awakens")))
             throw new Exception("Boss did not activate on room entry");
-        game.PlayerState.Position = new Vector2I(19, 12);
+        boss.Position = new Vector2I(23, 12);
+        boss.AbilityCooldown = 100;
+        game.PlayerState.Position = new Vector2I(17, 12);
         beforeHp = game.PlayerState.Health;
-        for (int i = 0; i < 15; i++)
-        {
-            game.EnemyAi.ActEnemy(boss);
-            if (!game.DungeonState.StairsRoom.HasPoint(boss.Position) || game.PlayerState.Health != beforeHp)
-                throw new Exception("Boss left room or attacked outside it");
-        }
-
-        if (boss.Position != game.DungeonState.Stairs)
-            throw new Exception("Boss did not return to stairs");
-        game.PlayerState.Position = new Vector2I(25, 14);
         game.EnemyAi.ActEnemy(boss);
-        if (boss.Position == game.DungeonState.Stairs)
-            throw new Exception("Boss did not resume pursuit after reentry");
+        if (boss.Position != new Vector2I(21, 12) || game.PlayerState.Health != beforeHp)
+            throw new Exception("Warden must move two cells without attacking.");
+        game.EnemyAi.ActEnemy(boss);
+        if (boss.Position != new Vector2I(19, 12)) throw new Exception("Awakened Warden did not leave its room.");
+        boss.Alerted = false; boss.Position = new Vector2I(23, 12);
+        game.CombatService.Hit(boss, 1);
+        if (!boss.Alerted) throw new Exception("Ranged damage failed to awaken Warden outside room.");
+        game.EnemyAi.ActEnemy(boss);
+        if (boss.Position != new Vector2I(21, 12)) throw new Exception("Damaged Warden did not pursue.");
+        boss.Alerted = false; boss.Position = new Vector2I(23, 12);
+        game.PlayerState.Position = new Vector2I(20, 12);
+        game.EnemyAi.ActEnemy(boss);
+        if (!boss.Alerted) throw new Exception("First room cell did not awaken Warden.");
+        game.PlayerState.Position = game.DungeonState.Stairs;
+        boss.Position = new Vector2I(18, 12);
+        int blockedFloor = game.DungeonState.Floor;
+        game.Descend();
+        if (game.DungeonState.Floor != blockedFloor) throw new Exception("Living Warden outside room did not block exit.");
         for (int seed = 1; seed <= 20; seed++)
         {
             game.Start(seed);
@@ -157,6 +165,6 @@ internal sealed partial class RegressionSuite
                 throw new Exception("Equipping ranged weapon did not disable melee");
         }
 
-        GD.Print("AI AUDIT: patrol, visual detection, last-seen search, wall routing, occupancy, boss activation and confinement passed; 600 generated-map turns.");
+        GD.Print("AI AUDIT: patrol, visual detection, last-seen search, wall routing, occupancy, boss activation, two-step pursuit and exit lock passed; 600 generated-map turns.");
     }
 }

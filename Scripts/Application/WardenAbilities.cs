@@ -10,7 +10,7 @@ internal sealed class WardenAbilities(CombatService combat, DungeonState dungeon
     }
     internal bool Act(Enemy enemy, bool evade)
     {
-        if (enemy.Health <= 0 || !enemy.IsWarden || !enemy.Alerted || !dungeon.StairsRoom.HasPoint(player.Position)) { Cancel(enemy); return false; }
+        if (enemy.Health <= 0 || !enemy.IsWarden || !enemy.Alerted || dungeon.IsSanctuary(player.Position)) { Cancel(enemy); return false; }
         enemy.AbilityEnergy = Math.Min(6, enemy.AbilityEnergy + 1);
         if (enemy.AbilityWindup > 0)
         {
@@ -39,8 +39,8 @@ internal sealed class WardenAbilities(CombatService combat, DungeonState dungeon
         var direction = player.Position - enemy.Position;
         bool horizontal = Math.Abs(direction.X) >= Math.Abs(direction.Y);
         int sign = Math.Sign(horizontal ? direction.X : direction.Y);
-        for (int y = dungeon.StairsRoom.Position.Y; y < dungeon.StairsRoom.End.Y; y++)
-            for (int x = dungeon.StairsRoom.Position.X; x < dungeon.StairsRoom.End.X; x++)
+        for (int y = Math.Max(0, enemy.Position.Y - 6); y < Math.Min(GameRules.Height, enemy.Position.Y + 7); y++)
+            for (int x = Math.Max(0, enemy.Position.X - 6); x < Math.Min(GameRules.Width, enemy.Position.X + 7); x++)
             {
                 var p = new Vector2I(x, y); var offset = p - enemy.Position;
                 int forward = (horizontal ? offset.X : offset.Y) * sign;
@@ -52,7 +52,7 @@ internal sealed class WardenAbilities(CombatService combat, DungeonState dungeon
                     Biome.FungalCaves => GameRules.Dist(p, player.Position) <= 1,
                     _ => (offset.X == 0 || offset.Y == 0) && GameRules.Dist(p, enemy.Position) <= 4
                 };
-                if (marked && p != enemy.Position && dungeon.Walk(p) && dungeon.Los(enemy.Position, p)) enemy.AbilityCells.Add(p);
+                if (marked && p != enemy.Position && dungeon.Walk(p) && !dungeon.IsSanctuary(p) && dungeon.Los(enemy.Position, p)) enemy.AbilityCells.Add(p);
             }
         if (!enemy.AbilityCells.Contains(player.Position)) { enemy.AbilityCells.Clear(); return false; }
         effects.Sounds.Play("wardencharge");
